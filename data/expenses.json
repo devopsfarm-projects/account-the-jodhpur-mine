@@ -1,0 +1,18 @@
+{
+  "expenses": [
+    {
+      "id": 1,
+      "date": "2025-06-12",
+      "category": "Office Supplies",
+      "amount": 2500,
+      "description": "Stationery and office materials"
+    },
+    {
+      "id": 2,
+      "date": "2025-06-12",
+      "category": "Utilities",
+      "amount": 5000,
+      "description": "Electricity and water bills"
+    }
+  ]
+}
