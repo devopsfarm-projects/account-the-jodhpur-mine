@@ -1,16 +1,16 @@
 import type { CollectionConfig } from 'payload'
 
-export const ClientTransactions: CollectionConfig = {
-  slug: 'client-transaction',
+export const VendorTransactions: CollectionConfig = {
+  slug: 'vendor-transaction',
   admin: {
-    useAsTitle: 'clientName',
+    useAsTitle: 'vendorName',
   },
 
   fields: [
     {
-      name: 'clientName',
+      name: 'vendorName',
       type: 'relationship',
-      relationTo: 'client-accounts',
+      relationTo: 'vendor',
       required: true,
     },
     {
@@ -57,12 +57,12 @@ export const ClientTransactions: CollectionConfig = {
  
     },
     {
-      name: 'clientCreatedAt',
+      name: 'vendorCreatedAt',
       type: 'date',
      
     },
     {
-      name: 'clientUpdatedAt',
+      name: 'vendorUpdatedAt',
       type: 'date',
       
     },

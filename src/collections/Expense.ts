@@ -5,7 +5,7 @@ export const Expense: CollectionConfig = {
   admin: {
     useAsTitle: 'nameOfExpense',
   },
-  auth: true,
+
   fields: [
     {
       name: 'nameOfExpense',

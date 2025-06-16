@@ -5,7 +5,7 @@ export const Vendor: CollectionConfig = {
   admin: {
     useAsTitle: 'vendorName',
   },
-  auth: true,
+
   fields: [
     {
       name: 'vendorName',

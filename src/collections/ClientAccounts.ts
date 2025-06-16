@@ -5,7 +5,7 @@ export const ClientAccounts: CollectionConfig = {
   admin: {
     useAsTitle: 'clientName',
   },
-  auth: true,
+
   fields: [
     {
       name: 'clientName',
