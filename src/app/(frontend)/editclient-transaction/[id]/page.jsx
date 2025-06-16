@@ -1,5 +1,5 @@
-"use client";
-
+//Edit Client Transaction page
+"use client";//required for localStorage and router
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
@@ -10,7 +10,6 @@ const EditClientTransaction = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id;
-
   const [form, setForm] = useState({
     client: "",
     totalAmount: "",
@@ -90,7 +89,7 @@ const EditClientTransaction = () => {
   return (
     <>
       <Header />
-      <Container className="mt-4 p-3 p-md-4 bg-light rounded shadow" style={{ maxWidth: "700px" }}>
+      <Container className="mt-4 p-3 p-md-4 bg-light rounded shadow w-100 w-sm-100 w-md-75 w-lg-75 w-xl-75 w-xxl-50 mx-auto" >
         <h4 className="text-center mb-4">Edit Client Transaction</h4>
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
@@ -180,12 +179,12 @@ const EditClientTransaction = () => {
             />
           </Form.Group>
 
-          <div className="d-flex flex-column flex-md-row gap-3">
-            <Button type="submit" className="flex-fill" variant="primary">
+          <div className="d-flex flex-column flex-md-row gap-3 justify-content-center mt-4 flex-wrap align-items-center">
+            <Button type="submit" className="px-4 fw-bold rounded-3" variant="primary">
               Save Changes
             </Button>
-            <Button variant="secondary" className="flex-fill" onClick={() => router.push("/viewclient-transaction")}>
-              Cancel
+            <Button variant="secondary" className="px-4 fw-bold rounded-3" onClick={() => router.push("/viewclient-transaction")}>
+              Go Back
             </Button>
           </div>
         </Form>

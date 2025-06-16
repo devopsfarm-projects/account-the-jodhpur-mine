@@ -5,14 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; // Used to navigate between pages
 
 // Bootstrap components for layout and UI
-import {
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  Alert
-} from "react-bootstrap";
+import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
 
 // Icons for better visuals
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -46,9 +39,9 @@ const AddVendorTransaction = () => {
 
   // Fetch only active vendors when component loads
   useEffect(() => {
-    const vendorData = JSON.parse(localStorage.getItem("vendorAccounts") || "[]");
-    const filtered = vendorData.filter(v => v.status === true).map(v => v.name);
-    setActiveVendors(filtered);
+    const storedVendorAccounts = JSON.parse(localStorage.getItem("vendorAccounts") || "[]");
+    const VendorNames = storedVendorAccounts.map((vendoraccounts) => vendoraccounts.name);
+    setActiveVendors(VendorNames);
   }, []);
 
   // Update form field values (like vendorName, totalAmount)
@@ -165,7 +158,7 @@ const AddVendorTransaction = () => {
         <Form onSubmit={handleSubmit}>
           {/* Vendor Name Field with filtered active vendors */}
           <Form.Group className="mb-3">
-            <Form.Label><strong>Vendor Name</strong> <span className="text-danger">*</span></Form.Label>
+            <Form.Label className="fw-bold text-dark fs-5">Vendor Name <span className="text-danger">*</span></Form.Label>
             <Form.Control
               list="vendorList"
               name="vendorName"
@@ -189,7 +182,7 @@ const AddVendorTransaction = () => {
           <Row>
             <Col xs={12} md={6}>
               <Form.Group className="mb-3">
-                <Form.Label><strong>Total Amount</strong> <span className="text-danger">*</span></Form.Label>
+                <Form.Label className="fw-bold text-dark fs-5">Total Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)<span className="text-danger ms-1">*</span></Form.Label>
                 <Form.Control
                   type="number"
                   name="totalAmount"
@@ -203,7 +196,7 @@ const AddVendorTransaction = () => {
             </Col>
             <Col xs={12} md={6}>
               <Form.Group className="mb-3">
-                <Form.Label><strong>Token Amount</strong> <span className="text-danger">*</span></Form.Label>
+                <Form.Label className="fw-bold text-dark fs-5">Token Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)<span className="text-danger ms-1">*</span></Form.Label>
                 <Form.Control
                   type="number"
                   name="tokenAmount"
@@ -260,16 +253,16 @@ const AddVendorTransaction = () => {
           ))}
 
           {/* Totals & Remaining */}
-          <Row>
+          <Row className="my-3">
             <Col xs={12} md={6}>
               <Form.Group className="mb-3">
-                <Form.Label><strong>Total Credits</strong></Form.Label>
+                <Form.Label className="fw-bold text-dark fs-5">Total Credits (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
                 <Form.Control value={getTotalCredit()} readOnly className="bg-white" />
               </Form.Group>
             </Col>
             <Col xs={12} md={6}>
               <Form.Group className="mb-3">
-                <Form.Label><strong>Remaining Amount</strong></Form.Label>
+                <Form.Label className="fw-bold text-dark fs-5">Remaining Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
                 <Form.Control value={getRemainingAmount()} readOnly className="bg-white" />
               </Form.Group>
             </Col>
@@ -277,7 +270,7 @@ const AddVendorTransaction = () => {
 
           {/* Optional Notes */}
           <Form.Group className="mb-3">
-            <Form.Label><strong>Description (Optional)</strong></Form.Label>
+            <Form.Label className="fw-bold text-dark fs-5">Description (Optional)</Form.Label>
             <Form.Control
               as="textarea"
               rows={2}

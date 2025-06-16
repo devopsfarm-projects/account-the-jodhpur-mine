@@ -19,6 +19,31 @@ export async function getExpenses() {
   }
 }
 
+export async function getExpenseById(id) {
+  try {
+    const expenses = await getExpenses();
+    
+    // Convert ID to number if it's a string
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
+    // Find expense by numeric ID
+    const expense = expenses.find(exp => {
+      const expId = typeof exp.id === 'string' ? parseInt(exp.id, 10) : exp.id;
+      return expId === numericId;
+    });
+    
+    if (!expense) {
+      console.error('Expense not found for ID:', id, 'Available expenses:', expenses);
+      throw new Error(`Expense with ID ${id} not found`);
+    }
+
+    return expense;
+  } catch (error) {
+    console.error('Error fetching expense:', error);
+    throw new Error('Failed to fetch expense. Please check the server logs for more details.');
+  }
+}
+
 export async function updateExpense(id, data) {
   try {
     const expenses = await getExpenses();

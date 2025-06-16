@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation"; // Navigation hook in Next.js
-import { Container,Navbar, Nav, Button, NavDropdown, Offcanvas, } from "react-bootstrap";
+import { Container, Navbar, Nav, Button, NavDropdown, Offcanvas, } from "react-bootstrap";
 
 const Header = () => {
   const router = useRouter(); // Allows programmatic navigation (e.g., after logout)
@@ -11,17 +11,30 @@ const Header = () => {
 
   // Read role from localStorage only after component loads (client-side)
   useEffect(() => {
-    const savedRole = localStorage.getItem("role");
-    if (savedRole) {
-      setRole(savedRole);
+    let Userdata;
+    // Check if we are in the browser environment (not server-side)
+    if (typeof window !== "undefined") {
+      // Try to get the saved user data from localStorage
+      Userdata = localStorage.getItem("user");
+    } else {
+      // If not in browser, user data is null
+      Userdata = null;
     }
+    // Set the user's role based on the data we got from localStorage If user data exists, parse it from JSON and get the role If there is no role or no user data, default to "client"
+    let UserRole;
+    if (Userdata) {
+      const parsedUser = JSON.parse(Userdata); // Convert string to object
+      UserRole = parsedUser.role ? parsedUser.role : "guest"; // Get role or set to "client"
+      //console.log("User Role:", UserRole);
+      setRole(UserRole);
+    }
+
   }, []);
 
   // Handle logout by removing login info and redirecting to login page
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("role");
-    router.push("/login");
+    localStorage.removeItem("user");
+    router.push("/");
   };
 
   return (
@@ -52,8 +65,7 @@ const Header = () => {
 
           {/* Body of offcanvas menu */}
           <Offcanvas.Body>
-            <Nav className="flex-grow-1 pe-3">
-
+            <Nav className="flex-grow-1 pe-3 text-capitalize fw-bold fs-5 justify-content-md-start align-items-md-center">
               {/* Admin Role Menus */}
               {role === "admin" && (
                 <>
@@ -145,7 +157,7 @@ const Header = () => {
                 </>
               )}
               {/* Client Role Menu Bar */}
-              {role === "client" && (
+              {role === "guest" && (
                 <Nav.Link as={Link} href="/client-transaction" className="text-white" active>
                   Add Client Transaction
                 </Nav.Link>
@@ -153,12 +165,8 @@ const Header = () => {
             </Nav>
 
             {/* Logout button: full width on mobile, auto width on large screens */}
-            <div className="mt-3 mt-lg-0">
-              <Button
-                variant="outline-light"
-                onClick={handleLogout}
-                className="w-100 w-lg-auto"
-              >
+            <div className="my-2">
+              <Button variant="outline-light" onClick={handleLogout} className="w-100 w-lg-auto fs-6 fw-bold text-capitalize text-center justify-content-center align-items-center">
                 Logout
               </Button>
             </div>

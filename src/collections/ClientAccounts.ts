@@ -1,11 +1,10 @@
+// ClientAccounts collection
 import type { CollectionConfig } from 'payload'
-
 export const ClientAccounts: CollectionConfig = {
   slug: 'client-accounts',
   admin: {
     useAsTitle: 'clientName',
   },
-  auth: true,
   fields: [
     {
       name: 'clientName',

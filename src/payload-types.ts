@@ -64,10 +64,6 @@ export type SupportedTimezones =
 export interface Config {
   auth: {
     users: UserAuthOperations;
-    'client-accounts': ClientAccountAuthOperations;
-    'client-transaction': ClientTransactionAuthOperations;
-    expense: ExpenseAuthOperations;
-    vendor: VendorAuthOperations;
   };
   blocks: {};
   collections: {
@@ -99,100 +95,15 @@ export interface Config {
   globals: {};
   globalsSelect: {};
   locale: null;
-  user:
-    | (User & {
-        collection: 'users';
-      })
-    | (ClientAccount & {
-        collection: 'client-accounts';
-      })
-    | (ClientTransaction & {
-        collection: 'client-transaction';
-      })
-    | (Expense & {
-        collection: 'expense';
-      })
-    | (Vendor & {
-        collection: 'vendor';
-      });
+  user: User & {
+    collection: 'users';
+  };
   jobs: {
     tasks: unknown;
     workflows: unknown;
   };
 }
 export interface UserAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
-  registerFirstUser: {
-    email: string;
-    password: string;
-  };
-  unlock: {
-    email: string;
-    password: string;
-  };
-}
-export interface ClientAccountAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
-  registerFirstUser: {
-    email: string;
-    password: string;
-  };
-  unlock: {
-    email: string;
-    password: string;
-  };
-}
-export interface ClientTransactionAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
-  registerFirstUser: {
-    email: string;
-    password: string;
-  };
-  unlock: {
-    email: string;
-    password: string;
-  };
-}
-export interface ExpenseAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
-  registerFirstUser: {
-    email: string;
-    password: string;
-  };
-  unlock: {
-    email: string;
-    password: string;
-  };
-}
-export interface VendorAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -266,14 +177,6 @@ export interface ClientAccount {
   clientUpdatedAt?: string | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -298,14 +201,6 @@ export interface ClientTransaction {
   clientUpdatedAt?: string | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -326,14 +221,6 @@ export interface Expense {
   expenseUpdatedAt: string;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -354,14 +241,6 @@ export interface Vendor {
   vendorUpdatedAt?: string | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -395,27 +274,10 @@ export interface PayloadLockedDocument {
         value: number | Vendor;
       } | null);
   globalSlug?: string | null;
-  user:
-    | {
-        relationTo: 'users';
-        value: number | User;
-      }
-    | {
-        relationTo: 'client-accounts';
-        value: number | ClientAccount;
-      }
-    | {
-        relationTo: 'client-transaction';
-        value: number | ClientTransaction;
-      }
-    | {
-        relationTo: 'expense';
-        value: number | Expense;
-      }
-    | {
-        relationTo: 'vendor';
-        value: number | Vendor;
-      };
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -425,27 +287,10 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user:
-    | {
-        relationTo: 'users';
-        value: number | User;
-      }
-    | {
-        relationTo: 'client-accounts';
-        value: number | ClientAccount;
-      }
-    | {
-        relationTo: 'client-transaction';
-        value: number | ClientTransaction;
-      }
-    | {
-        relationTo: 'expense';
-        value: number | Expense;
-      }
-    | {
-        relationTo: 'vendor';
-        value: number | Vendor;
-      };
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
   key?: string | null;
   value?:
     | {
@@ -522,13 +367,6 @@ export interface ClientAccountsSelect<T extends boolean = true> {
   clientUpdatedAt?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -552,13 +390,6 @@ export interface ClientTransactionSelect<T extends boolean = true> {
   clientUpdatedAt?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -578,13 +409,6 @@ export interface ExpenseSelect<T extends boolean = true> {
   expenseUpdatedAt?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -604,13 +428,6 @@ export interface VendorSelect<T extends boolean = true> {
   vendorUpdatedAt?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

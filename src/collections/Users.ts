@@ -14,7 +14,6 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
   },
   auth: true,
-
   access: {
     read: () => true,
     create: () => true,

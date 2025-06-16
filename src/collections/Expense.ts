@@ -1,3 +1,4 @@
+//Expense Collection
 import type { CollectionConfig } from 'payload'
 
 export const Expense: CollectionConfig = {
@@ -5,7 +6,7 @@ export const Expense: CollectionConfig = {
   admin: {
     useAsTitle: 'nameOfExpense',
   },
-  auth: true,
+ 
   fields: [
     {
       name: 'nameOfExpense',
