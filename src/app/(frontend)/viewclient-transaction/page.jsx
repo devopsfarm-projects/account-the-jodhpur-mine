@@ -302,7 +302,9 @@ const ViewClientTransaction = () => {
 
       const startDateObj = start ? new Date(start) : null;
       const endDateObj = end ? new Date(end) : null;
-
+      if (endDateObj) {
+        endDateObj.setHours(23, 59, 59, 999); // This covers the full end date
+      }
       const matchesStart = startDateObj ? txnDate >= startDateObj : true;
       const matchesEnd = endDateObj ? txnDate <= endDateObj : true;
 
@@ -405,10 +407,10 @@ const ViewClientTransaction = () => {
                         <td>
                           <div className="d-flex flex-wrap justify-content-center align-items-center gap-2">
                             <Button variant="info" onClick={() => handleView(txn)}>
-                              <EyeFill className="fs-5 fw-bold"/>
+                              <EyeFill className="fs-5 fw-bold" />
                             </Button>
                             <Button variant="warning" onClick={() => handleEdit(txn.id)}>
-                              <PencilSquare className="fs-5 fw-bold"/>
+                              <PencilSquare className="fs-5 fw-bold" />
                             </Button>
                           </div>
                         </td>

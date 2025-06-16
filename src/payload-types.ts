@@ -71,6 +71,7 @@ export interface Config {
     media: Media;
     'client-accounts': ClientAccount;
     'client-transaction': ClientTransaction;
+    'vendor-transaction': VendorTransaction;
     expense: Expense;
     vendor: Vendor;
     'payload-locked-documents': PayloadLockedDocument;
@@ -83,6 +84,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     'client-accounts': ClientAccountsSelect<false> | ClientAccountsSelect<true>;
     'client-transaction': ClientTransactionSelect<false> | ClientTransactionSelect<true>;
+    'vendor-transaction': VendorTransactionSelect<false> | VendorTransactionSelect<true>;
     expense: ExpenseSelect<false> | ExpenseSelect<true>;
     vendor: VendorSelect<false> | VendorSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -204,21 +206,25 @@ export interface ClientTransaction {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "expense".
+ * via the `definition` "vendor-transaction".
  */
-export interface Expense {
+export interface VendorTransaction {
   id: number;
-  nameOfExpense: string;
-  initialBalanceAmount: number;
-  addExpenseItems?:
+  vendorName: number | Vendor;
+  totalAmount: number;
+  tokenAmount: number;
+  workingStage?:
     | {
-        amount?: number | null;
-        description?: string | null;
+        workingStage?: string | null;
+        workingDescription?: string | null;
         id?: string | null;
       }[]
     | null;
-  expenseCreatedAt: string;
-  expenseUpdatedAt: string;
+  totalCredit?: number | null;
+  remainingAmount?: number | null;
+  description?: string | null;
+  vendorCreatedAt?: string | null;
+  vendorUpdatedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -244,6 +250,26 @@ export interface Vendor {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expense".
+ */
+export interface Expense {
+  id: number;
+  nameOfExpense: string;
+  initialBalanceAmount: number;
+  addExpenseItems?:
+    | {
+        amount?: number | null;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  expenseCreatedAt: string;
+  expenseUpdatedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -264,6 +290,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'client-transaction';
         value: number | ClientTransaction;
+      } | null)
+    | ({
+        relationTo: 'vendor-transaction';
+        value: number | VendorTransaction;
       } | null)
     | ({
         relationTo: 'expense';
@@ -388,6 +418,29 @@ export interface ClientTransactionSelect<T extends boolean = true> {
   description?: T;
   clientCreatedAt?: T;
   clientUpdatedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vendor-transaction_select".
+ */
+export interface VendorTransactionSelect<T extends boolean = true> {
+  vendorName?: T;
+  totalAmount?: T;
+  tokenAmount?: T;
+  workingStage?:
+    | T
+    | {
+        workingStage?: T;
+        workingDescription?: T;
+        id?: T;
+      };
+  totalCredit?: T;
+  remainingAmount?: T;
+  description?: T;
+  vendorCreatedAt?: T;
+  vendorUpdatedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -135,8 +135,8 @@ const Dashboard = () => {
             </>
           )}
 
-          {/* Admin/Guest-Specific Cards */}
-          {/* These cards are only shown if the user's UserRole is "admin" or "guest". */}
+          {/* Admin-Specific Cards */}
+          {/* These cards are only shown if the user's UserRole is "admin". */}
           {(UserRole === "admin") && (
             <>
               {/* Client Transactions Card */}
@@ -183,7 +183,7 @@ const Dashboard = () => {
                 </Card>
               </Col>
 
-              {/* Expense Card (Specific to Admin/Guest) */}
+              {/* Expense Card (Specific to Admin) */}
               <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
                 <Card className="text-center w-100 shadow border-4 border-warning cursor-pointer"
                   style={{ backgroundColor: "navy" }} text="warning" onClick={() => router.push("/view-expense")}>
@@ -197,7 +197,7 @@ const Dashboard = () => {
             </>
           )}
 
-          {/* Client-Specific Card. In this card is only shown if the user's Userdata is "client". */}
+          {/* Client-Specific Card. In this card is only shown if the user's Userdata is "guest". */}
           {UserRole === "guest" && (
             <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
               <Card className="text-center bg-warning text-dark w-100 shadow rounded-5 cursor-pointer hover:bg-dark hover:text-warning hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/client-transaction")}>

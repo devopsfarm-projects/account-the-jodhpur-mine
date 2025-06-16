@@ -20,11 +20,11 @@ const Header = () => {
       // If not in browser, user data is null
       Userdata = null;
     }
-    // Set the user's role based on the data we got from localStorage If user data exists, parse it from JSON and get the role If there is no role or no user data, default to "client"
+    // Set the user's role based on the data we got from localStorage If user data exists, parse it from JSON and get the role If there is no role or no user data, default to "guest"
     let UserRole;
     if (Userdata) {
       const parsedUser = JSON.parse(Userdata); // Convert string to object
-      UserRole = parsedUser.role ? parsedUser.role : "guest"; // Get role or set to "client"
+      UserRole = parsedUser.role ? parsedUser.role : "guest"; // Get role or set to "guest"
       //console.log("User Role:", UserRole);
       setRole(UserRole);
     }

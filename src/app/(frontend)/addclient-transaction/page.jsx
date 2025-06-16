@@ -1,73 +1,356 @@
-// pages/add-client-transaction.jsx
-'use client'; // Needed to use hooks like useRouter in Next.js (client-side code)
+// // pages/add-client-transaction.jsx
+// 'use client'; // Needed to use hooks like useRouter in Next.js (client-side code)
+// // Import required dependencies
+// import React, { useEffect, useState } from 'react';
+// import { useRouter } from 'next/navigation';
+// import { Container, Form, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
+// import Header from '../components/Header';
+// // ✅ Import icons
+// import { TbTransactionRupee, TbPlus } from 'react-icons/tb';
+// import { FaSave, FaExclamationTriangle } from 'react-icons/fa';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { faIndianRupeeSign, faScrewdriverWrench } from '@fortawesome/free-solid-svg-icons';
 
-// ✅ Import required dependencies
+// const AddClientTransaction = () => {
+//   const router = useRouter(); // For redirection after saving
+
+//   // ✅ Store all client objects from backend (with _id and name)
+//   const [clients, setClients] = useState([]);
+//   const [loadingClients, setLoadingClients] = useState(true); // to show spinner during loading
+//   const [submitting, setSubmitting] = useState(false); // to show spinner during save
+
+//   // ✅ Main form values
+//   const [form, setForm] = useState({
+//     clientName: '', // This will be client _id (not the label)
+//     totalAmount: '',
+//     tokenAmount: '',
+//     description: '',
+//   });
+
+//   // ✅ UI helper: track work stages
+//   const [workingStages, setWorkingStages] = useState([{ work: '', amount: '' }]);
+
+//   // ✅ Error display
+//   const [error, setError] = useState('');
+
+//   // ✅ Fetch all client accounts from Payload CMS
+//   useEffect(() => {
+//     const fetchClients = async () => {
+//       try {
+//         const res = await fetch('/api/client-accounts');
+//         const data = await res.json();
+//         setClients(data?.docs || []);
+//       } catch (err) {
+//         console.error('Error in fetching client:', err);
+//         setClients([]);
+//       } finally {
+//         setLoadingClients(false); // to hide loading spinner
+//       }
+//     };
+
+//     fetchClients();
+//   }, []);
+
+//   // ✅ Update form values
+//   const handleFormChange = (e) => {
+//     setForm({ ...form, [e.target.name]: e.target.value });
+//     setError(''); // to clear error when user types
+//   };
+
+//   // ✅ Update stage (by index)
+//   const updateStage = (index, field, value) => {
+//     const updated = [...workingStages];
+//     updated[index][field] = value;
+//     setWorkingStages(updated);
+//   };
+
+//   const addStage = () => {
+//     setWorkingStages([...workingStages, { work: '', amount: '' }]);
+//   };
+
+//   const removeStage = (index) => {
+//     if (workingStages.length > 1) {
+//       setWorkingStages(workingStages.filter((_, i) => i !== index));
+//     }
+//   };
+
+//   // ✅ Total credits = token + stage amounts
+//   const getTotalCredit = () => {
+//     const token = parseFloat(form.tokenAmount) || 0;
+//     const workTotal = workingStages.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+//     return token + workTotal;
+//   };
+
+//   const getRemainingAmount = () => {
+//     const total = parseFloat(form.totalAmount) || 0;
+//     return total - getTotalCredit();
+//   };
+
+//   const handleReset = () => {
+//     setForm({
+//       clientName: '',
+//       totalAmount: '',
+//       tokenAmount: '',
+//       description: '',
+//     });
+//     setWorkingStages([{ work: '', amount: '' }]);
+//     setError('');
+//   };
+
+//   // ✅ Submit the form
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     // ✅ Find the client ID from the label
+//     const selectedClient = clients.find(
+//       (client) => client.clientName === form.clientName || client._id === form.clientName
+//     );
+
+//     // ✅ If no valid match, show error
+//     if (!selectedClient) {
+//       setError(`Invalid client selected: "${form.clientName}"`);
+//       setTimeout(() => handleReset(), 3000);
+//       return;
+//     }
+
+//     const payload = {
+//       clientName: selectedClient.id || selectedClient._id, // ✅ Must send ID for relationship
+//       totalAmount: parseFloat(form.totalAmount),
+//       tokenAmount: parseFloat(form.tokenAmount),
+//       totalCredit: getTotalCredit(),
+//       remainingAmount: getRemainingAmount(),
+//       workingStage: workingStages.map((s) => ({
+//         workingStage: s.work,
+//         workingDescription: s.amount,
+//       })),
+//       description: form.description,
+//       clientCreatedAt: new Date().toISOString(),
+//       clientUpdatedAt: new Date().toISOString(),
+//     };
+
+//     try {
+//       setSubmitting(true); // to show spinner while saving
+//       const res = await fetch('/api/client-transaction', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(payload),
+//       });
+
+//       if (res.ok) {
+//         router.push('/viewclient-transaction'); // Success
+//       } else {
+//         const result = await res.json();
+//         console.error(result);
+//         setError('Save failed. Try again.');
+//       }
+//     } catch (err) {
+//       console.error(err);
+//       setError('An unexpected error occurred.');
+//     } finally {
+//       setSubmitting(false);
+//     }
+//   };
+
+//   return (
+//     <>
+//       <Header />
+//       <Container className="mt-3 px-3 px-sm-4 py-4 bg-light rounded-4 shadow-sm w-100 w-md-75 mx-auto">
+//         <h4 className="text-center mb-4 fs-4 fw-bold text-danger">
+//           <TbTransactionRupee className="fs-1 mb-1" /> Add Client Transaction
+//         </h4>
+
+//         {/* ✅ Loading spinner */}
+//         {loadingClients && (
+//           <div className="text-center my-4">
+//             <Spinner animation="border" variant="primary" />
+//             <div className="fw-semibold mt-2">Loading Please Wait...</div>
+//           </div>
+//         )}
+
+//         {/* ✅ Alert if no clients */}
+//         {!loadingClients && clients.length === 0 && (
+//           <Alert variant="danger" className="text-center fw-semibold">
+//             <FaExclamationTriangle className="me-2" />
+//             No client accounts found. Please add one first.
+//           </Alert>
+//         )}
+
+//         {/* ✅ Show error if any */}
+//         {error && (
+//           <Alert variant="danger" className="text-center fw-semibold">
+//             <FaExclamationTriangle className="me-2" /> {error}
+//           </Alert>
+//         )}
+
+//         {/* ✅ Form Section */}
+//         {!loadingClients && clients.length > 0 && (
+//           <Form onSubmit={handleSubmit}>
+//             <Form.Group className="mb-3">
+//               <Form.Label className="fw-bold fs-5">
+//                 Client Name <span className="text-danger">*</span>
+//               </Form.Label>
+//               <Form.Control
+//                 list="client-options"
+//                 name="clientName"
+//                 value={form.clientName}
+//                 onChange={handleFormChange}
+//                 placeholder="Select or type Client Name"
+//                 required
+//               />
+//               <datalist id="client-options">
+//                 {clients.map((client) => (
+//                   <option key={client._id} value={client.clientName} />
+//                 ))}
+//               </datalist>
+//             </Form.Group>
+
+//             {/* ✅ Amount Fields */}
+//             <Row className="my-4">
+//               <Col sm={6} className="pb-3 pb-md-0">
+//                 <Form.Label className="fw-bold fs-5">
+//                   Total Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)
+//                   <span className="text-danger ms-1">*</span>
+//                 </Form.Label>
+//                 <Form.Control type="number" name="totalAmount" placeholder="₹ Total Amount" value={form.totalAmount} onChange={handleFormChange} required />
+//               </Col>
+//               <Col sm={6}>
+//                 <Form.Label className="fw-bold fs-5">
+//                   Token Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)
+//                   <span className="text-danger ms-1">*</span>
+//                 </Form.Label>
+//                 <Form.Control type="number" name="tokenAmount" placeholder="₹ Advance/Token Amount" value={form.tokenAmount} onChange={handleFormChange} required />
+//               </Col>
+//             </Row>
+
+//             <div className="d-flex justify-content-between align-items-center my-4">
+//               <h5 className="fw-bold text-dark fs-5">
+//                 <FontAwesomeIcon icon={faScrewdriverWrench} className="me-2" />
+//                 Working Stages
+//               </h5>
+//               <Button variant="warning" onClick={addStage} className="w-25 fs-6 fw-bold text-capitalize text-center justify-content-center align-items-center d-flex gap-1"><TbPlus className="me-1 fw-bold fs-5" size={25} /> Add Stage</Button>
+//             </div>
+
+//             {workingStages.map((stage, index) => (
+//               <Row key={index} className="my-2">
+//                 <Col sm={5} className="pb-3 pb-md-0">
+//                   <Form.Control placeholder="Work Description" value={stage.work} onChange={(e) => updateStage(index, 'work', e.target.value)} />
+//                 </Col>
+//                 <Col sm={4} className="pb-3 pb-md-0">
+//                   <Form.Control type="number" placeholder="₹ Amount" value={stage.amount} onChange={(e) => updateStage(index, 'amount', e.target.value)} />
+//                 </Col>
+//                 <Col sm={3} className="pb-3 pb-md-0">
+//                   <Button variant="danger" onClick={() => removeStage(index)} disabled={workingStages.length === 1} className="w-75 fw-bold text-white">Remove</Button>
+//                 </Col>
+//               </Row>
+//             ))}
+
+//             {/* ✅ Credit Summary */}
+//             <Row className="my-4">
+//               <Col sm={6} className="pb-3 pb-md-0">
+//                 <Form.Label className="fw-bold fs-5">Total Credits (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
+//                 <Form.Control value={getTotalCredit()} readOnly className="bg-white" />
+//               </Col>
+//               <Col sm={6} className="pb-3 pb-md-0">
+//                 <Form.Label className="fw-bold fs-5">Remaining Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
+//                 <Form.Control value={getRemainingAmount()} readOnly className="bg-white" />
+//               </Col>
+//             </Row>
+//             {/* ✅ Optional Description */}
+//             <Form.Group className="my-4">
+//               <Form.Label className="fw-bold fs-5">Description (Optional)</Form.Label>
+//               <Form.Control as="textarea" rows={2} name="description" value={form.description} onChange={handleFormChange} />
+//             </Form.Group>
+
+//             {/* ✅ Submit & Reset Buttons */}
+//             <div className="text-center">
+//               <Button type="submit" variant="success" disabled={submitting} className="fw-bold px-4 py-2 me-2">
+//                 {submitting ? (
+//                   <>
+//                     <Spinner animation="border" size="sm" className="me-2" />
+//                     Saving Transaction...
+//                   </>
+//                 ) : (
+//                   <>
+//                     <FaSave className="me-1 fs-5" /> Save Transaction
+//                   </>
+//                 )}
+//               </Button>
+//               <Button variant="secondary" className="px-4 py-2 fw-bold" onClick={handleReset}>
+//                 Reset Form
+//               </Button>
+//             </div>
+//           </Form>
+//         )}
+//       </Container>
+//     </>
+//   );
+// };
+
+// export default AddClientTransaction;
+// pages/add-vendor-transaction.jsx
+'use client'; // Required for hooks like useRouter in Next.js (client-side rendering)
+
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container, Form, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import Header from '../components/Header';
-// ✅ Import icons
+
+// Icons
 import { TbTransactionRupee, TbPlus } from 'react-icons/tb';
 import { FaSave, FaExclamationTriangle } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faIndianRupeeSign, faScrewdriverWrench } from '@fortawesome/free-solid-svg-icons';
 
-const AddClientTransaction = () => {
-  const router = useRouter(); // For redirection after saving
+const AddVendorTransaction = () => {
+  const router = useRouter();
 
-  // ✅ Store all client objects from backend (with _id and name)
-  const [clients, setClients] = useState([]);
-  const [loadingClients, setLoadingClients] = useState(true); // to show spinner during loading
-  const [submitting, setSubmitting] = useState(false); // to show spinner during save
+  // ✅ Load vendor list from backend
+  const [vendors, setVendors] = useState([]);
+  const [loadingVendors, setLoadingVendors] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  // ✅ Main form values
+  // ✅ Form values
   const [form, setForm] = useState({
-    clientName: '', // This will be client _id (not the label)
+    vendorName: '',
     totalAmount: '',
     tokenAmount: '',
     description: '',
   });
 
-  // ✅ UI helper: track work stages
+  // ✅ Work stages array
   const [workingStages, setWorkingStages] = useState([{ work: '', amount: '' }]);
 
-  // ✅ Error display
   const [error, setError] = useState('');
 
-  // ✅ Fetch all client accounts from Payload CMS
   useEffect(() => {
-    const fetchClients = async () => {
+    const fetchVendors = async () => {
       try {
-        const res = await fetch('/api/client-accounts');
+        const res = await fetch('/api/vendor');
         const data = await res.json();
-        setClients(data?.docs || []);
+        setVendors(data?.docs || []);
       } catch (err) {
-        console.error('Error in fetching client:', err);
-        setClients([]);
+        console.error('Error fetching vendors:', err);
+        setVendors([]);
       } finally {
-        setLoadingClients(false); // to hide loading spinner
+        setLoadingVendors(false);
       }
     };
-
-    fetchClients();
+    fetchVendors();
   }, []);
 
-  // ✅ Update form values
+  // ✅ Update form inputs
   const handleFormChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setError(''); // to clear error when user types
+    setError('');
   };
 
-  // ✅ Update stage (by index)
   const updateStage = (index, field, value) => {
     const updated = [...workingStages];
     updated[index][field] = value;
     setWorkingStages(updated);
   };
 
-  const addStage = () => {
-    setWorkingStages([...workingStages, { work: '', amount: '' }]);
-  };
+  const addStage = () => setWorkingStages([...workingStages, { work: '', amount: '' }]);
 
   const removeStage = (index) => {
     if (workingStages.length > 1) {
@@ -75,7 +358,6 @@ const AddClientTransaction = () => {
     }
   };
 
-  // ✅ Total credits = token + stage amounts
   const getTotalCredit = () => {
     const token = parseFloat(form.tokenAmount) || 0;
     const workTotal = workingStages.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
@@ -89,7 +371,7 @@ const AddClientTransaction = () => {
 
   const handleReset = () => {
     setForm({
-      clientName: '',
+      vendorName: '',
       totalAmount: '',
       tokenAmount: '',
       description: '',
@@ -98,24 +380,22 @@ const AddClientTransaction = () => {
     setError('');
   };
 
-  // ✅ Submit the form
+  // ✅ Submit to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ Find the client ID from the label
-    const selectedClient = clients.find(
-      (client) => client.clientName === form.clientName || client._id === form.clientName
+    const selectedVendor = vendors.find(
+      (v) => v.vendorName === form.vendorName || v._id === form.vendorName
     );
 
-    // ✅ If no valid match, show error
-    if (!selectedClient) {
-      setError(`Invalid client selected: "${form.clientName}"`);
+    if (!selectedVendor) {
+      setError(`Invalid vendor selected: "${form.vendorName}"`);
       setTimeout(() => handleReset(), 3000);
       return;
     }
 
     const payload = {
-      clientName: selectedClient.id || selectedClient._id, // ✅ Must send ID for relationship
+      vendorName: selectedVendor._id || selectedVendor.id,
       totalAmount: parseFloat(form.totalAmount),
       tokenAmount: parseFloat(form.tokenAmount),
       totalCredit: getTotalCredit(),
@@ -125,20 +405,20 @@ const AddClientTransaction = () => {
         workingDescription: s.amount,
       })),
       description: form.description,
-      clientCreatedAt: new Date().toISOString(),
-      clientUpdatedAt: new Date().toISOString(),
+      vendorCreatedAt: new Date().toISOString(),
+      vendorUpdatedAt: new Date().toISOString(),
     };
 
     try {
-      setSubmitting(true); // to show spinner while saving
-      const res = await fetch('/api/client-transaction', {
+      setSubmitting(true);
+      const res = await fetch('/api/vendor-transaction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        router.push('/viewclient-transaction'); // Success
+        router.push('/viewvendor-transaction');
       } else {
         const result = await res.json();
         console.error(result);
@@ -157,69 +437,76 @@ const AddClientTransaction = () => {
       <Header />
       <Container className="mt-3 px-3 px-sm-4 py-4 bg-light rounded-4 shadow-sm w-100 w-md-75 mx-auto">
         <h4 className="text-center mb-4 fs-4 fw-bold text-danger">
-          <TbTransactionRupee className="fs-1 mb-1" /> Add Client Transaction
+          <TbTransactionRupee className="fs-1 mb-1" /> Add Vendor Transaction
         </h4>
 
-        {/* ✅ Loading spinner */}
-        {loadingClients && (
+        {loadingVendors && (
           <div className="text-center my-4">
             <Spinner animation="border" variant="primary" />
             <div className="fw-semibold mt-2">Loading Please Wait...</div>
           </div>
         )}
 
-        {/* ✅ Alert if no clients */}
-        {!loadingClients && clients.length === 0 && (
+        {!loadingVendors && vendors.length === 0 && (
           <Alert variant="danger" className="text-center fw-semibold">
             <FaExclamationTriangle className="me-2" />
-            No client accounts found. Please add one first.
+            No vendors found. Please add a vendor first.
           </Alert>
         )}
 
-        {/* ✅ Show error if any */}
         {error && (
           <Alert variant="danger" className="text-center fw-semibold">
             <FaExclamationTriangle className="me-2" /> {error}
           </Alert>
         )}
 
-        {/* ✅ Form Section */}
-        {!loadingClients && clients.length > 0 && (
+        {!loadingVendors && vendors.length > 0 && (
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
               <Form.Label className="fw-bold fs-5">
-                Client Name <span className="text-danger">*</span>
+                Vendor Name <span className="text-danger">*</span>
               </Form.Label>
               <Form.Control
-                list="client-options"
-                name="clientName"
-                value={form.clientName}
+                list="vendor-options"
+                name="vendorName"
+                value={form.vendorName}
                 onChange={handleFormChange}
-                placeholder="Select or type Client Name"
+                placeholder="Select or type Vendor Name"
                 required
               />
-              <datalist id="client-options">
-                {clients.map((client) => (
-                  <option key={client._id} value={client.clientName} />
+              <datalist id="vendor-options">
+                {vendors.map((v) => (
+                  <option key={v._id} value={v.vendorName} />
                 ))}
               </datalist>
             </Form.Group>
 
-            {/* ✅ Amount Fields */}
             <Row className="my-4">
-              <Col sm={6} className="pb-3 pb-md-0">
+              <Col sm={6}>
                 <Form.Label className="fw-bold fs-5">
                   Total Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)
-                  <span className="text-danger ms-1">*</span>
                 </Form.Label>
-                <Form.Control type="number" name="totalAmount" placeholder="₹ Total Amount" value={form.totalAmount} onChange={handleFormChange} required />
+                <Form.Control
+                  type="number"
+                  name="totalAmount"
+                  placeholder="₹ Total Amount"
+                  value={form.totalAmount}
+                  onChange={handleFormChange}
+                  required
+                />
               </Col>
               <Col sm={6}>
                 <Form.Label className="fw-bold fs-5">
                   Token Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)
-                  <span className="text-danger ms-1">*</span>
                 </Form.Label>
-                <Form.Control type="number" name="tokenAmount" placeholder="₹ Advance/Token Amount" value={form.tokenAmount} onChange={handleFormChange} required />
+                <Form.Control
+                  type="number"
+                  name="tokenAmount"
+                  placeholder="₹ Advance/Token Amount"
+                  value={form.tokenAmount}
+                  onChange={handleFormChange}
+                  required
+                />
               </Col>
             </Row>
 
@@ -228,43 +515,65 @@ const AddClientTransaction = () => {
                 <FontAwesomeIcon icon={faScrewdriverWrench} className="me-2" />
                 Working Stages
               </h5>
-              <Button variant="warning" onClick={addStage} className="w-25 fs-6 fw-bold text-capitalize text-center justify-content-center align-items-center d-flex gap-1"><TbPlus className="me-1 fw-bold fs-5" size={25} /> Add Stage</Button>
+              <Button variant="warning" onClick={addStage} className="w-25 fs-6 fw-bold d-flex gap-2 justify-content-center align-items-center">
+                <TbPlus className="fs-5" /> Add Stage
+              </Button>
             </div>
 
             {workingStages.map((stage, index) => (
-              <Row key={index} className="my-2">
-                <Col sm={5} className="pb-3 pb-md-0">
-                  <Form.Control placeholder="Work Description" value={stage.work} onChange={(e) => updateStage(index, 'work', e.target.value)} />
+              <Row key={index} className="mb-2">
+                <Col sm={5}>
+                  <Form.Control
+                    placeholder="Work Description"
+                    value={stage.work}
+                    onChange={(e) => updateStage(index, 'work', e.target.value)}
+                  />
                 </Col>
-                <Col sm={4} className="pb-3 pb-md-0">
-                  <Form.Control type="number" placeholder="₹ Amount" value={stage.amount} onChange={(e) => updateStage(index, 'amount', e.target.value)} />
+                <Col sm={4}>
+                  <Form.Control
+                    type="number"
+                    placeholder="₹ Amount"
+                    value={stage.amount}
+                    onChange={(e) => updateStage(index, 'amount', e.target.value)}
+                  />
                 </Col>
-                <Col sm={3} className="pb-3 pb-md-0">
-                  <Button variant="danger" onClick={() => removeStage(index)} disabled={workingStages.length === 1} className="w-75 fw-bold text-white">Remove</Button>
+                <Col sm={3}>
+                  <Button
+                    variant="danger"
+                    onClick={() => removeStage(index)}
+                    disabled={workingStages.length === 1}
+                    className="w-75 fw-bold"
+                  >
+                    Remove
+                  </Button>
                 </Col>
               </Row>
             ))}
 
-            {/* ✅ Credit Summary */}
             <Row className="my-4">
-              <Col sm={6} className="pb-3 pb-md-0">
-                <Form.Label className="fw-bold fs-5">Total Credits (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
-                <Form.Control value={getTotalCredit()} readOnly className="bg-white" />
+              <Col sm={6}>
+                <Form.Label className="fw-bold fs-5">Total Credits</Form.Label>
+                <Form.Control readOnly value={getTotalCredit()} className="bg-white" />
               </Col>
-              <Col sm={6} className="pb-3 pb-md-0">
-                <Form.Label className="fw-bold fs-5">Remaining Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)</Form.Label>
-                <Form.Control value={getRemainingAmount()} readOnly className="bg-white" />
+              <Col sm={6}>
+                <Form.Label className="fw-bold fs-5">Remaining Amount</Form.Label>
+                <Form.Control readOnly value={getRemainingAmount()} className="bg-white" />
               </Col>
             </Row>
-            {/* ✅ Optional Description */}
+
             <Form.Group className="my-4">
               <Form.Label className="fw-bold fs-5">Description (Optional)</Form.Label>
-              <Form.Control as="textarea" rows={2} name="description" value={form.description} onChange={handleFormChange} />
+              <Form.Control
+                as="textarea"
+                rows={2}
+                name="description"
+                value={form.description}
+                onChange={handleFormChange}
+              />
             </Form.Group>
 
-            {/* ✅ Submit & Reset Buttons */}
             <div className="text-center">
-              <Button type="submit" variant="success" disabled={submitting} className="fw-bold px-4 py-2 me-2">
+              <Button type="submit" variant="success" className="fw-bold px-4 py-2 me-2" disabled={submitting}>
                 {submitting ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
@@ -287,4 +596,4 @@ const AddClientTransaction = () => {
   );
 };
 
-export default AddClientTransaction;
+export default AddVendorTransaction;

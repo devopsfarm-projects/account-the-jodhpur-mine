@@ -23,17 +23,17 @@ const LoginPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (email === "admin2025@gmail.com" && password === "Admin@123") {
+    if (email === "admin2025@gmail.com" && password === "Admin@2025") {
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("role", "admin");
       router.push("/dashboard"); // ✅ Redirect using Next.js
-    } else if (email === "manager2025@gmail.com" && password === "Manager@123") {
+    } else if (email === "manager2025@gmail.com" && password === "Manager@2025") {
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("role", "manager");
       router.push("/dashboard");
-    }else if(email === "clienttransaction2025@gmail.com" && password === "Clienttransaction@123"){
+    }else if(email === "guest2025@gmail.com" && password === "Guest@2025"){
       localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("role", "client");
+      localStorage.setItem("role", "guest");
       router.push("/dashboard");
     }
      else {
