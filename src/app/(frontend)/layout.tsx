@@ -23,7 +23,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-      {user && <Navbar/>}
+      {/* {user && <Navbar/>} */}
       {user && <main className="flex-1">{children}</main>}
       {!user && <main className="flex-1"><Login/></main>}
     

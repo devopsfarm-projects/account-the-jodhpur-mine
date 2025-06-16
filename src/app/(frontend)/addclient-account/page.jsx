@@ -1,283 +1,305 @@
-"use client";
+'use client'; // Required for client-side code like useState and useRouter
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Form, Button, Container, Row, Col, Alert, } from "react-bootstrap";
-import Header from "../components/Header"; // Adjust if Header is elsewhere
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
+import Header from '../components/Header'; // Adjust path based on your file structure
 
 const AddClientAccount = () => {
-    const router = useRouter();
+  const router = useRouter(); // For navigating after successful form submission
 
-    // Form state
-    const [form, setForm] = useState({
-        name: "",
-        mobile: "",
-        queryLicense: "",
-        miningLicense: "",
-        village: "",
-        tehsil: "",
-        district: "",
-        state: "",
-        country: "",
+  // 🔧 This is our form data state. It holds all the input values.
+  const [formData, setFormData] = useState({
+    clientName: '',
+    clientMobile: '',
+    query_license: '',
+    mining_license: '',
+    near_village: '',
+    tehsil: '',
+    district: '',
+    state: '',
+    country: ''
+  });
+
+  const [validated, setValidated] = useState(false); // For form validation UI
+  const [showAlert, setShowAlert] = useState(false); // For showing alert message
+  const [alertMessage, setAlertMessage] = useState(''); // Message text
+  const [alertVariant, setAlertVariant] = useState('success'); // success / danger
+  const [isSubmitting, setIsSubmitting] = useState(false); // To disable button while processing
+
+  // 💡 Handle input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    // 🧠 Update the formData object with new input
+    setFormData({
+      ...formData,
+      [name]: value
     });
+  };
 
-    // Validation and alert states
-    const [validated, setValidated] = useState(false);
-    const [showAlert, setShowAlert] = useState(false);
-    const [alertMessage, setAlertMessage] = useState("");
-    const [alertVariant, setAlertVariant] = useState("success");
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  // 💡 Reset all fields
+  const resetForm = () => {
+    setFormData({
+      clientName: '',
+      clientMobile: '',
+      query_license: '',
+      mining_license: '',
+      near_village: '',
+      tehsil: '',
+      district: '',
+      state: '',
+      country: ''
+    });
+    setValidated(false);
+  };
 
-    // Handle input change
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm({ ...form, [name]: value });
+  // 🧠 Format the current date/time for clientCreatedAt
+  const getFormattedDate = () => {
+    const now = new Date();
+    return now.toISOString(); // ISO format for Payload date field
+  };
+
+  // 💡 Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent page reload
+    const form = e.currentTarget;
+    setValidated(true); // Show form validation styles
+
+    // ✅ Check if the form is valid
+    if (form.checkValidity() === false) {
+      e.stopPropagation(); // Prevent submission if form is invalid
+      return;
+    }
+
+    setIsSubmitting(true); // Disable button while submitting
+
+    // ✅ Prepare data to send to Payload CMS
+    const newClient = {
+      ...formData,
+      clientCreatedAt: getFormattedDate(),
+      clientUpdatedAt: getFormattedDate(),
     };
 
-    // Format date for createdAt
-    const getFormattedDate = () => {
-        const now = new Date();
-        const date = now.toLocaleDateString("en-GB");
-        const time = now.toLocaleTimeString("en-IN");
-        return `${date} ${time}`;
-    };
+    try {
+      const response = await fetch('/api/client-accounts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newClient)
+      });
 
-    // Reset form fields
-    const resetForm = () => {
-        setForm({
-            name: "",
-            mobile: "",
-            queryLicense: "",
-            miningLicense: "",
-            village: "",
-            tehsil: "",
-            district: "",
-            state: "",
-            country: "",
-        });
-        setValidated(false);
-    };
+      if (response.ok) {
+        setAlertVariant('success');
+        setAlertMessage('Client account created successfully!');
+        setShowAlert(true);
+        setTimeout(() => {
+          setShowAlert(false);
+          resetForm();
+          router.push('/viewclient-account'); // Navigate to View page
+        }, 2000);
+      } else {
+        const error = await response.json();
+        setAlertVariant('danger');
+        setAlertMessage(error.message || 'Something went wrong.');
+        setShowAlert(true);
+        setIsSubmitting(false);
+      }
+    } catch (err) {
+      setAlertVariant('danger');
+      setAlertMessage('Network error. Please try again.');
+      setShowAlert(true);
+      setIsSubmitting(false);
+    }
+  };
 
-    // Handle form submission
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const formElement = e.currentTarget;
-        setValidated(true);
+  return (
+    <>
+      <Header />
+      <Container className="mt-4 bg-light rounded-4 p-4 shadow shadow-info shadow-5 rounded-5 w-100 w-sm-100 w-md-75 w-lg-75 w-xl-75 w-xxl-50 mx-auto my-5 ">
+        <h4 className="mb-3 text-center fw-bold fs-4">Add New Client Account</h4>
 
-        // If the form has invalid fields, stop
-        if (formElement.checkValidity() === false) {
-            e.stopPropagation();
-            return;
-        }
+        {/* Alert message box */}
+        {showAlert && (
+          <Alert
+            variant={alertVariant}
+            dismissible
+            onClose={() => setShowAlert(false)}
+          >
+            {alertMessage}
+          </Alert>
+        )}
 
-        setIsSubmitting(true);
+        {/* Client Form */}
+        <Form noValidate validated={validated} onSubmit={handleSubmit}>
+          <Row>
+            {/* Left side inputs */}
+            <Col md={6}>
+              <Form.Group className="mb-3" controlId="clientName">
+                <Form.Label className="fw-bold">Client's Name <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="text"
+                  name="clientName"
+                  required
+                  value={formData.clientName}
+                  onChange={handleChange}
+                  placeholder="Enter full name"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Client name is required.
+                </Form.Control.Feedback>
+              </Form.Group>
 
-        // Get accounts from localStorage
-        const existingAccounts = JSON.parse(localStorage.getItem("accounts") || "[]");
+              <Form.Group className="mb-3" controlId="clientMobile">
+                <Form.Label className="fw-bold">Client's Mobile Number <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="tel"
+                  name="clientMobile"
+                  required
+                  pattern="[0-9]{10}"
+                  value={formData.clientMobile}
+                  onChange={handleChange}
+                  placeholder="10-digit mobile number"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Enter valid 10-digit mobile number.
+                </Form.Control.Feedback>
+              </Form.Group>
 
-        // Check for duplicate mobile
-        const mobileExists = existingAccounts.some((acc) => acc.mobile === form.mobile);
+              <Form.Group className="mb-3" controlId="query_license">
+                <Form.Label className="fw-bold"> Client's Query License <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="text"
+                  name="query_license"
+                  required
+                  value={formData.query_license}
+                  onChange={handleChange}
+                  placeholder="Enter query license"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Query license is required.
+                </Form.Control.Feedback>
+              </Form.Group>
 
-        if (mobileExists) {
-            setAlertVariant("danger");
-            setAlertMessage("An account with this mobile number already exists.");
-            setShowAlert(true);
-            setIsSubmitting(false);
-            setTimeout(() => {
-                setShowAlert(false);
-                resetForm();
-            }, 3000);
-        } else {
-            const newAccount = {
-                ...form,
-                createdAt: getFormattedDate(),
-                status: true,
-            };
-            existingAccounts.push(newAccount);
-            localStorage.setItem("accounts", JSON.stringify(existingAccounts));
+              <Form.Group className="mb-3" controlId="mining_license">
+                <Form.Label className="fw-bold"> Client's Mining License <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="text"
+                  name="mining_license"
+                  required
+                  value={formData.mining_license}
+                  onChange={handleChange}
+                  placeholder="Enter mining license"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Mining license is required.
+                </Form.Control.Feedback>
+              </Form.Group>
 
-            setAlertVariant("success");
-            setAlertMessage("Account added successfully!");
-            setShowAlert(true);
+              <Form.Group className="mb-3" controlId="near_village">
+                <Form.Label className="fw-bold"> Client's Nearby Village <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="text"
+                  name="near_village"
+                  required
+                  value={formData.near_village}
+                  onChange={handleChange}
+                  placeholder="Enter village"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Nearby village is required.
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
 
-            setTimeout(() => {
-                setShowAlert(false);
-                resetForm();
-                router.push("/viewclient-account"); // Next.js navigation
-            }, 3000);
-        }
-    };
+            {/* Right side inputs */}
+            <Col md={6}>
+              <Form.Group className="mb-3" controlId="tehsil">
+                <Form.Label className="fw-bold"> Client's Tehsil <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="text"
+                  name="tehsil"
+                  required
+                  value={formData.tehsil}
+                  onChange={handleChange}
+                  placeholder="Enter tehsil"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Tehsil is required.
+                </Form.Control.Feedback>
+              </Form.Group>
 
-    return (
-        <>
-            <Header />
-            <Container className="mt-4 w-75 mx-auto bg-light rounded-4 p-4 shadow">
-                <h4 className="mb-3 text-center fw-bold fs-4">Add New Client Account</h4>
+              <Form.Group className="mb-3" controlId="district">
+                <Form.Label className="fw-bold"> Client's District <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="text"
+                  name="district"
+                  required
+                  value={formData.district}
+                  onChange={handleChange}
+                  placeholder="Enter district"
+                />
+                <Form.Control.Feedback type="invalid">
+                  District is required.
+                </Form.Control.Feedback>
+              </Form.Group>
 
-                {showAlert && (
-                    <Alert variant={alertVariant} onClose={() => setShowAlert(false)} dismissible>
-                        {alertMessage}
-                    </Alert>
-                )}
+              <Form.Group className="mb-3" controlId="state">
+                <Form.Label className="fw-bold"> Client's State <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="text"
+                  name="state"
+                  required
+                  value={formData.state}
+                  onChange={handleChange}
+                  placeholder="Enter state"
+                />
+                <Form.Control.Feedback type="invalid">
+                  State is required.
+                </Form.Control.Feedback>
+              </Form.Group>
 
-                <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                    <Row>
-                        {/* Left Column */}
-                        <Col md={6}>
-                            <Form.Group className="mb-3" controlId="formName">
-                                <Form.Label className="fw-bold">Client Name <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="name"
-                                    required
-                                    placeholder="Enter full name"
-                                    value={form.name}
-                                    onChange={handleChange}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Please enter your name.
-                                </Form.Control.Feedback>
-                            </Form.Group>
+              <Form.Group className="mb-3" controlId="country">
+                <Form.Label className="fw-bold"> Client's Country <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="text"
+                  name="country"
+                  required
+                  value={formData.country}
+                  onChange={handleChange}
+                  placeholder="Enter country"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Country is required.
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
 
-                            <Form.Group className="mb-3" controlId="formMobile">
-                                <Form.Label className="fw-bold">Client Mobile <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="tel"
-                                    name="mobile"
-                                    required
-                                    placeholder="10-digit number"
-                                    pattern="[0-9]{10}"
-                                    value={form.mobile}
-                                    onChange={handleChange}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Enter a valid 10-digit mobile number.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="formQueryLicense">
-                                <Form.Label className="fw-bold">Query License <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="queryLicense"
-                                    required
-                                    placeholder="Enter query license ID"
-                                    value={form.queryLicense}
-                                    onChange={handleChange}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Query License is required.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="formMiningLicense">
-                                <Form.Label className="fw-bold">Mining License <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="miningLicense"
-                                    required
-                                    placeholder="Enter mining license ID"
-                                    value={form.miningLicense}
-                                    onChange={handleChange}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Mining License is required.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="formVillage">
-                                <Form.Label className="fw-bold">Nearby Village <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="village"
-                                    required
-                                    placeholder="Village name"
-                                    value={form.village}
-                                    onChange={handleChange}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Please enter the village name.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-
-                        {/* Right Column */}
-                        <Col md={6}>
-                            <Form.Group className="mb-3" controlId="formTehsil">
-                                <Form.Label className="fw-bold">Tehsil <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="tehsil"
-                                    required
-                                    placeholder="Tehsil name"
-                                    value={form.tehsil}
-                                    onChange={handleChange}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Tehsil is required.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="formDistrict">
-                                <Form.Label className="fw-bold">District <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="district"
-                                    required
-                                    placeholder="District name"
-                                    value={form.district}
-                                    onChange={handleChange}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    District is required.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="formState">
-                                <Form.Label className="fw-bold">State <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="state"
-                                    required
-                                    placeholder="State name"
-                                    value={form.state}
-                                    onChange={handleChange}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    State is required.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="formCountry">
-                                <Form.Label className="fw-bold">Country <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="country"
-                                    required
-                                    placeholder="Country name"
-                                    value={form.country}
-                                    onChange={handleChange}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    Country is required.
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-                    </Row>
-
-                    <div className="text-center mt-4 d-flex gap-2 justify-content-center align-items-center flex-wrap ">
-                        <Button type="submit" variant="primary" className="px-4 fw-bold rounded-3"
-                            disabled={isSubmitting}>
-                            {isSubmitting ? "Processing..." : "Create Account"}
-                        </Button>
-                        <Button variant="secondary" className="px-4 fw-bold rounded-3" onClick={resetForm}>
-                            Reset Form
-                        </Button>
-                    </div>
-                </Form>
-            </Container>
-        </>
-    );
+          {/* Submit and Reset buttons */}
+          <div className="text-center d-flex justify-content-center gap-2 flex-wrap mt-3">
+            <Button
+              type="submit"
+              variant="success"
+              className="fw-bold px-4 rounded-3"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Processing...' : 'Create Client Account'}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="fw-bold px-4 rounded-3"
+              onClick={resetForm}
+            >
+              Reset Form
+            </Button>
+          </div>
+        </Form>
+      </Container>
+    </>
+  );
 };
 
 export default AddClientAccount;

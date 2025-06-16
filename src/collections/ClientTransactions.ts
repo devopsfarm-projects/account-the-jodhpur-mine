@@ -1,11 +1,11 @@
+// ClientTransactions collection
 import type { CollectionConfig } from 'payload'
-
 export const ClientTransactions: CollectionConfig = {
   slug: 'client-transaction',
   admin: {
     useAsTitle: 'clientName',
   },
-
+ 
   fields: [
     {
       name: 'clientName',

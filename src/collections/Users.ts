@@ -13,8 +13,7 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'email',
   },
-
-
+  auth: true,
   access: {
     read: () => true,
     create: () => true,
