@@ -14,15 +14,6 @@ const LoginForm = () => {
    const [error, setError] = useState('')
    const [isLoading, setIsLoading] = useState(false)
  
-   useEffect(() => {
-     // Check if dark mode is preferred by the user
-     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
- 
-     // Listen for changes in system preference
-     window
-       .matchMedia('(prefers-color-scheme: dark)')
-       .addEventListener('change', (e) => )
-   }, [])
  
    const handleSubmit = async (e: React.FormEvent) => {
      e.preventDefault()
