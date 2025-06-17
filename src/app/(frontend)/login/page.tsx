@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Alert, InputGroup } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
@@ -9,58 +9,52 @@ import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa'
 import './styles.css'; // Optional: your custom styles
 
 const LoginForm = () => {
-  const router = useRouter();
-  // User input states
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  // Password show/hide toggle
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Error and loading feedback
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Show/hide password
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  // Submit form function
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Stop page reload
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.token) {
-        // Store token and user
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/dashboard');
-        // Redirect after short delay
-        // setTimeout(() => {
-        //   router.push('/dashboard');
-        // }, 500);
-      } else {
-        setError(data.message || 'Login failed.');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  const [email, setEmail] = useState('')
+   const [password, setPassword] = useState('')
+   const [error, setError] = useState('')
+   const [isLoading, setIsLoading] = useState(false)
+ 
+   useEffect(() => {
+     // Check if dark mode is preferred by the user
+     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+ 
+     // Listen for changes in system preference
+     window
+       .matchMedia('(prefers-color-scheme: dark)')
+       .addEventListener('change', (e) => )
+   }, [])
+ 
+   const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault()
+     setError('')
+     setIsLoading(true)
+ 
+     try {
+       const res = await fetch('/api/users/login', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ email, password }),
+       })
+ 
+       const data = await res.json()
+ 
+       if (res.ok && data.token) {
+         localStorage.setItem('token', data.token)
+         localStorage.setItem('user', JSON.stringify(data.user))
+         setTimeout(() => {
+           window.location.href = '/dashboard'
+         }, 2000)
+       } else {
+         setError(data.message || 'Login failed.')
+       }
+     } catch (err) {
+       console.error(err)
+       setError('An unexpected error occurred.')
+       setIsLoading(false)
+     }
+   }
+ 
+ 
   return (
     <Container fluid className="login-container d-flex align-items-center justify-content-center">
       <Row className="w-100 justify-content-center">
@@ -106,20 +100,13 @@ const LoginForm = () => {
                     <FaLock />
                   </InputGroup.Text>
                   <Form.Control
-                    type={showPassword ? 'text' : 'password'}
+                    type='password'
                     placeholder="Enter your password"
                     value={password}
                     required
                     onChange={(e) => setPassword(e.target.value)}
                   />
-                  <Button
-                    variant="outline-secondary"
-                    onClick={toggleShowPassword}
-                    title={showPassword ? 'Hide Password' : 'Show Password'}
-                    style={{ backgroundColor: '#f8f9fa' }}
-                  >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                  </Button>
+                 
                 </InputGroup>
               </Form.Group>
 
