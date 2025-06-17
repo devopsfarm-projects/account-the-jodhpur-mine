@@ -36,10 +36,9 @@ const Header = () => {
 
   // Handle logout by removing login info and redirecting to login page
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    router.push("/");
-  };
+    localStorage.clear()
+    window.location.href = '/api/logout'
+  }
 
   return (
     <Navbar expand="lg" bg="dark" variant="dark" className="mb-3">

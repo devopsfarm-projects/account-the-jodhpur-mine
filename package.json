@@ -24,7 +24,7 @@
     "@payloadcms/richtext-lexical": "3.40.0",
     "@payloadcms/ui": "3.40.0",
     "@types/mongodb": "^4.0.7",
-    "axios": "^1.9.0",
+    "axios": "^1.10.0",
     "bootstrap": "^5.3.6",
     "cross-env": "^7.0.3",
     "graphql": "^16.8.1",

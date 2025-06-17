@@ -41,11 +41,10 @@ const Dashboard = () => {
 
   // Function to handle logging out the user.
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    router.push("/"); // Redirect the user to the home page (which is the login page).
-  };
-
+    localStorage.clear()
+    window.location.href = '/api/logout'
+  }
+  
   return (
     // The main container for our dashboard, with a dark blue background.
     <div style={{ backgroundColor: "navy", minHeight: "100vh", color: "white" }}>
