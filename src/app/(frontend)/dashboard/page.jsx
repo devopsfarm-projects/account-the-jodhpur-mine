@@ -20,25 +20,29 @@ const Dashboard = () => {
   // Get the user's Userdata from localStorage. localStorage is a browser feature that lets us store small pieces of data that persist even if the user closes and reopens the browser. We check `typeof window !== "undefined"` because localStorage is only available in the browser, not during server-side rendering in Next.js.
 
   let Userdata;
+  let Token;
   if (typeof window !== "undefined") {
     // If it's in the browser, get the user data from localStorage
     Userdata = localStorage.getItem("user");
+    Token = localStorage.getItem("token");
   } else {
     // If not in the browser (for example, on the server), keep it as null
     Userdata = null;
+    Token = null;
   }
 
   // Set the user's role based on the data we got from localStorage If user data exists, parse it from JSON and get the role If there is no role or no user data, default to "client"
   let UserRole;
   if (Userdata) {
     const parsedUser = JSON.parse(Userdata); // Convert string to object
-    UserRole = parsedUser.role ? parsedUser.role : "client"; // Get role or set to "client"
+    UserRole = parsedUser.role ? parsedUser.role : ""; // Get role or set to "client"
     //console.log("User Role:", UserRole); // Show the role in the browser console for debugging
   }
 
   // Function to handle logging out the user.
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
     router.push("/"); // Redirect the user to the home page (which is the login page).
   };
 
