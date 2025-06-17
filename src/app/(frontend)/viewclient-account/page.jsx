@@ -350,8 +350,8 @@ const ViewClientAccount = () => {
                       <td>{index + 1}</td>
                       <td>{acc.clientName}</td>
                       <td>{acc.clientMobile}</td>
-                      <td>{acc.query_license}</td>
-                      <td>{acc.mining_license}</td>
+                      <td>{acc.query_license||"-"}</td>
+                      <td>{acc.mining_license||"-"}</td>
                       <td>{formatDate(acc.clientCreatedAt)}</td>
                       <td>{formatTime(acc.clientCreatedAt)}</td>
                       <td>
@@ -393,19 +393,19 @@ const ViewClientAccount = () => {
                   <Col md={6}><strong>Mobile:</strong> {selectedAccount.clientMobile}</Col>
                 </Row>
                 <Row className="mb-2">
-                  <Col md={6}><strong>Query License:</strong> {selectedAccount.query_license}</Col>
-                  <Col md={6}><strong>Mining License:</strong> {selectedAccount.mining_license}</Col>
+                  <Col md={6}><strong>Query License:</strong> {selectedAccount.query_license||"-"}</Col>
+                  <Col md={6}><strong>Mining License:</strong> {selectedAccount.mining_license||"-"}</Col>
                 </Row>
                 <Row className="mb-2">
-                  <Col md={6}><strong>Village:</strong> {selectedAccount.near_village}</Col>
-                  <Col md={6}><strong>Tehsil:</strong> {selectedAccount.tehsil}</Col>
+                  <Col md={6}><strong>Village:</strong> {selectedAccount.near_village||"-"}</Col>
+                  <Col md={6}><strong>Tehsil:</strong> {selectedAccount.tehsil||"-"}</Col>
                 </Row>
                 <Row className="mb-2">
-                  <Col md={6}><strong>District:</strong> {selectedAccount.district}</Col>
-                  <Col md={6}><strong>State:</strong> {selectedAccount.state}</Col>
+                  <Col md={6}><strong>District:</strong> {selectedAccount.district||"-"}</Col>
+                  <Col md={6}><strong>State:</strong> {selectedAccount.state||"-"}</Col>
                 </Row>
                 <Row className="mb-2">
-                  <Col md={6}><strong>Country:</strong> {selectedAccount.country}</Col>
+                  <Col md={6}><strong>Country:</strong> {selectedAccount.country||"-"}</Col>
                   <Col md={6}><strong>Date:</strong> {formatDate(selectedAccount.clientCreatedAt)}</Col>
                 </Row>
                 <Row>

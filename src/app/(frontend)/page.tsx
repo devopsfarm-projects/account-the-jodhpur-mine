@@ -184,11 +184,11 @@ const LoginForm = () => {
         // Store token and user
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-
+        router.push('/dashboard');
         // Redirect after short delay
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1000);
+        // setTimeout(() => {
+        //   router.push('/dashboard');
+        // }, 500);
       } else {
         setError(data.message || 'Login failed.');
       }

@@ -19,17 +19,17 @@ export const Vendor: CollectionConfig = {
     {
       name: 'query_license',
       type: 'text',
-      required: true,
+      
     },
     {
       name: 'mining_license',
       type: 'text',
-      required: true,
+      
     },
     {
         name: 'near_village',
         type: 'text',
-        required: true,
+      
       },
     {
       name: 'tehsil',
@@ -39,18 +39,18 @@ export const Vendor: CollectionConfig = {
     {
       name: 'district',
       type: 'text',
-      required: true,
+      
     },
     {
       name: 'state',
       type: 'text',
-      required: true,
+      
     },
    
     {
       name: 'country',
       type: 'text',
-      required: true,
+      
     },
     {
       name: 'vendorCreatedAt',

@@ -7,24 +7,27 @@ import { Container, Navbar, Nav, Button, NavDropdown, Offcanvas, } from "react-b
 
 const Header = () => {
   const router = useRouter(); // Allows programmatic navigation (e.g., after logout)
-  const [role, setRole] = useState(""); // Role: 'admin' or 'manager'
+  const [role, setRole] = useState(""); // Role: 'admin' or 'manager' or 'guest'
 
   // Read role from localStorage only after component loads (client-side)
   useEffect(() => {
     let Userdata;
+    let Token;
     // Check if we are in the browser environment (not server-side)
     if (typeof window !== "undefined") {
       // Try to get the saved user data from localStorage
       Userdata = localStorage.getItem("user");
+      Token = localStorage.getItem("token");
     } else {
       // If not in browser, user data is null
       Userdata = null;
+      Token = null;
     }
     // Set the user's role based on the data we got from localStorage If user data exists, parse it from JSON and get the role If there is no role or no user data, default to "guest"
     let UserRole;
     if (Userdata) {
       const parsedUser = JSON.parse(Userdata); // Convert string to object
-      UserRole = parsedUser.role ? parsedUser.role : "guest"; // Get role or set to "guest"
+      UserRole = parsedUser.role ? parsedUser.role : ""; // Get role or set to "guest"
       //console.log("User Role:", UserRole);
       setRole(UserRole);
     }
@@ -34,6 +37,7 @@ const Header = () => {
   // Handle logout by removing login info and redirecting to login page
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
     router.push("/");
   };
 
