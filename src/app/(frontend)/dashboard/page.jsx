@@ -221,14 +221,17 @@ const Dashboard = () => {
           ) : UserRole === "manager" ? (
             // If the Userdata is 'manager', show the User Manager icon
             <GrUserManager className="me-2 text-dark fs-2" />
-          ) : (
+          ) : UserRole === "guest" ? (
             // If the Userdata is 'client' (or any other Userdata), show the Money Bill Transfer icon
             <FaMoneyBillTransfer className="me-2 text-dark fs-2" />
+          ) : (
+            // If the Userdata is 'client' (or any other Userdata), show the Money Bill Transfer icon
+            <span className="me-2 text-dark fs-2" />
           )}
 
           {/* Welcome message text, also conditional based on Userdata */}
           <span className="text-dark fs-5 fw-bold">
-            Welcome,{" "} {UserRole === "admin" ? "Administrator" : UserRole === "manager" ? "Manager" : "Client"}
+            Welcome,{" "} {UserRole === "admin" ? "Administrator" : UserRole === "manager" ? "Manager" : UserRole === "guest" ? "Client" : ""}
           </span>
         </div>
         {/* Navigation section for the logout button */}

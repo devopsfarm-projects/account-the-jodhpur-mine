@@ -172,7 +172,7 @@ const LoginForm = () => {
    const [error, setError] = useState('')
    const [isDarkMode, setIsDarkMode] = useState(false)
    const [isLoading, setIsLoading] = useState(false)
- 
+   const router = useRouter()
    useEffect(() => {
      // Check if dark mode is preferred by the user
      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -206,6 +206,12 @@ const LoginForm = () => {
          }, 2000)
        } else {
          setError(data.message || 'Login failed.')
+         setTimeout(() => {
+           setError('')
+           setIsLoading(false)
+           setEmail('')
+           setPassword('')
+         }, 2000)
        }
      } catch (err) {
        console.error(err)

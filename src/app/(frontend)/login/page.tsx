@@ -33,12 +33,18 @@ const LoginForm = () => {
        if (res.ok && data.token) {
          localStorage.setItem('token', data.token)
          localStorage.setItem('user', JSON.stringify(data.user))
-         router.replace('/dashboard')
-        //  setTimeout(() => {
-        //    window.location.href = '/dashboard'
-        //  }, 2000)
+        //  router.replace('/dashboard')
+         setTimeout(() => {
+           window.location.href = '/dashboard'
+         }, 2000)
        } else {
          setError(data.message || 'Login failed.')
+         setTimeout(() => {
+           setError('')
+           setIsLoading(false)
+           setEmail('')
+           setPassword('')
+         }, 2000)
        }
      } catch (err) {
        console.error(err)
