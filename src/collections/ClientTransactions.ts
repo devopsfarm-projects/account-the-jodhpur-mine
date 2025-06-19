@@ -14,6 +14,18 @@ export const ClientTransactions: CollectionConfig = {
       required: true,
     },
     {
+      name:'query_license',
+      type:'relationship',
+      relationTo:'client-accounts',
+      required:true,
+    },
+    {
+      name:'near_village',
+      type:'relationship',
+      relationTo:'client-accounts',
+      required:true,
+    },
+    {
       name: 'totalAmount',
       type: 'number',
       required: true,

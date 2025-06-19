@@ -168,9 +168,9 @@ export interface ClientAccount {
   id: number;
   clientName: string;
   clientMobile: string;
-  query_license?: string | null;
+  query_license: string;
   mining_license?: string | null;
-  near_village?: string | null;
+  near_village: string;
   tehsil?: string | null;
   district?: string | null;
   state?: string | null;
@@ -187,6 +187,8 @@ export interface ClientAccount {
 export interface ClientTransaction {
   id: number;
   clientName: number | ClientAccount;
+  query_license: number | ClientAccount;
+  near_village: number | ClientAccount;
   totalAmount: number;
   tokenAmount: number;
   workingStage?:
@@ -236,9 +238,9 @@ export interface Vendor {
   id: number;
   vendorName: string;
   vendorMobile: string;
-  query_license?: string | null;
+  query_license: string;
   mining_license?: string | null;
-  near_village?: string | null;
+  near_village: string;
   tehsil?: string | null;
   district?: string | null;
   state?: string | null;
@@ -404,6 +406,8 @@ export interface ClientAccountsSelect<T extends boolean = true> {
  */
 export interface ClientTransactionSelect<T extends boolean = true> {
   clientName?: T;
+  query_license?: T;
+  near_village?: T;
   totalAmount?: T;
   tokenAmount?: T;
   workingStage?:
