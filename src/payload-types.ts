@@ -204,6 +204,7 @@ export interface ClientTransaction {
       }[]
     | null;
   totalAmount?: number | null;
+  totalAmountclient?: number | null;
   remainingAmount?: number | null;
   description?: string | null;
   clientCreatedAt?: string | null;
@@ -428,6 +429,7 @@ export interface ClientTransactionSelect<T extends boolean = true> {
         id?: T;
       };
   totalAmount?: T;
+  totalAmountclient?: T;
   remainingAmount?: T;
   description?: T;
   clientCreatedAt?: T;
