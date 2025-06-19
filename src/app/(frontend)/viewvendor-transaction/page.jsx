@@ -450,7 +450,7 @@
 
 //page View Vendor Transaction.jsx
 "use client"; // Enables client-side features like useEffect and useRouter in Next.js
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 import { FaEye as EyeFill, FaClipboard, FaRupeeSign, FaSearch, FaWrench } from "react-icons/fa";
@@ -513,12 +513,13 @@ const ViewVendorTransaction = () => {
         }, 1000);
       }
     } else {
-      router.push("/api/logout"); // Redirect to login if no user data
+     // If authorized, proceed to fetch data
+     setIsLoading(false); // End initial loading for role check
     }
   }, [router]);
 
   // Common filter logic for name and date range
-  const applyFilters = useCallback((name, start, end) => {
+  const applyFilters = (name, start, end) => {
     const filtered = transactions.filter((txn) => {
       const vendorName = txn.vendorName?.vendorName?.toLowerCase() || "";
       const matchesName = vendorName.includes(name.toLowerCase());
@@ -538,7 +539,7 @@ const ViewVendorTransaction = () => {
     });
 
     setFilteredTransactions(filtered);
-  }, [transactions]); // Depend on transactions to re-memoize if transactions change
+  };
 
   // Fetch vendor transactions from Payload CMS API on component load
   useEffect(() => {
@@ -578,7 +579,7 @@ const ViewVendorTransaction = () => {
   // Apply filters whenever searchName, startDate, or endDate changes
   useEffect(() => {
     applyFilters(searchName, startDate, endDate);
-  }, [searchName, startDate, endDate, applyFilters]);
+  }, [searchName, startDate, endDate]);
 
   // Filter by vendor name (on typing)
   const handleSearch = (e) => {
