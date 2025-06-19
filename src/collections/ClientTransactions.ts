@@ -26,16 +26,6 @@ export const ClientTransactions: CollectionConfig = {
       required:true,
     },
     {
-      name: 'totalAmount',
-      type: 'number',
-      required: true,
-    },
-    {
-      name: 'tokenAmount',
-      type: 'number',
-      required: true,
-    },
-    {
       name: 'workingStage',
       type: 'array',
      
@@ -52,11 +42,30 @@ export const ClientTransactions: CollectionConfig = {
         },
       ],
     },
-
     {
-      name: 'totalCredit',
-      type: 'number',
+      name: 'workingStageclient',
+      type: 'array',
      
+      fields: [
+        {
+          name: 'workingStageclient',
+          type: 'text',
+         
+        },
+        {
+          name: 'workingDescriptionclient',
+          type: 'text',
+         
+        },
+      ],
+    },
+    {
+      name: 'totalAmount',
+      type: 'number',
+    },
+    {
+      name:'totalAmountclient',
+      type:'number',
     },
     {
       name: 'remainingAmount',

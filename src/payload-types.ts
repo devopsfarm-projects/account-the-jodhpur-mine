@@ -189,8 +189,6 @@ export interface ClientTransaction {
   clientName: number | ClientAccount;
   query_license: number | ClientAccount;
   near_village: number | ClientAccount;
-  totalAmount: number;
-  tokenAmount: number;
   workingStage?:
     | {
         workingStage?: string | null;
@@ -198,7 +196,14 @@ export interface ClientTransaction {
         id?: string | null;
       }[]
     | null;
-  totalCredit?: number | null;
+  workingStageclient?:
+    | {
+        workingStageclient?: string | null;
+        workingDescriptionclient?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  totalAmount?: number | null;
   remainingAmount?: number | null;
   description?: string | null;
   clientCreatedAt?: string | null;
@@ -408,8 +413,6 @@ export interface ClientTransactionSelect<T extends boolean = true> {
   clientName?: T;
   query_license?: T;
   near_village?: T;
-  totalAmount?: T;
-  tokenAmount?: T;
   workingStage?:
     | T
     | {
@@ -417,7 +420,14 @@ export interface ClientTransactionSelect<T extends boolean = true> {
         workingDescription?: T;
         id?: T;
       };
-  totalCredit?: T;
+  workingStageclient?:
+    | T
+    | {
+        workingStageclient?: T;
+        workingDescriptionclient?: T;
+        id?: T;
+      };
+  totalAmount?: T;
   remainingAmount?: T;
   description?: T;
   clientCreatedAt?: T;
