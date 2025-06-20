@@ -448,324 +448,616 @@
 // };
 // export default ViewVendorTransaction;
 
-//page View Vendor Transaction.jsx
-"use client"; // Enables client-side features like useEffect and useRouter in Next.js
+// //page View Vendor Transaction.jsx
+// "use client"; // Enables client-side features like useEffect and useRouter in Next.js
+// import React, { useEffect, useState } from "react";
+// import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert } from "react-bootstrap";
+// import { useRouter } from "next/navigation";
+// import { FaEye as EyeFill, FaClipboard, FaRupeeSign, FaSearch, FaWrench } from "react-icons/fa";
+// import { PencilSquare } from "react-bootstrap-icons";
+// import Header from "../components/Header";
+
+// // Function to format a date string as DD/MM/YYYY (Indian format)
+// const formatDate = (dateString) => {
+//   if (!dateString) return "N/A";
+//   const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: "Asia/Kolkata" };
+//   return new Date(dateString).toLocaleDateString('en-GB', options);
+// };
+
+// // Function to format a date string to HH:MM:SS AM/PM (Indian format)
+// const formatTime = (dateString) => {
+//   if (!dateString) return "N/A";
+//   const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: "Asia/Kolkata" };
+//   return new Date(dateString).toLocaleTimeString('en-US', options);
+// };
+
+// const ViewVendorTransaction = () => {
+//   const router = useRouter(); // Used for programmatic navigation
+
+//   // All vendor transactions fetched from backend
+//   const [transactions, setTransactions] = useState([]);
+
+//   // Filtered results shown on screen
+//   const [filteredTransactions, setFilteredTransactions] = useState([]);
+
+//   // For search and date filter
+//   const [searchName, setSearchName] = useState("");
+//   const [startDate, setStartDate] = useState("");
+//   const [endDate, setEndDate] = useState("");
+
+//   // Modal management
+//   const [selectedTransaction, setSelectedTransaction] = useState(null);
+//   const [showModal, setShowModal] = useState(false);
+
+//   // Loading spinner state
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [error, setError] = useState(null); // State for error messages
+//   const [userRole, setUserRole] = useState(null); // State to store user role
+
+//   // Check user role on component mount and redirect if unauthorized
+//   useEffect(() => {
+//     let Userdata;
+//     if (typeof window !== "undefined") {
+//       Userdata = localStorage.getItem("user");
+//     }
+
+//     if (Userdata) {
+//       const parsedUser = JSON.parse(Userdata);
+//       const role = parsedUser.role;
+//       setUserRole(role);
+
+//       if (role !== "admin" && role !== "manager") {
+//         setTimeout(() => {
+//             localStorage.clear()
+//             window.location.href = '/api/logout' // Redirect to login
+//         }, 1000);
+//       }
+//     } else {
+//      // If authorized, proceed to fetch data
+//      setIsLoading(false); // End initial loading for role check
+//     }
+//   }, [router]);
+
+//   // Common filter logic for name and date range
+//   const applyFilters = (name, start, end) => {
+//     const filtered = transactions.filter((txn) => {
+//       const vendorName = txn.vendorName?.vendorName?.toLowerCase() || "";
+//       const matchesName = vendorName.includes(name.toLowerCase());
+
+//       const txnDate = new Date(txn.vendorCreatedAt);
+//       const startDateObj = start ? new Date(start) : null;
+//       const endDateObj = end ? new Date(end) : null;
+
+//       if (endDateObj) {
+//         endDateObj.setHours(23, 59, 59, 999); // This covers the full end date
+//       }
+
+//       const matchesStart = startDateObj ? txnDate >= startDateObj : true;
+//       const matchesEnd = endDateObj ? txnDate <= endDateObj : true;
+
+//       return matchesName && matchesStart && matchesEnd;
+//     });
+
+//     setFilteredTransactions(filtered);
+//   };
+
+//   // Fetch vendor transactions from Payload CMS API on component load
+//   useEffect(() => {
+//     if (userRole === "admin" || userRole === "manager") { // Only fetch if authorized
+//       const fetchTransactions = async () => {
+//         try {
+//           const res = await fetch("/api/vendor-transaction");
+//           if (!res.ok) {
+//             // Handle HTTP errors
+//             const errorData = await res.json();
+//             throw new Error(errorData.message || "Failed to fetch vendor transactions");
+//           }
+//           const data = await res.json();
+//           const vendorData = data.docs || [];
+
+//           // Sort transactions by vendorCreatedAt in descending order (latest first)
+//           //const sortedVendorData = vendorData.sort((a, b) => new Date(b.vendorCreatedAt) - new Date(a.vendorCreatedAt));
+
+//           setTransactions(vendorData);
+//           setFilteredTransactions(vendorData); // Initialize filtered with all data
+//         } catch (error) {
+//           console.error("Error fetching vendor transactions:", error);
+//           setError("Failed to load transactions. Please try again later."); // Set user-friendly error
+//         } finally {
+//           setIsLoading(false);
+//         }
+//       };
+
+//       fetchTransactions();
+//     } else if (userRole === "guest") {
+//       setIsLoading(false); // Stop loading if guest and not redirecting immediately
+//         localStorage.clear()
+//         window.location.href = '/api/logout' // Redirect to login
+//     }
+//   }, [userRole, router]); // Re-run when userRole changes
+
+//   // Apply filters whenever searchName, startDate, or endDate changes
+//   useEffect(() => {
+//     applyFilters(searchName, startDate, endDate);
+//   }, [searchName, startDate, endDate]);
+
+//   // Filter by vendor name (on typing)
+//   const handleSearch = (e) => {
+//     setSearchName(e.target.value);
+//   };
+
+//   // Filter by start date
+//   const handleStartDate = (e) => {
+//     setStartDate(e.target.value);
+//   };
+
+//   // Filter by end date
+//   const handleEndDate = (e) => {
+//     setEndDate(e.target.value);
+//   };
+
+//   // View full details in modal
+//   const handleView = (txn) => {
+//     setSelectedTransaction(txn);
+//     setShowModal(true);
+//   };
+
+//   // Navigate to edit vendor transaction page
+//   const handleEdit = (id) => {
+//     router.push(`/editvendor-transaction/${id}`);
+//   };
+//   // 🚀 PERFORMANCE: Show loading spinner while initial data or user role is being determined
+//   if (isLoading || userRole === null) {
+//     return (
+//       <div className="d-flex justify-content-center align-items-center vh-100">
+//         <Spinner animation="border" variant="primary" />
+//         <p className="fw-semibold my-2 ms-2">Loading Please Wait...</p>
+//       </div>
+//     );
+//   }
+//   if (userRole !== "admin" && userRole !== "manager") {
+//     return (
+//       <>
+//         <Container className="text-center mt-5">
+//           <Alert variant="danger">
+//             You do not have permission to view this page. Redirecting...
+//           </Alert>
+//         </Container>
+//       </>
+//     );
+//   }
+
+//   return (
+//     <>
+//       <Header />
+
+//       <Container className="mt-4 mb-5">
+//         <h4 className="text-center mb-4">
+//           <FaClipboard /> View Vendor All Transactions
+//         </h4>
+
+//         {error && <Alert variant="danger">{error}</Alert>}
+
+//         {/* 🔍 Search and Filter Form */}
+//         <Form className="mb-4">
+//           <Row className="gy-3 gx-3 align-items-end">
+//             <Col xs={12} md={4}>
+//               <InputGroup>
+//                 <Form.Control
+//                   type="text"
+//                   placeholder="Search by vendor name..."
+//                   value={searchName}
+//                   onChange={handleSearch}
+//                 />
+//                 <InputGroup.Text><FaSearch /></InputGroup.Text>
+//               </InputGroup>
+//             </Col>
+//             <Col xs={12} md={4}>
+//               <Form.Label>Start Date</Form.Label>
+//               <Form.Control
+//                 type="date"
+//                 value={startDate}
+//                 onChange={handleStartDate}
+//               />
+//             </Col>
+//             <Col xs={12} md={4}>
+//               <Form.Label>End Date</Form.Label>
+//               <Form.Control
+//                 type="date"
+//                 value={endDate}
+//                 onChange={handleEndDate}
+//               />
+//             </Col>
+//           </Row>
+//         </Form>
+
+//         {/* ⏳ Spinner while loading */}
+//         {isLoading ? (
+//           <div className="text-center mt-5">
+//             <Spinner animation="border" variant="primary" />
+//             <p>Loading all the vendor transactions...</p>
+//           </div>
+//         ) : (
+//           // 📊 Table showing all filtered vendor transactions
+//           <div className="table-responsive">
+//             <Table className="table-bordered table-hover text-center align-middle">
+//               <thead className="table-dark">
+//                 <tr>
+//                   <th>S.No</th>
+//                   <th>Vendor Name</th>
+//                   <th>Date of Creation</th>
+//                   <th>Time of Creation</th>
+//                   <th><FaRupeeSign /> Total Amount</th>
+//                   <th><FaRupeeSign /> Total Credit</th>
+//                   <th><FaRupeeSign /> Remaining Amount</th>
+//                   <th>Actions</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {filteredTransactions.length > 0 ? (
+//                   filteredTransactions.map((txn, index) => {
+//                     const date = formatDate(txn.vendorCreatedAt);
+//                     const time = formatTime(txn.vendorCreatedAt);
+//                     return (
+//                       <tr key={txn.id}>
+//                         <td>{index + 1}</td>
+//                         <td>{txn.vendorName?.vendorName || "N/A"}</td>
+//                         <td>{date}</td>
+//                         <td>{time}</td>
+//                         <td><FaRupeeSign /> {txn.totalAmount?.toFixed(2)}</td>
+//                         <td><FaRupeeSign /> {txn.totalCredit?.toFixed(2)}</td>
+//                         <td><FaRupeeSign /> {txn.remainingAmount?.toFixed(2)}</td>
+//                         <td>
+//                           <div className="d-flex flex-wrap justify-content-center align-items-center gap-2">
+//                             <Button variant="info" onClick={() => handleView(txn)}>
+//                               <EyeFill className="fs-5 fw-bold" />
+//                             </Button>
+//                             <Button variant="warning" onClick={() => handleEdit(txn.id)}>
+//                               <PencilSquare className="fs-5 fw-bold" />
+//                             </Button>
+//                           </div>
+//                         </td>
+//                       </tr>
+//                     );
+//                   })
+//                 ) : (
+//                   <tr>
+//                     <td colSpan="8" className="text-secondary fw-bold fs-5">No vendor transactions found</td>
+//                   </tr>
+//                 )}
+//               </tbody>
+//             </Table>
+//           </div>
+//         )}
+
+//         {/* 🧾 Modal to view transaction details */}
+//         <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+//           <Modal.Header closeButton>
+//             <Modal.Title>Transaction Details</Modal.Title>
+//           </Modal.Header>
+//           <Modal.Body>
+//             {selectedTransaction && (
+//               <>
+//                 <p><strong>Last Updated:</strong> {formatDate(selectedTransaction.vendorUpdatedAt)} {formatTime(selectedTransaction.vendorUpdatedAt)}</p>
+//                 <p><strong>Vendor Name:</strong> {selectedTransaction.vendorName?.vendorName}</p>
+//                 <p><strong>Total Amount:</strong> <FaRupeeSign /> {selectedTransaction.totalAmount?.toFixed(2)}</p>
+//                 <p><strong>Token Amount:</strong> <FaRupeeSign /> {selectedTransaction.tokenAmount?.toFixed(2)}</p>
+//                 <p><strong>Total Credit:</strong> <FaRupeeSign /> {selectedTransaction.totalCredit?.toFixed(2)}</p>
+//                 <p><strong>Remaining Amount:</strong> <FaRupeeSign /> {selectedTransaction.remainingAmount?.toFixed(2)}</p>
+//                 <p><strong>Description:</strong> {selectedTransaction.description || "N/A"}</p>
+
+//                 {/* 🛠️ Show working stages if any */}
+//                 <hr />
+//                 <h6><FaWrench /> Working Stages</h6>
+//                 {selectedTransaction.workingStage && selectedTransaction.workingStage.length > 0 ? (
+//                   <ul>
+//                     {selectedTransaction.workingStage.map((stage, idx) => (
+//                       <li key={idx}>
+//                         <strong>{stage.workingStage || "N/A"}</strong>: {stage.workingDescription || "N/A"}
+//                       </li>
+//                     ))}
+//                   </ul>
+//                 ) : (
+//                   <p>No working stages available.</p>
+//                 )}
+//               </>
+//             )}
+//           </Modal.Body>
+//         </Modal>
+//       </Container>
+//     </>
+//   );
+// };
+// export default ViewVendorTransaction;
+
+// Improved ViewVendorTransaction with working PDF download and mobile-friendly modal
+
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert } from "react-bootstrap";
 import { useRouter } from "next/navigation";
-import { FaEye as EyeFill, FaClipboard, FaRupeeSign, FaSearch, FaWrench } from "react-icons/fa";
+import { FaEye as EyeFill, FaClipboard, FaRupeeSign, FaSearch, FaWrench, FaDownload } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
 import Header from "../components/Header";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
-// Function to format a date string as DD/MM/YYYY (Indian format)
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
-  const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: "Asia/Kolkata" };
-  return new Date(dateString).toLocaleDateString('en-GB', options);
+  return new Date(dateString).toLocaleDateString("en-GB", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    timeZone: "Asia/Kolkata"
+  });
 };
 
-// Function to format a date string to HH:MM:SS AM/PM (Indian format)
 const formatTime = (dateString) => {
   if (!dateString) return "N/A";
-  const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: "Asia/Kolkata" };
-  return new Date(dateString).toLocaleTimeString('en-US', options);
+  return new Date(dateString).toLocaleTimeString("en-US", {
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hour12: true, timeZone: "Asia/Kolkata"
+  });
 };
 
 const ViewVendorTransaction = () => {
-  const router = useRouter(); // Used for programmatic navigation
-
-  // All vendor transactions fetched from backend
+  const router = useRouter();
   const [transactions, setTransactions] = useState([]);
-
-  // Filtered results shown on screen
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-
-  // For search and date filter
   const [searchName, setSearchName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
-  // Modal management
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
-  // Loading spinner state
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null); // State for error messages
-  const [userRole, setUserRole] = useState(null); // State to store user role
+  const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
-  // Check user role on component mount and redirect if unauthorized
   useEffect(() => {
-    let Userdata;
-    if (typeof window !== "undefined") {
-      Userdata = localStorage.getItem("user");
-    }
-
-    if (Userdata) {
-      const parsedUser = JSON.parse(Userdata);
-      const role = parsedUser.role;
+    const data = localStorage.getItem("user");
+    if (data) {
+      const parsed = JSON.parse(data);
+      const role = parsed.role;
       setUserRole(role);
-
       if (role !== "admin" && role !== "manager") {
         setTimeout(() => {
-            localStorage.clear()
-            window.location.href = '/api/logout' // Redirect to login
+          localStorage.clear();
+          window.location.href = "/api/logout";
         }, 1000);
+      } else {
+        setIsLoading(false);
       }
     } else {
-     // If authorized, proceed to fetch data
-     setIsLoading(false); // End initial loading for role check
+      setIsLoading(false);
+      setTimeout(() => {
+        localStorage.clear();
+        window.location.href = "/api/logout";
+      }, 1000);
     }
   }, [router]);
 
-  // Common filter logic for name and date range
-  const applyFilters = (name, start, end) => {
-    const filtered = transactions.filter((txn) => {
-      const vendorName = txn.vendorName?.vendorName?.toLowerCase() || "";
-      const matchesName = vendorName.includes(name.toLowerCase());
-
-      const txnDate = new Date(txn.vendorCreatedAt);
-      const startDateObj = start ? new Date(start) : null;
-      const endDateObj = end ? new Date(end) : null;
-
-      if (endDateObj) {
-        endDateObj.setHours(23, 59, 59, 999); // This covers the full end date
-      }
-
-      const matchesStart = startDateObj ? txnDate >= startDateObj : true;
-      const matchesEnd = endDateObj ? txnDate <= endDateObj : true;
-
-      return matchesName && matchesStart && matchesEnd;
-    });
-
-    setFilteredTransactions(filtered);
-  };
-
-  // Fetch vendor transactions from Payload CMS API on component load
   useEffect(() => {
-    if (userRole === "admin" || userRole === "manager") { // Only fetch if authorized
-      const fetchTransactions = async () => {
+    if (userRole === "admin" || userRole === "manager") {
+      const fetchData = async () => {
+        setIsLoading(true);
         try {
           const res = await fetch("/api/vendor-transaction");
-          if (!res.ok) {
-            // Handle HTTP errors
-            const errorData = await res.json();
-            throw new Error(errorData.message || "Failed to fetch vendor transactions");
-          }
+          if (!res.ok) throw new Error("Failed to fetch vendor transactions");
           const data = await res.json();
-          const vendorData = data.docs || [];
-
-          // Sort transactions by vendorCreatedAt in descending order (latest first)
-          //const sortedVendorData = vendorData.sort((a, b) => new Date(b.vendorCreatedAt) - new Date(a.vendorCreatedAt));
-
-          setTransactions(vendorData);
-          setFilteredTransactions(vendorData); // Initialize filtered with all data
-        } catch (error) {
-          console.error("Error fetching vendor transactions:", error);
-          setError("Failed to load transactions. Please try again later."); // Set user-friendly error
+          setTransactions(data.docs || []);
+        } catch (e) {
+          setError("Failed to load transactions.");
         } finally {
           setIsLoading(false);
         }
       };
-
-      fetchTransactions();
-    } else if (userRole === "guest") {
-      setIsLoading(false); // Stop loading if guest and not redirecting immediately
-        localStorage.clear()
-        window.location.href = '/api/logout' // Redirect to login
+      fetchData();
     }
-  }, [userRole, router]); // Re-run when userRole changes
+  }, [userRole]);
 
-  // Apply filters whenever searchName, startDate, or endDate changes
   useEffect(() => {
-    applyFilters(searchName, startDate, endDate);
-  }, [searchName, startDate, endDate]);
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+    if (end) end.setHours(23, 59, 59, 999);
+    const filtered = transactions.filter(txn => {
+      const nameMatch = txn.vendorName?.vendorName?.toLowerCase().includes(searchName.toLowerCase());
+      const txnDate = new Date(txn.vendorCreatedAt);
+      const startMatch = start ? txnDate >= start : true;
+      const endMatch = end ? txnDate <= end : true;
+      return nameMatch && startMatch && endMatch;
+    });
+    setFilteredTransactions(filtered.sort((a, b) => new Date(b.vendorCreatedAt) - new Date(a.vendorCreatedAt)));
+  }, [searchName, startDate, endDate, transactions]);
 
-  // Filter by vendor name (on typing)
-  const handleSearch = (e) => {
-    setSearchName(e.target.value);
-  };
+  const handleDownloadPdf = () => {
+    if (!selectedTransaction) return;
 
-  // Filter by start date
-  const handleStartDate = (e) => {
-    setStartDate(e.target.value);
-  };
+    const doc = new jsPDF();
 
-  // Filter by end date
-  const handleEndDate = (e) => {
-    setEndDate(e.target.value);
-  };
+    // Title
+    doc.setFontSize(18);
+    doc.setTextColor(40);
+    doc.text("Jodhpur Mines - Transaction Details", 14, 20);
 
-  // View full details in modal
-  const handleView = (txn) => {
-    setSelectedTransaction(txn);
-    setShowModal(true);
-  };
+    doc.setFontSize(12);
+    let y = 30;
 
-  // Navigate to edit vendor transaction page
-  const handleEdit = (id) => {
-    router.push(`/editvendor-transaction/${id}`);
+    const addWrappedText = (label, value) => {
+      const text = `${label}: ${value}`;
+      const lines = doc.splitTextToSize(text, 180); // Word wrap text to fit page width
+      doc.text(lines, 14, y);
+      y += lines.length * 7; // Move y for next line, considering wrapping
+    };
+
+    // Add each field
+    addWrappedText("Last Updated", `${formatDate(selectedTransaction.vendorUpdatedAt)} ${formatTime(selectedTransaction.vendorUpdatedAt)}`);
+    addWrappedText("Vendor Name", selectedTransaction.vendorName?.vendorName || "N/A");
+    addWrappedText("Total Amount", `\u20B9 ${selectedTransaction.totalAmount?.toFixed(2) || "0.00"}`);
+    addWrappedText("Token Amount", `\u20B9 ${selectedTransaction.tokenAmount?.toFixed(2) || "0.00"}`);
+    addWrappedText("Received Amount", `\u20B9 ${selectedTransaction.totalCredit?.toFixed(2) || "0.00"}`);
+    addWrappedText("Remaining Amount", `\u20B9 ${selectedTransaction.remainingAmount?.toFixed(2) || "0.00"}`);
+    addWrappedText("Description", selectedTransaction.description || "N/A");
+
+    // Add table of working stages
+    y += 10;
+    doc.setFontSize(14);
+    doc.setTextColor(0, 102, 204);
+    doc.text("Working Stages", 14, y);
+    y += 6;
+
+    autoTable(doc, {
+      startY: y,
+      head: [["Work Stage Description", `\u20B9 Work Stage Amount`]],
+      body: selectedTransaction.workingStage?.length
+        ? selectedTransaction.workingStage.map(stage => [
+          stage.workingStage || "N/A",
+          stage.workingDescription || "N/A",
+        ])
+        : [["N/A", "No working stages available."]],
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+        overflow: 'linebreak', // Wrap text in cells
+      },
+      headStyles: {
+        fillColor: [0, 123, 255], // Bootstrap blue
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      bodyStyles: {
+        fillColor: [248, 249, 250],
+        textColor: 51,
+      },
+      alternateRowStyles: {
+        fillColor: [255, 255, 255],
+      },
+      margin: { left: 14, right: 14 },
+    });
+
+    // Save the PDF
+    doc.save(`Transaction_${selectedTransaction.id || Date.now()}.pdf`);
   };
-  // 🚀 PERFORMANCE: Show loading spinner while initial data or user role is being determined
-  if (isLoading || userRole === null) {
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <Spinner animation="border" variant="primary" />
-        <p className="fw-semibold my-2 ms-2">Loading Please Wait...</p>
-      </div>
-    );
-  }
-  if (userRole !== "admin" && userRole !== "manager") {
-    return (
-      <>
-        <Container className="text-center mt-5">
-          <Alert variant="danger">
-            You do not have permission to view this page. Redirecting...
-          </Alert>
-        </Container>
-      </>
-    );
-  }
 
   return (
     <>
       <Header />
-
       <Container className="mt-4 mb-5">
-        <h4 className="text-center mb-4">
-          <FaClipboard /> View Vendor All Transactions
-        </h4>
-
+        <h4 className="text-center mb-4"><FaClipboard /> View Vendor Transactions</h4>
         {error && <Alert variant="danger">{error}</Alert>}
-
-        {/* 🔍 Search and Filter Form */}
-        <Form className="mb-4">
-          <Row className="gy-3 gx-3 align-items-end">
+        <Form className="mb-3 bg-light p-3 rounded shadow-sm">
+          <Row className="gy-2 gx-3 align-items-end">
             <Col xs={12} md={4}>
+              <Form.Label>Vendor Name</Form.Label>
               <InputGroup>
-                <Form.Control
-                  type="text"
-                  placeholder="Search by vendor name..."
-                  value={searchName}
-                  onChange={handleSearch}
-                />
+                <Form.Control value={searchName} onChange={e => setSearchName(e.target.value)}
+                  placeholder="Search name..." />
                 <InputGroup.Text><FaSearch /></InputGroup.Text>
               </InputGroup>
             </Col>
-            <Col xs={12} md={4}>
+            <Col xs={6} md={4}>
               <Form.Label>Start Date</Form.Label>
-              <Form.Control
-                type="date"
-                value={startDate}
-                onChange={handleStartDate}
-              />
+              <Form.Control type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
             </Col>
-            <Col xs={12} md={4}>
+            <Col xs={6} md={4}>
               <Form.Label>End Date</Form.Label>
-              <Form.Control
-                type="date"
-                value={endDate}
-                onChange={handleEndDate}
-              />
+              <Form.Control type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
             </Col>
           </Row>
         </Form>
-
-        {/* ⏳ Spinner while loading */}
-        {isLoading ? (
+        {isLoading ?
           <div className="text-center mt-5">
-            <Spinner animation="border" variant="primary" />
-            <p>Loading all the vendor transactions...</p>
-          </div>
-        ) : (
-          // 📊 Table showing all filtered vendor transactions
+            <Spinner animation="border" /><p>Loading transactions...</p>
+          </div> :
           <div className="table-responsive">
             <Table className="table-bordered table-hover text-center align-middle">
               <thead className="table-dark">
                 <tr>
                   <th>S.No</th>
                   <th>Vendor Name</th>
-                  <th>Date of Creation</th>
-                  <th>Time of Creation</th>
-                  <th><FaRupeeSign /> Total Amount</th>
-                  <th><FaRupeeSign /> Total Credit</th>
-                  <th><FaRupeeSign /> Remaining Amount</th>
+                  <th>Date & Time</th>
+                  <th><FaRupeeSign />Total Amount</th>
+                  <th><FaRupeeSign />Received Amount</th>
+                  <th><FaRupeeSign />Remaining Amount</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredTransactions.length > 0 ? (
-                  filteredTransactions.map((txn, index) => {
-                    const date = formatDate(txn.vendorCreatedAt);
-                    const time = formatTime(txn.vendorCreatedAt);
-                    return (
-                      <tr key={txn.id}>
-                        <td>{index + 1}</td>
-                        <td>{txn.vendorName?.vendorName || "N/A"}</td>
-                        <td>{date}</td>
-                        <td>{time}</td>
-                        <td><FaRupeeSign /> {txn.totalAmount?.toFixed(2)}</td>
-                        <td><FaRupeeSign /> {txn.totalCredit?.toFixed(2)}</td>
-                        <td><FaRupeeSign /> {txn.remainingAmount?.toFixed(2)}</td>
-                        <td>
-                          <div className="d-flex flex-wrap justify-content-center align-items-center gap-2">
-                            <Button variant="info" onClick={() => handleView(txn)}>
-                              <EyeFill className="fs-5 fw-bold" />
-                            </Button>
-                            <Button variant="warning" onClick={() => handleEdit(txn.id)}>
-                              <PencilSquare className="fs-5 fw-bold" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan="8" className="text-secondary fw-bold fs-5">No vendor transactions found</td>
+                {filteredTransactions.length ? filteredTransactions.map((txn, idx) => (
+                  <tr key={txn.id}>
+                    <td>{idx + 1}</td>
+                    <td>{txn.vendorName?.vendorName || "N/A"}</td>
+                    <td>{formatDate(txn.vendorCreatedAt)} <br /><small>{formatTime(txn.vendorCreatedAt)}</small></td>
+                    <td><FaRupeeSign /> {txn.totalAmount?.toFixed(2)}</td>
+                    <td><FaRupeeSign /> {txn.totalCredit?.toFixed(2)}</td>
+                    <td><FaRupeeSign /> {txn.remainingAmount?.toFixed(2)}</td>
+                    <td>
+                      <div className="d-flex flex-wrap justify-content-center align-items-center gap-2">
+                        <Button variant="info" onClick={() => { setSelectedTransaction(txn); setShowModal(true); }}><EyeFill className="fs-5 fw-bold" /></Button>
+                        <Button variant="warning" onClick={() => router.push(`/editvendor-transaction/${txn.id}`)}><PencilSquare className="fs-5 fw-bold" /></Button>
+                      </div>
+                    </td>
                   </tr>
-                )}
+                )) : <tr><td colSpan="7">No matching transactions found.</td></tr>}
               </tbody>
             </Table>
-          </div>
-        )}
+          </div>}
 
-        {/* 🧾 Modal to view transaction details */}
-        <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered scrollable>
           <Modal.Header closeButton>
-            <Modal.Title>Transaction Details</Modal.Title>
+            <Modal.Title>
+              <div className="d-flex flex-wrap justify-content-center align-items-center gap-2">
+                <span>Transaction Details</span>
+                <Button variant="outline-primary" onClick={handleDownloadPdf} ><FaDownload className="fs-5 fw-bold" /> PDF</Button>
+              </div>
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {selectedTransaction && (
-              <>
-                <p><strong>Last Updated:</strong> {formatDate(selectedTransaction.vendorUpdatedAt)} {formatTime(selectedTransaction.vendorUpdatedAt)}</p>
-                <p><strong>Vendor Name:</strong> {selectedTransaction.vendorName?.vendorName}</p>
-                <p><strong>Total Amount:</strong> <FaRupeeSign /> {selectedTransaction.totalAmount?.toFixed(2)}</p>
-                <p><strong>Token Amount:</strong> <FaRupeeSign /> {selectedTransaction.tokenAmount?.toFixed(2)}</p>
-                <p><strong>Total Credit:</strong> <FaRupeeSign /> {selectedTransaction.totalCredit?.toFixed(2)}</p>
-                <p><strong>Remaining Amount:</strong> <FaRupeeSign /> {selectedTransaction.remainingAmount?.toFixed(2)}</p>
-                <p><strong>Description:</strong> {selectedTransaction.description || "N/A"}</p>
-
-                {/* 🛠️ Show working stages if any */}
-                <hr />
-                <h6><FaWrench /> Working Stages</h6>
-                {selectedTransaction.workingStage && selectedTransaction.workingStage.length > 0 ? (
-                  <ul>
-                    {selectedTransaction.workingStage.map((stage, idx) => (
-                      <li key={idx}>
-                        <strong>{stage.workingStage || "N/A"}</strong>: {stage.workingDescription || "N/A"}
-                      </li>
+            {selectedTransaction && <>
+              <Row className="mb-2">
+                <Col xs={12}><p><strong>Vendor Name:</strong> {selectedTransaction.vendorName?.vendorName}</p></Col>
+              </Row>
+              <Row>
+                <Col xs={6}><p><strong>Last Updated At:</strong> {formatDate(selectedTransaction.vendorUpdatedAt)} {formatTime(selectedTransaction.vendorUpdatedAt)}</p></Col>
+                <Col xs={6}><p><strong>Created At:</strong> {formatDate(selectedTransaction.vendorCreatedAt)} {formatTime(selectedTransaction.vendorCreatedAt)}</p></Col>
+              </Row>
+              <hr />
+              <Row>
+                <Col xs={6}><p><strong>Total Amount:</strong> <FaRupeeSign /> {selectedTransaction.totalAmount?.toFixed(2)}</p></Col>
+                <Col xs={6}><p><strong>Total Credit:</strong> <FaRupeeSign /> {selectedTransaction.totalCredit?.toFixed(2)}</p></Col>
+              </Row>
+              <Row>
+                <Col xs={6}><p><strong>Token Amount:</strong> <FaRupeeSign /> {selectedTransaction.tokenAmount?.toFixed(2)}</p></Col>
+                <Col xs={6}><p><strong>Remaining Amount:</strong> <FaRupeeSign /> {selectedTransaction.remainingAmount?.toFixed(2)}</p></Col>
+              </Row>
+              <Row className="my-3">
+                <Col><p><strong>Description:</strong> {selectedTransaction.description || "N/A"}</p></Col>
+              </Row>
+              <h6 className="mt-3"><FaWrench /> Working Stages</h6>
+              {selectedTransaction.workingStage?.length ? (
+                <Table size="sm" bordered hover responsive>
+                  <thead>
+                    <tr>
+                      <th>S.No</th>
+                      <th>Stage</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedTransaction.workingStage.map((s, i) => (
+                      <tr key={i}>
+                        <td>{i + 1}</td>
+                        <td>{s.workingStage}</td>
+                        <td>{s.workingDescription}</td>
+                      </tr>
                     ))}
-                  </ul>
-                ) : (
-                  <p>No working stages available.</p>
-                )}
-              </>
-            )}
+                  </tbody>
+                </Table>
+              ) : <td colSpan="3">No working stages available.</td>}
+            </>}
           </Modal.Body>
         </Modal>
       </Container>
     </>
   );
 };
+
 export default ViewVendorTransaction;

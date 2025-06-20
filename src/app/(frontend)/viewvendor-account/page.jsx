@@ -694,7 +694,7 @@ const ViewVendorAccount = () => {
                   <th>Name</th>
                   <th>Mobile</th>
                   <th>Query License</th>
-                  <th>Mining License</th>
+                  <th>Nearby Village</th>
                   <th>Created Date</th>
                   <th>Created Time</th>
                   <th>Actions</th>
@@ -707,8 +707,8 @@ const ViewVendorAccount = () => {
                       <td>{index + 1}</td>
                       <td>{vendor.vendorName || "N/A"}</td>
                       <td>{vendor.vendorMobile || "N/A"}</td>
-                      <td>{vendor.query_license || "-"}</td>
-                      <td>{vendor.mining_license || "-"}</td>
+                      <td>{vendor.query_license||"NA"}</td>
+                      <td>{vendor.near_village||"NA"}</td>
                       <td>{formatDate(vendor.createdAt)}</td> {/* Formatted creation date */}
                       <td>{formatTime(vendor.createdAt)}</td> {/* Formatted creation time */}
                       <td>
@@ -756,31 +756,31 @@ const ViewVendorAccount = () => {
                 </Row>
                 <Row className="mb-2">
                   <Col md={6}>
-                    <strong>Query License:</strong> {selectedVendorAccount.query_license || "-"}
+                    <strong>Query License:</strong> {selectedVendorAccount.query_license || "NA"}
                   </Col>
                   <Col md={6}>
-                    <strong>Mining License:</strong> {selectedVendorAccount.mining_license || "-"}
-                  </Col>
-                </Row>
-                <Row className="mb-2">
-                  <Col md={6}>
-                    <strong>Village:</strong> {selectedVendorAccount.near_village || "-"}
-                  </Col>
-                  <Col md={6}>
-                    <strong>Tehsil:</strong> {selectedVendorAccount.tehsil || "-"}
+                    <strong>Mining License:</strong> {selectedVendorAccount.mining_license || "NA"}
                   </Col>
                 </Row>
                 <Row className="mb-2">
                   <Col md={6}>
-                    <strong>District:</strong> {selectedVendorAccount.district || "-"}
+                    <strong>Nearby Village:</strong> {selectedVendorAccount.near_village || "NA"}
                   </Col>
                   <Col md={6}>
-                    <strong>State:</strong> {selectedVendorAccount.state || "-"}
+                    <strong>Tehsil:</strong> {selectedVendorAccount.tehsil || "NA"}
                   </Col>
                 </Row>
                 <Row className="mb-2">
                   <Col md={6}>
-                    <strong>Country:</strong> {selectedVendorAccount.country || "-"}
+                    <strong>District:</strong> {selectedVendorAccount.district || "NA"}
+                  </Col>
+                  <Col md={6}>
+                    <strong>State:</strong> {selectedVendorAccount.state || "NA"}
+                  </Col>
+                </Row>
+                <Row className="mb-2">
+                  <Col md={6}>
+                    <strong>Country:</strong> {selectedVendorAccount.country || "NA"}
                   </Col>
                   <Col md={6}>
                     <strong>Created Date:</strong> {formatDate(selectedVendorAccount.createdAt)}

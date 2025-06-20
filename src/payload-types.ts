@@ -209,6 +209,7 @@ export interface ClientTransaction {
   description?: string | null;
   clientCreatedAt?: string | null;
   clientUpdatedAt?: string | null;
+  paymentstatus?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -434,6 +435,7 @@ export interface ClientTransactionSelect<T extends boolean = true> {
   description?: T;
   clientCreatedAt?: T;
   clientUpdatedAt?: T;
+  paymentstatus?: T;
   updatedAt?: T;
   createdAt?: T;
 }

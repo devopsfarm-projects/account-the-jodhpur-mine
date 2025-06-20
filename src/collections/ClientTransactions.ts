@@ -87,5 +87,10 @@ export const ClientTransactions: CollectionConfig = {
       type: 'date',
       
     },
+    {
+      name:'paymentstatus',
+      type:'text',
+      defaultValue:'pending',
+    }
   ],
 }
