@@ -168,7 +168,7 @@
 //                   </td>
 //                 </tr>
 //               ))
-//             ) : (
+//             : (
 //               <tr>
 //                 <td colSpan="6">No Client Transactions found</td>
 //               </tr>
@@ -211,7 +211,7 @@
 // export default ViewClientTransaction;
 "use client"; // Enables client-side features like localStorage and router
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Container,
   Row,
@@ -235,6 +235,8 @@ import {
 } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
 import Header from "../components/Header";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 // Helper function to format date as DD/MM/YYYY
 const formatDate = (date) =>
@@ -269,6 +271,23 @@ const ViewClientTransaction = () => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(""); // ✅ Error message displayed using Alert
+  const modalBodyRef = useRef(null);
+
+  // PDF download handler
+  const handleDownloadPDF = async () => {
+    if (!modalBodyRef.current) return;
+    const element = modalBodyRef.current;
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    // Calculate image dimensions to fit A4
+    const imgWidth = pageWidth - 40;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    pdf.addImage(imgData, "PNG", 20, 20, imgWidth, imgHeight);
+    pdf.save("client-transaction-details.pdf");
+  };
 
   // ✅ Validate user role using localStorage
   useEffect(() => {
@@ -507,8 +526,11 @@ const ViewClientTransaction = () => {
         >
           <Modal.Header closeButton>
             <Modal.Title>Client Transaction Details</Modal.Title>
+            <Button variant="outline-primary" className="ms-3" onClick={handleDownloadPDF}>
+              Download as PDF
+            </Button>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body ref={modalBodyRef}>
             {selectedTransaction && (
               <div>
                 <Row>
