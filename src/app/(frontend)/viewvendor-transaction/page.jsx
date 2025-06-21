@@ -973,7 +973,7 @@ const ViewVendorTransaction = () => {
                 <tr>
                   <th>S.No</th>
                   <th>Vendor Name</th>
-                  <th>Date & Time</th>
+                  <th>Create At</th>
                   <th><FaRupeeSign />Total Amount</th>
                   <th><FaRupeeSign />Received Amount</th>
                   <th><FaRupeeSign />Remaining Amount</th>

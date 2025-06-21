@@ -412,13 +412,38 @@ const AddClientAccount = () => {
 
     setIsSubmitting(true);
 
-    const newClient = {
-      ...formData,
-      clientCreatedAt: getFormattedDate(),
-      clientUpdatedAt: getFormattedDate(),
-    };
-
     try {
+      // Check for existing account with same clientName, query_license, and near_village (case-insensitive)
+      const checkRes = await fetch('/api/client-accounts');
+      const existingClients = await checkRes.json();
+
+      const isDuplicate = existingClients?.docs?.some((client) =>
+        client.clientName?.toLowerCase() === formData.clientName.toLowerCase() &&
+        client.query_license?.toLowerCase() === formData.query_license.toLowerCase() &&
+        client.near_village?.toLowerCase() === formData.near_village.toLowerCase()
+      );
+
+      if (isDuplicate) {
+        setAlertVariant('danger');
+        setAlertMessage('This client account already exists. Duplicate combination not allowed.');
+        setShowAlert(true);
+        setIsSubmitting(false);
+
+        // Auto-reset form after 3 seconds
+        setTimeout(() => {
+          resetForm();
+          setShowAlert(false);
+        }, 3000);
+
+        return;
+      }
+
+      const newClient = {
+        ...formData,
+        clientCreatedAt: getFormattedDate(),
+        clientUpdatedAt: getFormattedDate(),
+      };
+
       const response = await fetch('/api/client-accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

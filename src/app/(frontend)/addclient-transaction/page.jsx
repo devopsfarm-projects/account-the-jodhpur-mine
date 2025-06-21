@@ -822,7 +822,7 @@ import { useRouter } from 'next/navigation';
 import { Container, Form, Button, Row, Col, Alert, Spinner, Card } from 'react-bootstrap'; // Added Card for better sectioning
 
 // Import icons from various libraries for a richer UI
-import { TbTransactionRupee, TbPlus, TbCreditCard, TbTrashFilled  } from 'react-icons/tb'; // Transaction, Add, Credit Card, Receipt, Home Check
+import { TbTransactionRupee, TbPlus, TbCreditCard, TbTrashFilled } from 'react-icons/tb'; // Transaction, Add, Credit Card, Receipt, Home Check
 import { FaSave, FaExclamationTriangle, FaUserTie, FaMapMarkerAlt, FaCoins, FaPencilAlt, FaUndo } from 'react-icons/fa'; // Save, Warning, User, Building, Map Marker, Coins, Balance Scale, Pencil, Undo
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faIndianRupeeSign, faScrewdriverWrench, faMoneyCheckDollar } from '@fortawesome/free-solid-svg-icons'; // Indian Rupee, Tools, Money Check
@@ -1014,98 +1014,195 @@ const AddClientTransaction = () => {
     setSuccess(''); // Clear success messages
   };
 
-  // --- Form Submission Handler ---
+  // // --- Form Submission Handler ---
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault(); // Prevent default form submission behavior (page reload)
+
+  //   // Basic client-side validation
+  //   if (!form.clientName || !form.query_license || !form.near_village) {
+  //     setError('Please fill in all required fields (Client Name, Query License, Near Village).');
+  //     return; // Stop submission if validation fails
+  //   }
+
+  //   // Find the actual client objects based on the selected names/values
+  //   // This is crucial for sending the correct client IDs to the backend.
+  //   const selectedClientName = clients.find(
+  //     (client) => client.clientName === form.clientName || client._id === form.clientName
+  //   );
+
+  //   const selectedQueryLicense = clients.find(
+  //     (client) => client.query_license === form.query_license || client._id === form.query_license
+  //   );
+
+  //   const selectedNearVillage = clients.find(
+  //     (client) => client.near_village === form.near_village || client._id === form.near_village
+  //   );
+
+  //   // More robust validation to ensure selected values correspond to existing clients
+  //   if (!selectedClientName) {
+  //     setError(`Invalid client selected for Client Name: "${form.clientName}". Please select from the list.`);
+  //     setTimeout(() => handleReset(), 3000); // Reset form after 3 seconds on error
+  //     return;
+  //   }
+  //   if (!selectedQueryLicense) {
+  //     setError(`Invalid client selected for Query License: "${form.query_license}". Please select from the list.`);
+  //     setTimeout(() => handleReset(), 3000);
+  //     return;
+  //   }
+  //   if (!selectedNearVillage) {
+  //     setError(`Invalid client selected for Village: "${form.near_village}". Please select from the list.`);
+  //     setTimeout(() => handleReset(), 3000);
+  //     return;
+  //   }
+
+  //   setSubmitting(true); // Set submitting state to true to show loading indicator
+
+  //   // Prepare the data payload to be sent to the API
+  //   const payload = {
+  //     clientName: selectedClientName.id || selectedClientName._id, // Send client ID
+  //     query_license: selectedQueryLicense.id || selectedQueryLicense._id, // Send query license ID
+  //     near_village: selectedNearVillage.id || selectedNearVillage._id, // Send near village ID
+  //     totalAmount: getTotalAmount(), // Calculated total for our side's work
+  //     totalAmountclient: getTotalAmountClient(), // Calculated total for client's payments
+  //     remainingAmount: getRemainingAmount(), // Calculated remaining balance
+  //     workingStage: workingStages.map((s) => ({
+  //       workingStage: s.work,
+  //       workingDescription: s.amount, // Note: 'amount' is mapped to 'workingDescription' here
+  //     })),
+  //     workingStageclient: workingStagesClient.map((s) => ({
+  //       workingStageclient: s.work,
+  //       workingDescriptionclient: s.amount, // Note: 'amount' is mapped to 'workingDescriptionclient' here
+  //     })),
+  //     description: form.description,
+  //     clientCreatedAt: new Date().toISOString(), // Timestamp for creation
+  //     clientUpdatedAt: new Date().toISOString(), // Timestamp for last update
+  //     paymentstatus: 'pending',// Payment status from form (default 'pending')
+  //   };
+
+  //   try {
+  //     // Make the POST request to the API
+  //     const res = await fetch('/api/client-transaction', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify(payload), // Send payload as JSON string
+  //     });
+
+  //     if (res.ok) {
+  //       setSuccess('Client transaction saved successfully!'); // Set success message
+  //       setTimeout(() => {
+  //         handleReset(); // Reset form after success
+  //         setSuccess(''); // Clear success message
+  //         router.push('/viewclient-transaction'); // Redirect to view transactions page
+  //       }, 1000); // Redirect after 1 second
+  //     } else {
+  //       const result = await res.json(); // Parse error response from API
+  //       console.error('API Error:', result);
+  //       setError(result.message || 'Failed to save transaction. Please check your inputs.'); // Display API error message
+  //       setSuccess(''); // Clear success message
+  //     }
+  //   } catch (err) {
+  //     console.error('Network or unexpected error:', err);
+  //     setError('An unexpected error occurred. Please try again later.'); // Display generic error
+  //     setSuccess(''); // Clear success message
+  //   } finally {
+  //     setSubmitting(false); // Always set submitting to false after the attempt
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior (page reload)
+    e.preventDefault(); // Prevent page reload on form submit
+    setError("");       // Clear any previous errors
+    setSuccess("");     // Clear any previous success messages
 
-    // Basic client-side validation
+    // Step 1: Basic field presence check
     if (!form.clientName || !form.query_license || !form.near_village) {
-      setError('Please fill in all required fields (Client Name, Query License, Near Village).');
-      return; // Stop submission if validation fails
-    }
-
-    // Find the actual client objects based on the selected names/values
-    // This is crucial for sending the correct client IDs to the backend.
-    const selectedClientName = clients.find(
-      (client) => client.clientName === form.clientName || client._id === form.clientName
-    );
-
-    const selectedQueryLicense = clients.find(
-      (client) => client.query_license === form.query_license || client._id === form.query_license
-    );
-
-    const selectedNearVillage = clients.find(
-      (client) => client.near_village === form.near_village || client._id === form.near_village
-    );
-
-    // More robust validation to ensure selected values correspond to existing clients
-    if (!selectedClientName) {
-      setError(`Invalid client selected for Client Name: "${form.clientName}". Please select from the list.`);
-      setTimeout(() => handleReset(), 3000); // Reset form after 3 seconds on error
-      return;
-    }
-    if (!selectedQueryLicense) {
-      setError(`Invalid client selected for Query License: "${form.query_license}". Please select from the list.`);
-      setTimeout(() => handleReset(), 3000);
-      return;
-    }
-    if (!selectedNearVillage) {
-      setError(`Invalid client selected for Village: "${form.near_village}". Please select from the list.`);
-      setTimeout(() => handleReset(), 3000);
+      setError("Please fill in all required fields: Client Name, Query License, and Near Village.");
       return;
     }
 
-    setSubmitting(true); // Set submitting state to true to show loading indicator
+    // Step 2: Try to find the client that matches all 3 fields
+    const matchedClient = clients.find((client) =>
+      (client.clientName === form.clientName || client._id === form.clientName) &&
+      (client.query_license === form.query_license || client._id === form.query_license) &&
+      (client.near_village === form.near_village || client._id === form.near_village)
+    );
 
-    // Prepare the data payload to be sent to the API
+    // Step 3: If no exact match is found, check individual mismatches and show custom errors
+    if (!matchedClient) {
+      // Check for each valid match individually
+      const clientMatch = clients.some((client) => client.clientName === form.clientName || client._id === form.clientName);
+      const licenseMatch = clients.some((client) => client.query_license === form.query_license || client._id === form.query_license);
+      const villageMatch = clients.some((client) => client.near_village === form.near_village || client._id === form.near_village);
+
+      // Provide specific error messages based on mismatches
+      if (licenseMatch && villageMatch && !clientMatch) {
+        setError("Client Name is incorrect for the selected Query License and Near Village.");
+      } else if (clientMatch && licenseMatch && !villageMatch) {
+        setError("Near Village is incorrect for the selected Client Name and Query License.");
+      } else if (clientMatch && villageMatch && !licenseMatch) {
+        setError("Query License is incorrect for the selected Client Name and Near Village.");
+      } else if (clientMatch && !licenseMatch && !villageMatch) {
+        setError("Both Query License and Near Village are incorrect for the selected Client Name.");
+      } else if (!clientMatch && licenseMatch && !villageMatch) {
+        setError("Client Name and Near Village are incorrect for the selected Query License.");
+      } else if (!clientMatch && !licenseMatch && villageMatch) {
+        setError("Client Name and Query License are incorrect for the selected Near Village.");
+      } else {
+        setError("The provided Client Name, Query License, and Near Village do not match any known client.");
+      }
+      // Reset the form after showing error
+      setTimeout(() => handleReset(), 5000);
+      return;
+    }
+
+    // Step 4: Prepare payload using the matched client
+    setSubmitting(true); // Show loading indicator
+
     const payload = {
-      clientName: selectedClientName.id || selectedClientName._id, // Send client ID
-      query_license: selectedQueryLicense.id || selectedQueryLicense._id, // Send query license ID
-      near_village: selectedNearVillage.id || selectedNearVillage._id, // Send near village ID
-      totalAmount: getTotalAmount(), // Calculated total for our side's work
-      totalAmountclient: getTotalAmountClient(), // Calculated total for client's payments
-      remainingAmount: getRemainingAmount(), // Calculated remaining balance
+      clientName: matchedClient.clientName,
+      query_license: matchedClient.query_license,
+      near_village: matchedClient.near_village,
+      totalAmount: getTotalAmount(),
+      totalAmountclient: getTotalAmountClient(),
+      remainingAmount: getRemainingAmount(),
       workingStage: workingStages.map((s) => ({
         workingStage: s.work,
-        workingDescription: s.amount, // Note: 'amount' is mapped to 'workingDescription' here
+        workingDescription: s.amount,
       })),
       workingStageclient: workingStagesClient.map((s) => ({
         workingStageclient: s.work,
-        workingDescriptionclient: s.amount, // Note: 'amount' is mapped to 'workingDescriptionclient' here
+        workingDescriptionclient: s.amount,
       })),
       description: form.description,
-      clientCreatedAt: new Date().toISOString(), // Timestamp for creation
-      clientUpdatedAt: new Date().toISOString(), // Timestamp for last update
-      paymentstatus: 'pending',// Payment status from form (default 'pending')
+      clientCreatedAt: new Date().toISOString(),
+      clientUpdatedAt: new Date().toISOString(),
+      paymentstatus: "pending",
     };
 
+    // Step 5: Submit data to API
     try {
-      // Make the POST request to the API
-      const res = await fetch('/api/client-transaction', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload), // Send payload as JSON string
+      const res = await fetch("/api/client-transaction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        setSuccess('Client transaction saved successfully!'); // Set success message
+        setSuccess("Client transaction saved successfully!");
         setTimeout(() => {
-          handleReset(); // Reset form after success
-          setSuccess(''); // Clear success message
-          router.push('/viewclient-transaction'); // Redirect to view transactions page
-        }, 1000); // Redirect after 1 second
+          handleReset();
+          router.push("/viewclient-transaction");
+        }, 1000);
       } else {
-        const result = await res.json(); // Parse error response from API
-        console.error('API Error:', result);
-        setError(result.message || 'Failed to save transaction. Please check your inputs.'); // Display API error message
-        setSuccess(''); // Clear success message
+        const result = await res.json();
+        console.error("API Error:", result);
+        setError(result.message || "Failed to save transaction. Please check your inputs.");
       }
     } catch (err) {
-      console.error('Network or unexpected error:', err);
-      setError('An unexpected error occurred. Please try again later.'); // Display generic error
-      setSuccess(''); // Clear success message
+      console.error("Unexpected error:", err);
+      setError("An unexpected error occurred. Please try again later.");
     } finally {
-      setSubmitting(false); // Always set submitting to false after the attempt
+      setSubmitting(false); // Turn off loading state
     }
   };
 
