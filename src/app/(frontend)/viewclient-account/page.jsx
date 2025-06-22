@@ -502,6 +502,7 @@ const ViewClientAccount = () => {
         try {
           // Make a GET request to your client-accounts API endpoint
           const response = await axios.get("/api/client-accounts");
+          console.log(response.data);
           const data = response.data.docs; // Payload CMS typically returns data in a 'docs' array
           setAccounts(data); // Store all fetched accounts
           setFilteredAccounts(data); // Initialize filtered accounts with all accounts

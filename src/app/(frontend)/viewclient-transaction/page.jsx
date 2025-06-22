@@ -1,11 +1,11 @@
 // pages/view-client-transaction.jsx
-// "use client"; // Required in Next.js for client-side features like useEffect, useRoute
-// import React, { useEffect, useState } from "react";
-// import { Container, Row, Col, Table, Button, Modal, Form, InputGroup } from "react-bootstrap";
-// import { useRouter } from "next/navigation";
-// import { FaEye as EyeFill, FaClipboard, FaRupeeSign, FaSearch, FaWrench } from "react-icons/fa";
-// import Header from "../components/Header";
-// import { PencilSquare } from "react-bootstrap-icons";
+//  "use client"; // Required in Next.js for client-side features like useEffect, useRoute
+//  import React, { useEffect, useState } from "react";
+// // import { Container, Row, Col, Table, Button, Modal, Form, InputGroup } from "react-bootstrap";
+// // import { useRouter } from "next/navigation";
+// // import { FaEye as EyeFill, FaClipboard, FaRupeeSign, FaSearch, FaWrench } from "react-icons/fa";
+// // import Header from "../components/Header";
+// // import { PencilSquare } from "react-bootstrap-icons";
 
 // const ViewClientTransaction = () => {
 //   const router = useRouter();
@@ -48,21 +48,20 @@
 //   };
 
 //   // 🧠 Filter function for name + date range
-//   const applyFilters = (name, start, end) => {
+//   const applyFilters = (searchName, startDate, endDate) => {
+//     const nameLower = searchName.toLowerCase();
+//     const startDateObj = startDate ? new Date(startDate) : null;
+//     const endDateObj = endDate ? new Date(endDate) : null;
+//     if (endDateObj) endDateObj.setHours(23, 59, 59, 999);
 //     const filtered = transactions.filter((txn) => {
-//       const matchesName = txn.client.toLowerCase().includes(name);
+//       const clientName = txn.clientName?.clientName?.toLowerCase() || "";
+//       const txnDate = new Date(txn.clientCreatedAt);
 
-//       const [datePart] = txn.transactioncreated.split(" ");
-//       const [day, month, year] = datePart.split("/");
-//       const txnDateObj = new Date(`${year}-${month}-${day}`);
-
-//       const startDateObj = start ? new Date(start) : null;
-//       const endDateObj = end ? new Date(end) : null;
-
-//       const matchesStart = startDateObj ? txnDateObj >= startDateObj : true;
-//       const matchesEnd = endDateObj ? txnDateObj <= endDateObj : true;
-
-//       return matchesName && matchesStart && matchesEnd;
+//       return (
+//         clientName.includes(nameLower) &&
+//         (!startDateObj || txnDate >= startDateObj) &&
+//         (!endDateObj || txnDate <= endDateObj)
+//       );
 //     });
 
 //     setFilteredTransactions(filtered);
@@ -209,51 +208,22 @@
 //   );
 // };
 // export default ViewClientTransaction;
-"use client"; // Enables client-side features like localStorage and router
 
+// View Client Transaction Page
+"use client"; // Enables client-side features like localStorage and router
 import React, { useEffect, useState } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Table,
-  Button,
-  Modal,
-  Form,
-  InputGroup,
-  Spinner,
-  Alert,
-  Badge,
-} from "react-bootstrap";
+import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert, Badge, } from "react-bootstrap";
 import { useRouter } from "next/navigation";
-import {
-  FaEye,
-  FaSearch,
-  FaRupeeSign,
-  FaClipboard,
-  FaWrench,
-} from "react-icons/fa";
+import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
 import Header from "../components/Header";
-
 // Helper function to format date as DD/MM/YYYY
 const formatDate = (date) =>
-  new Date(date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    timeZone: "Asia/Kolkata",
-  });
+  new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Asia/Kolkata", });
 
 // Helper function to format time as HH:MM:SS AM/PM
 const formatTime = (date) =>
-  new Date(date).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Kolkata",
-  });
+  new Date(date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Kolkata", });
 
 const ViewClientTransaction = () => {
   const router = useRouter();
@@ -268,9 +238,9 @@ const ViewClientTransaction = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(""); // ✅ Error message displayed using Alert
+  const [error, setError] = useState(""); // Error message displayed using Alert
 
-  // ✅ Validate user role using localStorage
+  // Validate user role using localStorage
   useEffect(() => {
     const userData = localStorage.getItem("user");
 
@@ -295,13 +265,14 @@ const ViewClientTransaction = () => {
     setIsLoading(false);
   }, []);
 
-  // ✅ Fetch client transactions if authorized
+  // Fetch client transactions if authorized
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
         const res = await fetch("/api/client-transaction");
         const data = await res.json();
+        console.log(data);
         setTransactions(data.docs || []);
         setFilteredTransactions(data.docs || []);
       } catch {
@@ -313,27 +284,74 @@ const ViewClientTransaction = () => {
     if (userRole === "admin" || userRole === "manager") fetchData();
   }, [userRole]);
 
-  // ✅ Simplified filter logic
-  const applyFilters = (name, start, end) => {
-    const nameLower = name.toLowerCase();
-    const startDateObj = start ? new Date(start) : null;
-    const endDateObj = end ? new Date(end) : null;
-    if (endDateObj) endDateObj.setHours(23, 59, 59, 999);
-    const filtered = transactions.filter((txn) => {
-      const clientName = txn.clientName?.clientName?.toLowerCase() || "";
-      const txnDate = new Date(txn.clientCreatedAt);
+  // Function to filter transactions by name and date range
+  const applyFilters = (searchName, startDate, endDate) => {
+    // Convert search name to lowercase for case-insensitive comparison
+    const searchTerm = searchName.toLowerCase();
 
-      return (
-        clientName.includes(nameLower) &&
-        (!startDateObj || txnDate >= startDateObj) &&
-        (!endDateObj || txnDate <= endDateObj)
-      );
+    // Create Date objects if dates are provided
+    const startDateObj = startDate ? new Date(startDate) : null;
+    const endDateObj = endDate ? new Date(endDate) : null;
+
+    // Set end date to end of day if provided
+    if (endDateObj) {
+      endDateObj.setHours(23, 59, 59, 999);
+    }
+
+    // Filter the transactions array
+    const filteredResults = transactions.filter(transaction => {
+      // Get client name safely (with optional chaining)
+      const clientName = transaction.clientName?.clientName?.toLowerCase() || "";
+      const transactionDate = new Date(transaction.clientCreatedAt);
+
+      // Check if transaction matches all filter criteria
+      const matchesName = clientName.includes(searchTerm);
+      const afterStartDate = !startDateObj || transactionDate >= startDateObj;
+      const beforeEndDate = !endDateObj || transactionDate <= endDateObj;
+
+      return matchesName && afterStartDate && beforeEndDate;
     });
 
-    setFilteredTransactions(filtered);
+    // Update state with filtered results
+    setFilteredTransactions(filteredResults);
   };
 
-  // ✅ Toggle payment status (pending ↔ paid)
+  // Function to download PDF
+  const downloadPDF = async () => {
+    if (typeof window === 'undefined' || !selectedTransaction) return;
+    
+    try {
+      // Dynamically import html2pdf only on the client side
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      const element = document.getElementById("pdf-content");
+      if (!element) return;
+      
+      const opt = {
+        margin: 0.5,
+        filename: `Client_Transaction_${selectedTransaction.clientName?.clientName || "Details"}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true,
+          logging: true,
+          scrollY: 0
+        },
+        jsPDF: { 
+          unit: "in", 
+          format: "a4", 
+          orientation: "portrait" 
+        },
+      };
+      
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+    }
+  };
+
+  // Toggle payment status (pending paid)
   const togglePaymentStatus = async (id) => {
     const updated = transactions.map((txn) => {
       if (txn.id === id) {
@@ -352,7 +370,7 @@ const ViewClientTransaction = () => {
     setFilteredTransactions(updated);
   };
 
-  // ✅ Show spinner while loading
+  // Show spinner while loading
   if (isLoading || userRole === null) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
@@ -370,14 +388,14 @@ const ViewClientTransaction = () => {
           <FaClipboard /> View All Client Transactions
         </h4>
 
-        {/* ✅ Show error using Alert */}
+        {/* Show error using Alert */}
         {error && (
           <Alert variant="danger" className="text-center fw-semibold">
             {error}
           </Alert>
         )}
 
-        {/* 🔍 Search & Date Filter */}
+        {/* Search & Date Filter */}
         <Form className="mb-4">
           <Row className="gy-3">
             <Col xs={12} md={4}>
@@ -422,18 +440,18 @@ const ViewClientTransaction = () => {
           </Row>
         </Form>
 
-        {/* 📋 Responsive Table */}
+        {/* Responsive Table */}
         <div className="table-responsive">
           <Table className="table-bordered table-hover text-center align-middle">
             <thead className="table-dark">
               <tr>
                 <th>S.No</th>
-                <th>Client</th>
-                <th>Date</th>
-                <th>Total</th>
-                <th>Received</th>
-                <th>Remaining</th>
-                <th>Status</th>
+                <th>Client Name</th>
+                <th>Created At</th>
+                <th>Total Amount(<FaRupeeSign />)</th>
+                <th>Received Amount(<FaRupeeSign />)</th>
+                <th>Remaining Amount(<FaRupeeSign />)</th>
+                <th>Payment Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -445,41 +463,30 @@ const ViewClientTransaction = () => {
                   <td>
                     {formatDate(txn.clientCreatedAt)}
                     <br />
-                    <small>{formatTime(txn.clientCreatedAt)}</small>
+                    <small><span className="fw-semibold">{formatTime(txn.clientCreatedAt)}</span></small>
                   </td>
                   <td>
-                    <FaRupeeSign /> {txn.totalAmount?.toFixed(2)}
+                    <FaRupeeSign />{txn.totalAmount?.toFixed(2)}
                   </td>
                   <td>
-                    <FaRupeeSign /> {txn.totalAmountclient?.toFixed(2)}
+                    <FaRupeeSign />{txn.totalAmountclient?.toFixed(2)}
                   </td>
                   <td>
-                    <FaRupeeSign /> {txn.remainingAmount?.toFixed(2)}
+                    <FaRupeeSign />{(txn.totalAmount - txn.totalAmountclient).toFixed(2) || txn.remainingAmount?.toFixed(2)}
                   </td>
                   <td>
-                    <Button
-                      variant={txn.paymentstatus === "pending" ? "danger" : "success"}
+                    <Button variant={txn.paymentstatus === "pending" ? "danger" : "success"}
                       onClick={() => togglePaymentStatus(txn.id)}
-                      className="rounded-pill text-capitalize fw-bold fs-6"
-                    >
+                      className="rounded-pill text-capitalize fw-bold fs-6">
                       {txn.paymentstatus}
                     </Button>
                   </td>
                   <td>
                     <div className="d-flex flex-wrap justify-content-center gap-2">
-                      <Button
-                        variant="info"
-                        onClick={() => {
-                          setSelectedTransaction(txn);
-                          setShowModal(true);
-                        }}
-                      >
+                      <Button variant="info" onClick={() => { setSelectedTransaction(txn); setShowModal(true); }}>
                         <FaEye />
                       </Button>
-                      <Button
-                        variant="warning"
-                        onClick={() => router.push(`/editclient-transaction/${txn.id}`)}
-                      >
+                      <Button variant="warning" onClick={() => router.push(`/editclient-transaction/${txn.id}`)}>
                         <PencilSquare />
                       </Button>
                     </div>
@@ -497,73 +504,101 @@ const ViewClientTransaction = () => {
           </Table>
         </div>
 
-        {/* 📑 Modal for Full Details (Responsive: xs → xxl) */}
-        <Modal
-          show={showModal}
-          onHide={() => setShowModal(false)}
-          size="xl"
-          centered
-          scrollable
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Client Transaction Details</Modal.Title>
+        <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered scrollable>
+          <Modal.Header closeButton className="bg-light border-bottom">
+            <Modal.Title className="d-flex align-items-center gap-2">
+              <FaClipboard className="text-primary" />
+              <span className="fs-5">Client Transaction Details</span>
+              <Button variant="outline-danger" size="sm" className="ms-auto" onClick={downloadPDF} title="Download as PDF">
+                <FaFilePdf className="me-1" /> PDF
+              </Button>
+            </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+
+          <Modal.Body id="pdf-content" className="px-3 py-2">
             {selectedTransaction && (
               <div>
-                <Row>
+                {/* Client Info */}
+                <Row className="g-3 mb-3">
                   <Col xs={12} sm={6}>
-                    <p><strong>Client Name:</strong> {selectedTransaction.clientName?.clientName}</p>
-                    <p><strong>Query License:</strong> {selectedTransaction.query_license?.query_license}</p>
-                    <p><strong>Near Village:</strong> {selectedTransaction.near_village?.near_village}</p>
+                    <p><FaUser className="me-2 text-secondary" /><strong>Client:</strong> {selectedTransaction.clientName?.clientName || "N/A"}</p>
+                    <p><FaWrench className="me-2 text-secondary" /><strong>License:</strong> {selectedTransaction.query_license?.query_license || "N/A"}</p>
+                    <p><FaMapMarkerAlt className="me-2 text-secondary" /><strong>Village:</strong> {selectedTransaction.near_village?.near_village || "N/A"}</p>
                   </Col>
                   <Col xs={12} sm={6}>
-                    <p><strong>Created At:</strong> {formatDate(selectedTransaction.clientCreatedAt)} {formatTime(selectedTransaction.clientCreatedAt)}</p>
-                    <p><strong>Updated At:</strong> {formatDate(selectedTransaction.clientUpdatedAt)} {formatTime(selectedTransaction.clientUpdatedAt)}</p>
+                    <p><FaCalendarAlt className="me-2 text-secondary" /><strong>Created:</strong> {formatDate(selectedTransaction.clientCreatedAt)} {formatTime(selectedTransaction.clientCreatedAt)}</p>
+                    <p><FaCalendarAlt className="me-2 text-secondary" /><strong>Updated:</strong> {formatDate(selectedTransaction.clientUpdatedAt)} {formatTime(selectedTransaction.clientUpdatedAt)}</p>
                   </Col>
                 </Row>
 
-                <Row className="mt-2">
-                  <Col xs={12} sm={4}>
-                    <p><strong>Total:</strong> <FaRupeeSign /> {selectedTransaction.totalAmount?.toFixed(2)}</p>
+                {/* Amount Summary */}
+                <Row className="g-3 text-center mb-3">
+                  <Col xs={12} md={4}>
+                    <div className="bg-light rounded shadow-sm p-2">
+                      <p className="mb-1 fw-bold text-dark">Total Amount</p>
+                      <p className="text-success"><FaRupeeSign /> {selectedTransaction.totalAmount?.toFixed(2)}</p>
+                    </div>
                   </Col>
-                  <Col xs={12} sm={4}>
-                    <p><strong>Received:</strong> <FaRupeeSign /> {selectedTransaction.totalAmountclient?.toFixed(2)}</p>
+                  <Col xs={12} md={4}>
+                    <div className="bg-light rounded shadow-sm p-2">
+                      <p className="mb-1 fw-bold text-dark">Received Amount</p>
+                      <p className="text-primary"><FaRupeeSign /> {selectedTransaction.totalAmountclient?.toFixed(2)}</p>
+                    </div>
                   </Col>
-                  <Col xs={12} sm={4}>
-                    <p><strong>Remaining:</strong> <FaRupeeSign /> {selectedTransaction.remainingAmount?.toFixed(2)}</p>
+                  <Col xs={12} md={4}>
+                    <div className="bg-light rounded shadow-sm p-2">
+                      <p className="mb-1 fw-bold text-dark">Remaining</p>
+                      <p className="text-danger"><FaRupeeSign /> {selectedTransaction.remainingAmount?.toFixed(2) || (selectedTransaction.totalAmount - selectedTransaction.totalAmountclient).toFixed(2)}</p>
+                    </div>
                   </Col>
                 </Row>
 
-                <p><strong>Status:</strong> <Badge bg={selectedTransaction.paymentstatus === "pending" ? "danger" : "success"}>{selectedTransaction.paymentstatus}</Badge></p>
-                <p><strong>Description:</strong> {selectedTransaction.description || "N/A"}</p>
+                {/* Payment Status & Description */}
+                <Row className="mb-3">
+                  <Col xs={12}>
+                    <p>
+                      <strong>Status:</strong>{" "}
+                      <Badge bg={selectedTransaction.paymentstatus === "pending" ? "danger" : "success"}>
+                        {selectedTransaction.paymentstatus}
+                      </Badge>
+                    </p>
+                    <p><strong>Description:</strong> {selectedTransaction.description || "N/A"}</p>
+                  </Col>
+                </Row>
 
+                {/* Working Stage Table */}
                 <hr />
-                <h6><FaWrench /> Working Stages</h6>
+                <h6 className="text-secondary mb-3"><FaWrench className="me-2" />Work Progress Stages</h6>
                 <div className="table-responsive">
-                  <Table bordered responsive className="table-hover text-center align-middle">
+                  <Table bordered hover className="text-center align-middle">
                     <thead className="table-light">
                       <tr>
                         <th>S.No</th>
-                        <th>Admin Stage</th>
-                        <th>Admin Desc</th>
+                        <th>Company Stage</th>
+                        <th>Company Amount (<FaRupeeSign />)</th>
                         <th>Client Stage</th>
-                        <th>Client Desc</th>
+                        <th>Client Amount (<FaRupeeSign />)</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {Array.from({ length: Math.max(
-                        selectedTransaction.workingStage?.length || 0,
-                        selectedTransaction.workingStageclient?.length || 0
-                      ) }).map((_, i) => (
-                        <tr key={i}>
-                          <td>{i + 1}</td>
-                          <td>{selectedTransaction.workingStage?.[i]?.workingStage || "N/A"}</td>
-                          <td>{selectedTransaction.workingStage?.[i]?.workingDescription || "N/A"}</td>
-                          <td>{selectedTransaction.workingStageclient?.[i]?.workingStageclient || "N/A"}</td>
-                          <td>{selectedTransaction.workingStageclient?.[i]?.workingDescriptionclient || "N/A"}</td>
-                        </tr>
-                      ))}
+                      {Array.from({
+                        length: Math.max(
+                          selectedTransaction.workingStage?.length || 0,
+                          selectedTransaction.workingStageclient?.length || 0
+                        )
+                      }).map((_, index) => {
+                        const company = selectedTransaction.workingStage?.[index];
+                        const client = selectedTransaction.workingStageclient?.[index];
+                        return (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{company?.workingStage || "N/A"}</td>
+                            <td>{company?.workingDescription || "N/A"}</td>
+                            <td>{client?.workingStageclient || "N/A"}</td>
+                            <td>{client?.workingDescriptionclient || "N/A"}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </Table>
                 </div>
@@ -577,4 +612,3 @@ const ViewClientTransaction = () => {
 };
 
 export default ViewClientTransaction;
-

@@ -1014,7 +1014,7 @@ const AddClientTransaction = () => {
     setSuccess(''); // Clear success messages
   };
 
-  // // --- Form Submission Handler ---
+   // --- Form Submission Handler ---
   // const handleSubmit = async (e) => {
   //   e.preventDefault(); // Prevent default form submission behavior (page reload)
 
@@ -1122,17 +1122,17 @@ const AddClientTransaction = () => {
 
     // Step 2: Try to find the client that matches all 3 fields
     const matchedClient = clients.find((client) =>
-      (client.clientName === form.clientName || client._id === form.clientName) &&
-      (client.query_license === form.query_license || client._id === form.query_license) &&
-      (client.near_village === form.near_village || client._id === form.near_village)
+      (client.clientName === form.clientName || client.id === form.clientName) &&
+      (client.query_license === form.query_license || client.id === form.query_license) &&
+      (client.near_village === form.near_village || client.id === form.near_village)
     );
 
     // Step 3: If no exact match is found, check individual mismatches and show custom errors
     if (!matchedClient) {
       // Check for each valid match individually
-      const clientMatch = clients.some((client) => client.clientName === form.clientName || client._id === form.clientName);
-      const licenseMatch = clients.some((client) => client.query_license === form.query_license || client._id === form.query_license);
-      const villageMatch = clients.some((client) => client.near_village === form.near_village || client._id === form.near_village);
+      const clientMatch = clients.some((client) => client.clientName === form.clientName || client.id === form.clientName);
+      const licenseMatch = clients.some((client) => client.query_license === form.query_license || client.id === form.query_license);
+      const villageMatch = clients.some((client) => client.near_village === form.near_village || client.id === form.near_village);
 
       // Provide specific error messages based on mismatches
       if (licenseMatch && villageMatch && !clientMatch) {
@@ -1159,9 +1159,9 @@ const AddClientTransaction = () => {
     setSubmitting(true); // Show loading indicator
 
     const payload = {
-      clientName: matchedClient.clientName,
-      query_license: matchedClient.query_license,
-      near_village: matchedClient.near_village,
+      clientName: matchedClient.id,
+      query_license: matchedClient.id,
+      near_village: matchedClient.id,
       totalAmount: getTotalAmount(),
       totalAmountclient: getTotalAmountClient(),
       remainingAmount: getRemainingAmount(),
@@ -1205,7 +1205,6 @@ const AddClientTransaction = () => {
       setSubmitting(false); // Turn off loading state
     }
   };
-
   // --- Conditional Rendering based on user role and loading state ---
 
   // Show a spinner while determining user role
@@ -1302,8 +1301,8 @@ const AddClientTransaction = () => {
                       />
                       {/* Datalist provides autocomplete suggestions for client names */}
                       <datalist id="client-options">
-                        {clients.map((client) => (
-                          <option key={client._id} value={client.clientName} />
+                        {clients.filter((client) => client.clientName).map((client) => (
+                          <option key={client.id} value={client.clientName} />
                         ))}
                       </datalist>
                     </Form.Group>
@@ -1325,7 +1324,7 @@ const AddClientTransaction = () => {
                       />
                       <datalist id="query-license-options">
                         {clients.filter((client) => client.query_license).map((client) => (
-                          <option key={client._id} value={client.query_license} />
+                          <option key={client.id} value={client.query_license} />
                         ))}
                       </datalist>
                     </Form.Group>
@@ -1347,7 +1346,7 @@ const AddClientTransaction = () => {
                       />
                       <datalist id="near-village-options">
                         {clients.filter((client) => client.near_village).map((client) => (
-                          <option key={client._id} value={client.near_village} />
+                          <option key={client.id} value={client.near_village} />
                         ))}
                       </datalist>
                     </Form.Group>
