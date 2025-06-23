@@ -286,7 +286,7 @@
 // };
 // export default AddClientTransaction;
 
-// // Add Client Transaction Page
+// Add Client Transaction Page
 // 'use client';
 // import React, { useEffect, useState } from 'react';
 // import { useRouter } from 'next/navigation';
@@ -810,10 +810,10 @@
 //     </>
 //   );
 // };
-
 // export default AddClientTransaction;
-'use client'; // This directive marks the component as a Client Component in Next.js
 
+// Add Client Transaction Page
+'use client'; // This directive marks the component as a Client Component in Next.js
 // Import necessary React hooks and components from 'react' and 'next/navigation'
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';

@@ -521,13 +521,13 @@ const ViewClientTransaction = () => {
                 {/* Client Info */}
                 <Row className="g-3 mb-3">
                   <Col xs={12} sm={6}>
-                    <p><FaUser className="me-2 text-secondary" /><strong>Client:</strong> {selectedTransaction.clientName?.clientName || "N/A"}</p>
-                    <p><FaWrench className="me-2 text-secondary" /><strong>License:</strong> {selectedTransaction.query_license?.query_license || "N/A"}</p>
-                    <p><FaMapMarkerAlt className="me-2 text-secondary" /><strong>Village:</strong> {selectedTransaction.near_village?.near_village || "N/A"}</p>
+                    <p><FaUser className="me-2 text-secondary" /><strong>Client Name:</strong> {selectedTransaction.clientName?.clientName || "N/A"}</p>
+                    <p><FaWrench className="me-2 text-secondary" /><strong>Query License:</strong> {selectedTransaction.query_license?.query_license || "N/A"}</p>
+                    <p><FaMapMarkerAlt className="me-2 text-secondary" /><strong>Nearby Village:</strong> {selectedTransaction.near_village?.near_village || "N/A"}</p>
                   </Col>
                   <Col xs={12} sm={6}>
-                    <p><FaCalendarAlt className="me-2 text-secondary" /><strong>Created:</strong> {formatDate(selectedTransaction.clientCreatedAt)} {formatTime(selectedTransaction.clientCreatedAt)}</p>
-                    <p><FaCalendarAlt className="me-2 text-secondary" /><strong>Updated:</strong> {formatDate(selectedTransaction.clientUpdatedAt)} {formatTime(selectedTransaction.clientUpdatedAt)}</p>
+                    <p><FaCalendarAlt className="me-2 text-secondary" /><strong>Created At:</strong> {formatDate(selectedTransaction.clientCreatedAt)} {formatTime(selectedTransaction.clientCreatedAt)}</p>
+                    <p><FaCalendarAlt className="me-2 text-secondary" /><strong>Last Updated At:</strong> {formatDate(selectedTransaction.clientUpdatedAt)} {formatTime(selectedTransaction.clientUpdatedAt)}</p>
                   </Col>
                 </Row>
 
@@ -547,7 +547,7 @@ const ViewClientTransaction = () => {
                   </Col>
                   <Col xs={12} md={4}>
                     <div className="bg-light rounded shadow-sm p-2">
-                      <p className="mb-1 fw-bold text-dark">Remaining</p>
+                      <p className="mb-1 fw-bold text-dark">Remaining Amount</p>
                       <p className="text-danger"><FaRupeeSign /> {selectedTransaction.remainingAmount?.toFixed(2) || (selectedTransaction.totalAmount - selectedTransaction.totalAmountclient).toFixed(2)}</p>
                     </div>
                   </Col>
@@ -557,12 +557,12 @@ const ViewClientTransaction = () => {
                 <Row className="mb-3">
                   <Col xs={12}>
                     <p>
-                      <strong>Status:</strong>{" "}
+                      <strong>Payment Status:</strong>{" "}
                       <Badge bg={selectedTransaction.paymentstatus === "pending" ? "danger" : "success"}>
                         {selectedTransaction.paymentstatus}
                       </Badge>
                     </p>
-                    <p><strong>Description:</strong> {selectedTransaction.description || "N/A"}</p>
+                    <p><strong>Transaction Description:</strong> {selectedTransaction.description || "N/A"}</p>
                   </Col>
                 </Row>
 

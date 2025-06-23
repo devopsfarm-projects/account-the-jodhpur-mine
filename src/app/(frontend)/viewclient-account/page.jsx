@@ -693,10 +693,10 @@ const ViewClientAccount = () => {
                 </Row>
                 <Row className="mb-2">
                   <Col md={6}><strong>Query License:</strong> {selectedAccount.query_license}</Col>
-                  <Col md={6}><strong>Mining License:</strong> {selectedAccount.mining_license || "NA"}</Col>
+                  <Col md={6}><strong>Nearby Village:</strong> {selectedAccount.near_village}</Col>
                 </Row>
                 <Row className="mb-2">
-                  <Col md={6}><strong>Nearby Village:</strong> {selectedAccount.near_village}</Col>
+                  <Col md={6}><strong>Mining License:</strong> {selectedAccount.mining_license || "NA"}</Col>
                   <Col md={6}><strong>Tehsil:</strong> {selectedAccount.tehsil || "NA"}</Col>
                 </Row>
                 <Row className="mb-2">
@@ -705,10 +705,8 @@ const ViewClientAccount = () => {
                 </Row>
                 <Row className="mb-2">
                   <Col md={6}><strong>Country:</strong> {selectedAccount.country || "NA"}</Col>
-                  <Col md={6}><strong>Date:</strong> {formatDate(selectedAccount.clientCreatedAt)}</Col>
-                </Row>
-                <Row>
-                  <Col><strong>Time:</strong> {formatTime(selectedAccount.clientCreatedAt)}</Col>
+                  <Col md={6}><strong>Created At:</strong> {formatDate(selectedAccount.clientCreatedAt)} {formatTime(selectedAccount.clientCreatedAt)}
+                  </Col>
                 </Row>
               </Card.Body>
             </Card>
@@ -720,3 +718,176 @@ const ViewClientAccount = () => {
 };
 
 export default ViewClientAccount;
+// {
+//   "docs": [
+//       {
+//           "id": 29,
+//           "clientName": "Mansi Govil",
+//           "clientMobile": "0592913019",
+//           "query_license": "Query License123",
+//           "mining_license": "Mining License21345",
+//           "near_village": "phodi",
+//           "tehsil": "Ratanada",
+//           "district": "Jodhpur",
+//           "state": "RAJASTHAN",
+//           "country": "India",
+//           "clientCreatedAt": "2025-06-22T11:09:11.445Z",
+//           "clientUpdatedAt": "2025-06-22T11:09:11.445Z",
+//           "updatedAt": "2025-06-22T11:09:11.567Z",
+//           "createdAt": "2025-06-22T11:09:11.452Z"
+//       },
+//       {
+//           "id": 28,
+//           "clientName": "H&m",
+//           "clientMobile": "9865743201",
+//           "query_license": "123456789",
+//           "mining_license": "mining",
+//           "near_village": "banaras",
+//           "tehsil": "chowk",
+//           "district": "varansi",
+//           "state": "UP",
+//           "country": "India",
+//           "clientCreatedAt": "2025-06-22T04:11:55.638Z",
+//           "clientUpdatedAt": "2025-06-22T04:11:55.638Z",
+//           "updatedAt": "2025-06-22T04:11:55.759Z",
+//           "createdAt": "2025-06-22T04:11:55.399Z"
+//       },
+//       {
+//           "id": 27,
+//           "clientName": "a",
+//           "clientMobile": "9694716263",
+//           "query_license": "12",
+//           "mining_license": "21",
+//           "near_village": "j",
+//           "tehsil": "r",
+//           "district": "jo",
+//           "state": "Rajasthan",
+//           "country": "India",
+//           "clientCreatedAt": "2025-06-21T19:35:28.756Z",
+//           "clientUpdatedAt": "2025-06-21T19:35:28.756Z",
+//           "updatedAt": "2025-06-21T19:35:30.127Z",
+//           "createdAt": "2025-06-21T19:35:30.143Z"
+//       },
+//       {
+//           "id": 26,
+//           "clientName": "Harshit tak",
+//           "clientMobile": "7977189963",
+//           "query_license": "Devopsfarm@2025",
+//           "mining_license": "Mining License1234",
+//           "near_village": "paota",
+//           "tehsil": "",
+//           "district": "",
+//           "state": "",
+//           "country": "",
+//           "clientCreatedAt": "2025-06-21T09:50:32.039Z",
+//           "clientUpdatedAt": "2025-06-21T09:50:32.039Z",
+//           "updatedAt": "2025-06-21T09:50:32.147Z",
+//           "createdAt": "2025-06-21T09:50:32.448Z"
+//       },
+//       {
+//           "id": 25,
+//           "clientName": "shreyash",
+//           "clientMobile": "3590119021",
+//           "query_license": "shreyash@1234",
+//           "mining_license": "mining-MBM",
+//           "near_village": "Jodhpur",
+//           "tehsil": "Basni",
+//           "district": "Jodhpur",
+//           "state": "RAJASTHAN",
+//           "country": "India",
+//           "clientCreatedAt": "2025-06-21T09:48:22.660Z",
+//           "clientUpdatedAt": "2025-06-21T09:48:22.660Z",
+//           "updatedAt": "2025-06-21T09:48:22.791Z",
+//           "createdAt": "2025-06-21T09:48:23.076Z"
+//       },
+//       {
+//           "id": 24,
+//           "clientName": "Hiamnshu Govil",
+//           "clientMobile": "1098274635",
+//           "query_license": "Query License23415",
+//           "mining_license": "21062025",
+//           "near_village": "Salawas",
+//           "tehsil": "Goverdhan",
+//           "district": "Bharatpur",
+//           "state": "Rajasthan",
+//           "country": "India",
+//           "clientCreatedAt": "2025-06-21T08:01:51.688Z",
+//           "clientUpdatedAt": "2025-06-21T08:01:51.688Z",
+//           "updatedAt": "2025-06-21T08:01:51.817Z",
+//           "createdAt": "2025-06-21T08:01:52.035Z"
+//       },
+//       {
+//           "id": 23,
+//           "clientName": "Hiamnshu Govil",
+//           "clientMobile": "9012837456",
+//           "query_license": "Devopsfarm@2025",
+//           "mining_license": "Mining License1234",
+//           "near_village": "Salawas",
+//           "tehsil": "Phalodi",
+//           "district": "Jodhpur",
+//           "state": "Raj",
+//           "country": "India",
+//           "clientCreatedAt": "2025-06-21T08:00:24.924Z",
+//           "clientUpdatedAt": "2025-06-21T08:00:24.924Z",
+//           "updatedAt": "2025-06-21T08:00:25.122Z",
+//           "createdAt": "2025-06-21T08:00:25.319Z"
+//       },
+//       {
+//           "id": 20,
+//           "clientName": "ABC",
+//           "clientMobile": "9135901192",
+//           "query_license": "241101",
+//           "mining_license": "33333333",
+//           "near_village": "Jodhpur",
+//           "tehsil": "Ratanada",
+//           "district": "Jodhpur",
+//           "state": "RAJASTHAN",
+//           "country": "India",
+//           "clientCreatedAt": "2025-06-19T12:50:33.349Z",
+//           "clientUpdatedAt": "2025-06-19T12:50:33.349Z",
+//           "updatedAt": "2025-06-19T12:50:33.965Z",
+//           "createdAt": "2025-06-19T12:50:34.001Z"
+//       },
+//       {
+//           "id": 19,
+//           "clientName": "Mayank Govil",
+//           "clientMobile": "0462611036",
+//           "query_license": "1234",
+//           "mining_license": "Mining License213456",
+//           "near_village": "paota",
+//           "tehsil": "",
+//           "district": "",
+//           "state": "Rajasthan",
+//           "country": "India",
+//           "clientCreatedAt": "2025-06-18T11:36:20.365Z",
+//           "clientUpdatedAt": "2025-06-18T11:36:20.365Z",
+//           "updatedAt": "2025-06-18T11:36:21.324Z",
+//           "createdAt": "2025-06-18T11:36:21.207Z"
+//       },
+//       {
+//           "id": 18,
+//           "clientName": "Raj",
+//           "clientMobile": "9928765103",
+//           "query_license": "123",
+//           "mining_license": "557",
+//           "near_village": "Paota",
+//           "tehsil": "Polar ",
+//           "district": "Jodhpur ",
+//           "state": "Rajasthan ",
+//           "country": "India",
+//           "clientCreatedAt": "2025-06-18T10:21:53.635Z",
+//           "clientUpdatedAt": "2025-06-18T10:21:53.635Z",
+//           "updatedAt": "2025-06-18T10:21:56.669Z",
+//           "createdAt": "2025-06-18T10:21:56.570Z"
+//       }
+//   ],
+//   "hasNextPage": true,
+//   "hasPrevPage": false,
+//   "limit": 10,
+//   "nextPage": 2,
+//   "page": 1,
+//   "pagingCounter": 1,
+//   "prevPage": null,
+//   "totalDocs": 21,
+//   "totalPages": 3
+// }
