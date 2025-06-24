@@ -746,7 +746,7 @@ const ClientTransaction = () => {
       // These fields remain as they were, assuming they are set this way for transactions initiated from this form
       totalAmount: 0,
       totalAmountclient: getTotalAmountClient(),
-      remainingAmount: 0 - getTotalAmountClient(),
+      remainingAmount: 0 ,
       workingStage: [],
       workingStageclient: workingStagesClient.map((s) => ({
         workingStageclient: s.work,

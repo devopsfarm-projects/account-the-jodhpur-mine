@@ -216,27 +216,42 @@
 // };
 // export default ViewVendorAccount;
 
+//viewvendor-account page.jsx
 // 'use client'; // Enables client-side interactivity in Next.js
 // import React, { useEffect, useState } from 'react';
 // import { Table, Button, Container, Modal, Card, Row, Col, Form, InputGroup, Spinner, Alert } from 'react-bootstrap';
 // import { FaEye, FaTrash, FaSearch, FaClipboard } from 'react-icons/fa'; // Using FaClipboard from react-icons
 // import Header from '../components/Header'; // Reusing the Header component
 // import axios from 'axios'; // Importing axios for easier API calls
+// import { useRouter } from 'next/navigation'; // Import useRouter for redirection
 
-// // Helper function to format date to DD/MM/YYYY
+// // Helper function to format date to DD/MM/YYYY (Indian timezone)
 // const formatDate = (dateString) => {
-//   const date = new Date(dateString);
-//   return date.toLocaleDateString('en-GB'); // British format = DD/MM/YYYY
+//   const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: "Asia/Kolkata" };
+//   try {
+//     return new Date(dateString).toLocaleDateString('en-GB', options); // British format = DD/MM/YYYY
+//   } catch (e) {
+//     console.error("Invalid date string for formatDate:", dateString, e);
+//     return "Invalid Date";
+//   }
 // };
-
-// // Helper function to format time to HH:MM:SS AM/PM
+// // Helper function to format time to HH:MM:SS AM/PM (Indian timezone)
 // const formatTime = (dateString) => {
-//   const time = new Date(dateString);
-//   return time.toLocaleTimeString('en-US'); // US format = HH:MM:SS AM/PM
+//   const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: "Asia/Kolkata" };
+//   try {
+//     return new Date(dateString).toLocaleTimeString('en-US', options); // US format = HH:MM:SS AM/PM
+//   } catch (e) {
+//     console.error("Invalid date string for formatTime:", dateString, e);
+//     return "Invalid Time";
+//   }
 // };
-
 // const ViewVendorAccount = () => {
-//   // State to hold all vendor accounts fetched from the API
+//   const router = useRouter(); // Initialize Next.js router for navigation
+
+//   // State to store the user's role for access control
+//   const [userRole, setUserRole] = useState(null);
+
+//   // State to hold all vendor accounts fetched from the API (the master list)
 //   const [vendorAccounts, setVendorAccounts] = useState([]);
 //   // State to hold vendor accounts after applying search filter
 //   const [filteredVendorAccounts, setFilteredVendorAccounts] = useState([]);
@@ -251,28 +266,70 @@
 //   // State to store the vendor account data to be displayed in the modal
 //   const [selectedVendorAccount, setSelectedVendorAccount] = useState(null);
 
-//   // useEffect hook to fetch vendor data when the component first loads
+//   // 🚀 ACCESS CONTROL: Check user role immediately on component mount
 //   useEffect(() => {
-//     const fetchVendorAccounts = async () => {
-//       try {
-//         // Make GET request to the vendor API endpoint
-//         const response = await axios.get('/api/vendor');
-//         // Payload CMS usually returns data in a 'docs' array
-//         const data = response.data.docs || [];
-//         setVendorAccounts(data); // Update the main vendor accounts list
-//         setFilteredVendorAccounts(data); // Initialize filtered list with all accounts
-//       } catch (err) {
-//         // If there's an error, set the error message
-//         setError('Failed to load vendor accounts. Please try again.');
-//         console.error('Error fetching vendors:', err);
-//       } finally {
-//         // Always stop loading, whether success or error
-//         setLoading(false);
+//     if (typeof window !== "undefined") { // Ensure this code runs only in the browser environment
+//       const userData = localStorage.getItem("user");
+//       let role = null;
+//       if (userData) {
+//         try {
+//           const parsedUser = JSON.parse(userData);
+//           role = parsedUser.role;
+//           setUserRole(role); // Set the role to state
+//         } catch (parseError) {
+//           console.error("Error parsing user data from localStorage in ViewVendorAccount:", parseError);
+//           // If parsing fails, default to an unauthorized state
+//         }
 //       }
-//     };
 
-//     fetchVendorAccounts(); // Call the fetch function
-//   }, []); // Empty dependency array means this runs once on component mount
+//       // If the user's role is not 'admin' or 'manager', redirect them.
+//       // This is a client-side gate; server-side validation is also paramount.
+//       if (role !== 'admin' && role !== 'manager') {
+//         console.log(`Unauthorized access attempt to ViewVendorAccount by user with role: ${role || 'undefined'}. Redirecting...`);
+//         setError("You do not have permission to access this page. Redirecting...");
+//         // Use a slight delay for user to see the message before redirect
+//         setTimeout(() => {
+//           localStorage.clear()
+//           window.location.href = '/api/logout'
+//         }, 1500); // Redirect after 1.5 seconds
+//       } else {
+//         // If authorized, proceed to fetch data
+//         setLoading(false); // End initial loading for role check
+//       }
+//     }
+//   }, [router]); // Re-run if router object changes (rare)
+
+
+//   // 🚀 PERFORMANCE / DATA FETCHING: Fetch vendor data when the component first loads
+//   // This useEffect will run only if the userRole is determined to be 'admin' or 'manager'
+//   useEffect(() => {
+//     // Only fetch vendor accounts if the user is authorized (admin or manager)
+//     if (userRole === 'admin' || userRole === 'manager') {
+//       const fetchVendorAccounts = async () => {
+//         setLoading(true); // Start loading before fetching data
+//         setError(''); // Clear any previous errors
+//         try {
+//           // Make GET request to the vendor API endpoint
+//           const response = await axios.get('/api/vendor');
+//           // Payload CMS usually returns data in a 'docs' array
+//           const data = response.data.docs || [];
+//           setVendorAccounts(data); // Update the main vendor accounts list
+//           setFilteredVendorAccounts(data); // Initialize filtered list with all accounts
+//         } catch (err) {
+//           // If there's an error, set the error message
+//           setError('Failed to load vendor accounts. Please try again.');
+//           console.error('Error fetching vendors:', err);
+//         } finally {
+//           // Always stop loading, whether success or error
+//           setLoading(false);
+//         }
+//       };
+
+//       fetchVendorAccounts(); // Call the fetch function
+//     } else if (userRole !== null) { // If userRole is determined but not authorized
+//       setLoading(false); // Stop loading as no data will be fetched
+//     }
+//   }, [userRole]); // Empty dependency array means this runs once on component mount
 
 //   // Function to handle changes in the search input field
 //   const handleSearch = (e) => {
@@ -301,6 +358,7 @@
 //         const updatedList = vendorAccounts.filter((v) => v.id !== vendorId);
 //         setVendorAccounts(updatedList);
 //         setFilteredVendorAccounts(updatedList);
+//         alert('Vendor account deleted successfully!'); // Provide user feedback
 //       } catch (error) {
 //         // If there's an error during deletion, show an alert
 //         alert('Error deleting vendor account. Please try again.');
@@ -314,6 +372,30 @@
 //     setSelectedVendorAccount(vendor); // Set the selected vendor data
 //     setShowModal(true); // Open the modal
 //   };
+
+//   // 🚀 PERFORMANCE: Show loading spinner while initial data or user role is being determined
+//   if (loading || userRole === null) {
+//     return (
+//       <div className="d-flex justify-content-center align-items-center vh-100">
+//         <Spinner animation="border" variant="primary" />
+//         <p className="fw-semibold my-2 ms-2">Loading Please Wait...</p>
+//       </div>
+//     );
+//   }
+
+//   // Display unauthorized message if user role is not admin or manager
+//   if (userRole !== 'admin' && userRole !== 'manager') {
+//     return (
+//       <>
+//         <Container className="mt-5 text-center">
+//           <Alert variant="danger" className="fw-semibold">
+//             <FaClipboard className="me-2" />
+//             You do not have permission to access this page. Redirecting...
+//           </Alert>
+//         </Container>
+//       </>
+//     );
+//   }
 
 //   return (
 //     <>
@@ -344,15 +426,8 @@
 //         </Row>
 
 //         {/* Conditional Rendering: Loading, Error, or Table */}
-//         {loading ? ( // Show spinner if data is still loading
-//           <div className="text-center py-5">
-//             <Spinner animation="border" variant="primary" />
-//             <p className="mt-3">Loading vendor accounts...</p>
-//           </div>
-//         ) : error ? ( // Show error alert if there was an error fetching data
-//           <Alert variant="danger" className="text-center">
-//             {error}
-//           </Alert>
+//         {error ? ( // Show error alert if there was an error fetching data
+//           <Alert variant="danger" className="text-center">{error}</Alert>
 //         ) : (
 //           // Display the table if data is loaded successfully
 //           <div className="table-responsive">
@@ -363,7 +438,7 @@
 //                   <th>Name</th>
 //                   <th>Mobile</th>
 //                   <th>Query License</th>
-//                   <th>Mining License</th>
+//                   <th>Nearby Village</th>
 //                   <th>Created Date</th>
 //                   <th>Created Time</th>
 //                   <th>Actions</th>
@@ -374,10 +449,10 @@
 //                   filteredVendorAccounts.map((vendor, index) => (
 //                     <tr key={vendor.id}>
 //                       <td>{index + 1}</td>
-//                       <td>{vendor.vendorName}</td>
-//                       <td>{vendor.vendorMobile}</td>
-//                       <td>{vendor.query_license||"-"}</td>
-//                       <td>{vendor.mining_license||"-"}</td>
+//                       <td>{vendor.vendorName || "N/A"}</td>
+//                       <td>{vendor.vendorMobile || "N/A"}</td>
+//                       <td>{vendor.query_license||"NA"}</td>
+//                       <td>{vendor.near_village||"NA"}</td>
 //                       <td>{formatDate(vendor.createdAt)}</td> {/* Formatted creation date */}
 //                       <td>{formatTime(vendor.createdAt)}</td> {/* Formatted creation time */}
 //                       <td>
@@ -417,39 +492,39 @@
 //               <Card.Body>
 //                 <Row className="mb-2">
 //                   <Col md={6}>
-//                     <strong>Name:</strong> {selectedVendorAccount.vendorName}
+//                     <strong>Name:</strong> {selectedVendorAccount.vendorName || "N/A"}
 //                   </Col>
 //                   <Col md={6}>
-//                     <strong>Mobile:</strong> {selectedVendorAccount.vendorMobile}
-//                   </Col>
-//                 </Row>
-//                 <Row className="mb-2">
-//                   <Col md={6}>
-//                     <strong>Query License:</strong> {selectedVendorAccount.query_license||"-"}
-//                   </Col>
-//                   <Col md={6}>
-//                     <strong>Mining License:</strong> {selectedVendorAccount.mining_license||"-"}
+//                     <strong>Mobile:</strong> {selectedVendorAccount.vendorMobile || "N/A"}
 //                   </Col>
 //                 </Row>
 //                 <Row className="mb-2">
 //                   <Col md={6}>
-//                     <strong>Village:</strong> {selectedVendorAccount.near_village||"-"}
+//                     <strong>Query License:</strong> {selectedVendorAccount.query_license || "NA"}
 //                   </Col>
 //                   <Col md={6}>
-//                     <strong>Tehsil:</strong> {selectedVendorAccount.tehsil||"-"}
-//                   </Col>
-//                 </Row>
-//                 <Row className="mb-2">
-//                   <Col md={6}>
-//                     <strong>District:</strong> {selectedVendorAccount.district||"-"}
-//                   </Col>
-//                   <Col md={6}>
-//                     <strong>State:</strong> {selectedVendorAccount.state||"-"}
+//                     <strong>Mining License:</strong> {selectedVendorAccount.mining_license || "NA"}
 //                   </Col>
 //                 </Row>
 //                 <Row className="mb-2">
 //                   <Col md={6}>
-//                     <strong>Country:</strong> {selectedVendorAccount.country||"-"}
+//                     <strong>Nearby Village:</strong> {selectedVendorAccount.near_village || "NA"}
+//                   </Col>
+//                   <Col md={6}>
+//                     <strong>Tehsil:</strong> {selectedVendorAccount.tehsil || "NA"}
+//                   </Col>
+//                 </Row>
+//                 <Row className="mb-2">
+//                   <Col md={6}>
+//                     <strong>District:</strong> {selectedVendorAccount.district || "NA"}
+//                   </Col>
+//                   <Col md={6}>
+//                     <strong>State:</strong> {selectedVendorAccount.state || "NA"}
+//                   </Col>
+//                 </Row>
+//                 <Row className="mb-2">
+//                   <Col md={6}>
+//                     <strong>Country:</strong> {selectedVendorAccount.country || "NA"}
 //                   </Col>
 //                   <Col md={6}>
 //                     <strong>Created Date:</strong> {formatDate(selectedVendorAccount.createdAt)}
@@ -468,337 +543,424 @@
 //     </>
 //   );
 // };
-
 // export default ViewVendorAccount;
+
 
 'use client'; // Enables client-side interactivity in Next.js
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Container, Modal, Card, Row, Col, Form, InputGroup, Spinner, Alert } from 'react-bootstrap';
-import { FaEye, FaTrash, FaSearch, FaClipboard } from 'react-icons/fa'; // Using FaClipboard from react-icons
+import { FaEye, FaTrash, FaSearch, FaClipboard, FaAngleLeft, FaAngleRight } from 'react-icons/fa'; // Using FaClipboard from react-icons
 import Header from '../components/Header'; // Reusing the Header component
 import axios from 'axios'; // Importing axios for easier API calls
 import { useRouter } from 'next/navigation'; // Import useRouter for redirection
 
 // Helper function to format date to DD/MM/YYYY (Indian timezone)
 const formatDate = (dateString) => {
-  const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: "Asia/Kolkata" };
-  try {
-    return new Date(dateString).toLocaleDateString('en-GB', options); // British format = DD/MM/YYYY
-  } catch (e) {
-    console.error("Invalid date string for formatDate:", dateString, e);
-    return "Invalid Date";
-  }
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: "Asia/Kolkata" };
+    try {
+        return new Date(dateString).toLocaleDateString('en-GB', options); // British format = DD/MM/YYYY
+    } catch (e) {
+        console.error("Invalid date string for formatDate:", dateString, e);
+        return "Invalid Date";
+    }
 };
-
 // Helper function to format time to HH:MM:SS AM/PM (Indian timezone)
 const formatTime = (dateString) => {
-  const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: "Asia/Kolkata" };
-  try {
-    return new Date(dateString).toLocaleTimeString('en-US', options); // US format = HH:MM:SS AM/PM
-  } catch (e) {
-    console.error("Invalid date string for formatTime:", dateString, e);
-    return "Invalid Time";
-  }
+    const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: "Asia/Kolkata" };
+    try {
+        return new Date(dateString).toLocaleTimeString('en-US', options); // US format = HH:MM:SS AM/PM
+    } catch (e) {
+        console.error("Invalid date string for formatTime:", dateString, e);
+        return "Invalid Time";
+    }
 };
 
 const ViewVendorAccount = () => {
-  const router = useRouter(); // Initialize Next.js router for navigation
+    const router = useRouter(); // Initialize Next.js router for navigation
 
-  // State to store the user's role for access control
-  const [userRole, setUserRole] = useState(null);
+    // State to store the user's role for access control
+    const [userRole, setUserRole] = useState(null);
 
-  // State to hold all vendor accounts fetched from the API (the master list)
-  const [vendorAccounts, setVendorAccounts] = useState([]);
-  // State to hold vendor accounts after applying search filter
-  const [filteredVendorAccounts, setFilteredVendorAccounts] = useState([]);
-  // State to store the user's search input
-  const [searchTerm, setSearchTerm] = useState('');
-  // State to control the loading spinner visibility
-  const [loading, setLoading] = useState(true);
-  // State to store and display any error messages
-  const [error, setError] = useState('');
-  // State to control the visibility of the detailed view modal
-  const [showModal, setShowModal] = useState(false);
-  // State to store the vendor account data to be displayed in the modal
-  const [selectedVendorAccount, setSelectedVendorAccount] = useState(null);
+    // State to hold all vendor accounts fetched from the API (the master list)
+    const [allVendorAccounts, setAllVendorAccounts] = useState([]);
+    // State to hold vendor accounts after applying search filter
+    const [filteredVendorAccounts, setFilteredVendorAccounts] = useState([]);
+    // State to store the user's search input
+    const [searchTerm, setSearchTerm] = useState('');
+    // State to control the loading spinner visibility
+    const [loading, setLoading] = useState(true);
+    // State to store and display any error messages
+    const [error, setError] = useState('');
+    // State to control the visibility of the detailed view modal
+    const [showModal, setShowModal] = useState(false);
+    // State to store the vendor account data to be displayed in the modal
+    const [selectedVendorAccount, setSelectedVendorAccount] = useState(null);
 
-  // 🚀 ACCESS CONTROL: Check user role immediately on component mount
-  useEffect(() => {
-    if (typeof window !== "undefined") { // Ensure this code runs only in the browser environment
-      const userData = localStorage.getItem("user");
-      let role = null;
-      if (userData) {
-        try {
-          const parsedUser = JSON.parse(userData);
-          role = parsedUser.role;
-          setUserRole(role); // Set the role to state
-        } catch (parseError) {
-          console.error("Error parsing user data from localStorage in ViewVendorAccount:", parseError);
-          // If parsing fails, default to an unauthorized state
+    // Pagination states
+    const itemsPerPage = 5; // Number of rows per page
+    const [currentPage, setCurrentPage] = useState(1); // Current page number
+
+
+    // 🚀 ACCESS CONTROL: Check user role immediately on component mount
+    useEffect(() => {
+        if (typeof window !== "undefined") { // Ensure this code runs only in the browser environment
+            const userData = localStorage.getItem("user");
+            let role = null;
+            if (userData) {
+                try {
+                    const parsedUser = JSON.parse(userData);
+                    role = parsedUser.role;
+                    setUserRole(role); // Set the role to state
+                } catch (parseError) {
+                    console.error("Error parsing user data from localStorage in ViewVendorAccount:", parseError);
+                    // If parsing fails, default to an unauthorized state
+                }
+            }
+
+            // If the user's role is not 'admin' or 'manager', redirect them.
+            // This is a client-side gate; server-side validation is also paramount.
+            if (role !== 'admin' && role !== 'manager') {
+                console.log(`Unauthorized access attempt to ViewVendorAccount by user with role: ${role || 'undefined'}. Redirecting...`);
+                setError("You do not have permission to access this page. Redirecting...");
+                // Use a slight delay for user to see the message before redirect
+                setTimeout(() => {
+                    localStorage.clear()
+                    window.location.href = '/api/logout'
+                }, 1500); // Redirect after 1.5 seconds
+            } else {
+                // If authorized, proceed to fetch data
+                setLoading(false); // End initial loading for role check
+            }
         }
-      }
-
-      // If the user's role is not 'admin' or 'manager', redirect them.
-      // This is a client-side gate; server-side validation is also paramount.
-      if (role !== 'admin' && role !== 'manager') {
-        console.log(`Unauthorized access attempt to ViewVendorAccount by user with role: ${role || 'undefined'}. Redirecting...`);
-        setError("You do not have permission to access this page. Redirecting...");
-        // Use a slight delay for user to see the message before redirect
-        setTimeout(() => {
-          localStorage.clear()
-          window.location.href = '/api/logout'
-        }, 1500); // Redirect after 1.5 seconds
-      } else {
-        // If authorized, proceed to fetch data
-        setLoading(false); // End initial loading for role check
-      }
-    }
-  }, [router]); // Re-run if router object changes (rare)
+    }, [router]); // Re-run if router object changes (rare)
 
 
-  // 🚀 PERFORMANCE / DATA FETCHING: Fetch vendor data when the component first loads
-  // This useEffect will run only if the userRole is determined to be 'admin' or 'manager'
-  useEffect(() => {
-    // Only fetch vendor accounts if the user is authorized (admin or manager)
-    if (userRole === 'admin' || userRole === 'manager') {
-      const fetchVendorAccounts = async () => {
-        setLoading(true); // Start loading before fetching data
-        setError(''); // Clear any previous errors
-        try {
-          // Make GET request to the vendor API endpoint
-          const response = await axios.get('/api/vendor');
-          // Payload CMS usually returns data in a 'docs' array
-          const data = response.data.docs || [];
-          setVendorAccounts(data); // Update the main vendor accounts list
-          setFilteredVendorAccounts(data); // Initialize filtered list with all accounts
-        } catch (err) {
-          // If there's an error, set the error message
-          setError('Failed to load vendor accounts. Please try again.');
-          console.error('Error fetching vendors:', err);
-        } finally {
-          // Always stop loading, whether success or error
-          setLoading(false);
+    // 🚀 PERFORMANCE / DATA FETCHING: Fetch vendor data when the component first loads
+    // This useEffect will run only if the userRole is determined to be 'admin' or 'manager'
+    useEffect(() => {
+        // Only fetch vendor accounts if the user is authorized (admin or manager)
+        if (userRole === 'admin' || userRole === 'manager') {
+            const fetchVendorAccounts = async () => {
+                setLoading(true); // Start loading before fetching data
+                setError(''); // Clear any previous errors
+                try {
+                    // Make GET request to the vendor API endpoint
+                    const response = await axios.get('/api/vendor?limit=10000'); // Fetch all vendors
+                    // Payload CMS usually returns data in a 'docs' array
+                    const data = response.data.docs || [];
+                    setAllVendorAccounts(data); // Update the main vendor accounts list
+                    setFilteredVendorAccounts(data); // Initialize filtered list with all accounts
+                } catch (err) {
+                    // If there's an error, set the error message
+                    setError('Failed to load vendor accounts. Please try again.');
+                    console.error('Error fetching vendors:', err);
+                } finally {
+                    // Always stop loading, whether success or error
+                    setLoading(false);
+                }
+            };
+
+            fetchVendorAccounts(); // Call the fetch function
+        } else if (userRole !== null) { // If userRole is determined but not authorized
+            setLoading(false); // Stop loading as no data will be fetched
         }
-      };
+    }, [userRole]);
 
-      fetchVendorAccounts(); // Call the fetch function
-    } else if (userRole !== null) { // If userRole is determined but not authorized
-      setLoading(false); // Stop loading as no data will be fetched
+    // Function to handle changes in the search input field
+    const handleSearch = (e) => {
+        const value = e.target.value.toLowerCase(); // Get input value and convert to lowercase
+        setSearchTerm(value); // Update search term state
+        setCurrentPage(1); // Reset to first page on new search
+
+        // Filter the vendor accounts based on the search term
+        const results = allVendorAccounts.filter(
+            (vendor) =>
+                vendor.vendorName?.toLowerCase().includes(value) || // Search by vendor name
+                vendor.vendorMobile?.includes(value) || // Search by vendor mobile
+                vendor.query_license?.toLowerCase().includes(value) || // Search by query license
+                vendor.mining_license?.toLowerCase().includes(value) // Search by mining license
+        );
+        setFilteredVendorAccounts(results); // Update the filtered list
+    };
+
+    // Function to handle deleting a vendor account
+    const deleteVendorAccount = async (vendorId) => {
+        // Ask for confirmation before deleting
+        if (window.confirm('Are you sure you want to delete this vendor account?')) {
+            try {
+                // Make DELETE request to the API endpoint with the vendor ID
+                await axios.delete(`/api/vendor/${vendorId}`);
+                // If deletion is successful, update the state by removing the deleted vendor
+                const updatedAll = allVendorAccounts.filter((v) => v.id !== vendorId);
+                setAllVendorAccounts(updatedAll);
+
+                const updatedFiltered = updatedAll.filter(
+                    (vendor) =>
+                        vendor.vendorName?.toLowerCase().includes(searchTerm) ||
+                        vendor.vendorMobile?.includes(searchTerm) ||
+                        vendor.query_license?.toLowerCase().includes(searchTerm) ||
+                        vendor.mining_license?.toLowerCase().includes(searchTerm)
+                );
+                setFilteredVendorAccounts(updatedFiltered);
+                alert('Vendor account deleted successfully!'); // Provide user feedback
+            } catch (error) {
+                // If there's an error during deletion, show an alert
+                alert('Error deleting vendor account. Please try again.');
+                console.error('Error deleting vendor:', error);
+            }
+        }
+    };
+
+    // Function to handle viewing a vendor's detailed information in a modal
+    const handleView = (vendor) => {
+        setSelectedVendorAccount(vendor); // Set the selected vendor data
+        setShowModal(true); // Open the modal
+    };
+
+    // Get current page items for pagination
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentVendors = filteredVendorAccounts.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredVendorAccounts.length / itemsPerPage);
+
+    // Pagination rendering logic
+    const renderPagination = () => {
+        const pages = [];
+
+        if (currentPage > 1) {
+            pages.push(<Button key="prev" onClick={() => setCurrentPage(currentPage - 1)}><FaAngleLeft /> Prev</Button>);
+        }
+
+        // Always show first page
+        if (totalPages >= 1) {
+            pages.push(
+                <Button
+                    key={1}
+                    variant={1 === currentPage ? "dark" : "outline-primary"}
+                    onClick={() => setCurrentPage(1)}
+                >
+                    1
+                </Button>
+            );
+        }
+
+        // Ellipsis after first page if there's a gap
+        if (currentPage > 3 && totalPages > 2) {
+            pages.push(<span key={`ellipsis-start`} className="mx-2">...</span>);
+        }
+
+        // Pages around the current page
+        for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+            pages.push(
+                <Button
+                    key={i}
+                    variant={i === currentPage ? "dark" : "outline-primary"}
+                    onClick={() => setCurrentPage(i)}
+                >
+                    {i}
+                </Button>
+            );
+        }
+
+        // Ellipsis before last page if there's a gap
+        if (currentPage < totalPages - 2 && totalPages > 2) {
+            pages.push(<span key={`ellipsis-end`} className="mx-2">...</span>);
+        }
+
+        // Always show last page if more than one page
+        if (totalPages > 1) {
+            pages.push(
+                <Button
+                    key={totalPages}
+                    variant={totalPages === currentPage ? "dark" : "outline-primary"}
+                    onClick={() => setCurrentPage(totalPages)}
+                >
+                    {totalPages}
+                </Button>
+            );
+        }
+
+
+        if (currentPage < totalPages) {
+            pages.push(<Button key="next" onClick={() => setCurrentPage(currentPage + 1)}>Next <FaAngleRight /></Button>);
+        }
+
+        return <div className="d-flex flex-wrap gap-2 justify-content-center my-3">{pages}</div>;
+    };
+
+
+    // 🚀 PERFORMANCE: Show loading spinner while initial data or user role is being determined
+    if (loading || userRole === null) {
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <Spinner animation="border" variant="primary" />
+                <p className="fw-semibold my-2 ms-2">Loading Please Wait...</p>
+            </div>
+        );
     }
-  }, [userRole]); // Empty dependency array means this runs once on component mount
 
-  // Function to handle changes in the search input field
-  const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase(); // Get input value and convert to lowercase
-    setSearchTerm(value); // Update search term state
-
-    // Filter the vendor accounts based on the search term
-    const results = vendorAccounts.filter(
-      (vendor) =>
-        vendor.vendorName?.toLowerCase().includes(value) || // Search by vendor name
-        vendor.vendorMobile?.includes(value) || // Search by vendor mobile
-        vendor.query_license?.toLowerCase().includes(value) || // Search by query license
-        vendor.mining_license?.toLowerCase().includes(value) // Search by mining license
-    );
-    setFilteredVendorAccounts(results); // Update the filtered list
-  };
-
-  // Function to handle deleting a vendor account
-  const deleteVendorAccount = async (vendorId) => {
-    // Ask for confirmation before deleting
-    if (window.confirm('Are you sure you want to delete this vendor account?')) {
-      try {
-        // Make DELETE request to the API endpoint with the vendor ID
-        await axios.delete(`/api/vendor/${vendorId}`);
-        // If deletion is successful, update the state by removing the deleted vendor
-        const updatedList = vendorAccounts.filter((v) => v.id !== vendorId);
-        setVendorAccounts(updatedList);
-        setFilteredVendorAccounts(updatedList);
-        alert('Vendor account deleted successfully!'); // Provide user feedback
-      } catch (error) {
-        // If there's an error during deletion, show an alert
-        alert('Error deleting vendor account. Please try again.');
-        console.error('Error deleting vendor:', error);
-      }
+    // Display unauthorized message if user role is not admin or manager
+    if (userRole !== 'admin' && userRole !== 'manager') {
+        return (
+            <>
+                <Container className="mt-5 text-center">
+                    <Alert variant="danger" className="fw-semibold">
+                        <FaClipboard className="me-2" />
+                        {error}
+                    </Alert>
+                </Container>
+            </>
+        );
     }
-  };
 
-  // Function to handle viewing a vendor's detailed information in a modal
-  const handleView = (vendor) => {
-    setSelectedVendorAccount(vendor); // Set the selected vendor data
-    setShowModal(true); // Open the modal
-  };
-
-  // 🚀 PERFORMANCE: Show loading spinner while initial data or user role is being determined
-  if (loading || userRole === null) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <Spinner animation="border" variant="primary" />
-        <p className="fw-semibold my-2 ms-2">Loading Please Wait...</p>
-      </div>
-    );
-  }
+        <>
+            <Header /> {/* Renders the common Header component */}
 
-  // Display unauthorized message if user role is not admin or manager
-  if (userRole !== 'admin' && userRole !== 'manager') {
-    return (
-      <>
-        <Container className="mt-5 text-center">
-          <Alert variant="danger" className="fw-semibold">
-            <FaClipboard className="me-2" />
-            You do not have permission to access this page. Redirecting...
-          </Alert>
-        </Container>
-      </>
-    );
-  }
+            <Container fluid className="py-3 text-capitalize"> {/* Main container for the page */}
+                {/* Page Title and Search Bar Section */}
+                <Row className="text-center align-items-center mb-3">
+                    <Col xs={12} md={6}>
+                        <h4 className="fw-bold">
+                            <FaClipboard className="me-2" /> {/* Clipboard icon */}
+                            View All Vendor's Accounts
+                        </h4>
+                    </Col>
+                    <Col xs={12} md={6} className="mt-2 mt-md-0">
+                        <InputGroup className="mx-auto w-75">
+                            <InputGroup.Text>
+                                <FaSearch /> {/* Search icon */}
+                            </InputGroup.Text>
+                            <Form.Control
+                                type="text"
+                                placeholder="Search by Name, Mobile, License" // Placeholder text for search
+                                value={searchTerm}
+                                onChange={handleSearch} // Call handleSearch when input changes
+                            />
+                        </InputGroup>
+                    </Col>
+                </Row>
 
-  return (
-    <>
-      <Header /> {/* Renders the common Header component */}
-
-      <Container fluid className="py-3 text-capitalize"> {/* Main container for the page */}
-        {/* Page Title and Search Bar Section */}
-        <Row className="text-center align-items-center mb-3">
-          <Col xs={12} md={6}>
-            <h4 className="fw-bold">
-              <FaClipboard className="me-2" /> {/* Clipboard icon */}
-              View All Vendor's Accounts
-            </h4>
-          </Col>
-          <Col xs={12} md={6} className="mt-2 mt-md-0">
-            <InputGroup className="mx-auto w-75">
-              <InputGroup.Text>
-                <FaSearch /> {/* Search icon */}
-              </InputGroup.Text>
-              <Form.Control
-                type="text"
-                placeholder="Search by Name, Mobile, License" // Placeholder text for search
-                value={searchTerm}
-                onChange={handleSearch} // Call handleSearch when input changes
-              />
-            </InputGroup>
-          </Col>
-        </Row>
-
-        {/* Conditional Rendering: Loading, Error, or Table */}
-        {error ? ( // Show error alert if there was an error fetching data
-          <Alert variant="danger" className="text-center">{error}</Alert>
-        ) : (
-          // Display the table if data is loaded successfully
-          <div className="table-responsive">
-            <Table className="table-bordered table-hover text-center align-middle">
-              <thead className="table-dark">
-                <tr>
-                  <th>S.No</th>
-                  <th>Name</th>
-                  <th>Mobile</th>
-                  <th>Query License</th>
-                  <th>Nearby Village</th>
-                  <th>Created Date</th>
-                  <th>Created Time</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredVendorAccounts.length > 0 ? ( // Check if there are accounts to display
-                  filteredVendorAccounts.map((vendor, index) => (
-                    <tr key={vendor.id}>
-                      <td>{index + 1}</td>
-                      <td>{vendor.vendorName || "N/A"}</td>
-                      <td>{vendor.vendorMobile || "N/A"}</td>
-                      <td>{vendor.query_license||"NA"}</td>
-                      <td>{vendor.near_village||"NA"}</td>
-                      <td>{formatDate(vendor.createdAt)}</td> {/* Formatted creation date */}
-                      <td>{formatTime(vendor.createdAt)}</td> {/* Formatted creation time */}
-                      <td>
-                        <div className="d-flex flex-wrap justify-content-center align-items-center gap-2">
-                          <Button variant="info" onClick={() => handleView(vendor)}>
-                            <FaEye className="fs-5 fw-bold" /> {/* View icon */}
-                          </Button>
-                          <Button variant="danger" onClick={() => deleteVendorAccount(vendor.id)}>
-                            <FaTrash className="fs-5 fw-bold" /> {/* Delete icon */}
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                {/* Conditional Rendering: Loading, Error, or Table */}
+                {error ? ( // Show error alert if there was an error fetching data
+                    <Alert variant="danger" className="text-center">{error}</Alert>
                 ) : (
-                  // Display message if no vendor accounts are found after filtering
-                  <tr>
-                    <td colSpan="8" className="text-secondary fw-bold fs-5">
-                      No Vendor Accounts Found.
-                    </td>
-                  </tr>
+                    // Display the table if data is loaded successfully
+                    <div className="table-responsive">
+                        <Table className="table-bordered table-hover text-center align-middle">
+                            <thead className="table-dark">
+                                <tr>
+                                    <th>S.No</th>
+                                    <th>Name</th>
+                                    <th>Mobile</th>
+                                    <th>Query License</th>
+                                    <th>Nearby Village</th>
+                                    <th>Created Date</th>
+                                    <th>Created Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {currentVendors.length > 0 ? ( // Check if there are accounts to display
+                                    currentVendors.map((vendor, index) => (
+                                        <tr key={vendor.id}>
+                                            <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                                            <td>{vendor.vendorName || "N/A"}</td>
+                                            <td>{vendor.vendorMobile || "N/A"}</td>
+                                            <td>{vendor.query_license || "NA"}</td>
+                                            <td>{vendor.near_village || "NA"}</td>
+                                            <td>{formatDate(vendor.createdAt)}</td> {/* Formatted creation date */}
+                                            <td>{formatTime(vendor.createdAt)}</td> {/* Formatted creation time */}
+                                            <td>
+                                                <div className="d-flex flex-wrap justify-content-center align-items-center gap-2">
+                                                    <Button variant="info" onClick={() => handleView(vendor)}>
+                                                        <FaEye className="fs-5 fw-bold" /> {/* View icon */}
+                                                    </Button>
+                                                    <Button variant="danger" onClick={() => deleteVendorAccount(vendor.id)}>
+                                                        <FaTrash className="fs-5 fw-bold" /> {/* Delete icon */}
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    // Display message if no vendor accounts are found after filtering
+                                    <tr>
+                                        <td colSpan="8" className="text-secondary fw-bold fs-5">
+                                            No Vendor Accounts Found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </Table>
+                    </div>
                 )}
-              </tbody>
-            </Table>
-          </div>
-        )}
-      </Container>
+                {renderPagination()}
+            </Container>
 
-      {/* Modal for displaying detailed Vendor Account Information */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Vendor Account Details</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedVendorAccount && ( // Only render if a vendor account is selected
-            <Card className="shadow-sm border-0">
-              <Card.Body>
-                <Row className="mb-2">
-                  <Col md={6}>
-                    <strong>Name:</strong> {selectedVendorAccount.vendorName || "N/A"}
-                  </Col>
-                  <Col md={6}>
-                    <strong>Mobile:</strong> {selectedVendorAccount.vendorMobile || "N/A"}
-                  </Col>
-                </Row>
-                <Row className="mb-2">
-                  <Col md={6}>
-                    <strong>Query License:</strong> {selectedVendorAccount.query_license || "NA"}
-                  </Col>
-                  <Col md={6}>
-                    <strong>Mining License:</strong> {selectedVendorAccount.mining_license || "NA"}
-                  </Col>
-                </Row>
-                <Row className="mb-2">
-                  <Col md={6}>
-                    <strong>Nearby Village:</strong> {selectedVendorAccount.near_village || "NA"}
-                  </Col>
-                  <Col md={6}>
-                    <strong>Tehsil:</strong> {selectedVendorAccount.tehsil || "NA"}
-                  </Col>
-                </Row>
-                <Row className="mb-2">
-                  <Col md={6}>
-                    <strong>District:</strong> {selectedVendorAccount.district || "NA"}
-                  </Col>
-                  <Col md={6}>
-                    <strong>State:</strong> {selectedVendorAccount.state || "NA"}
-                  </Col>
-                </Row>
-                <Row className="mb-2">
-                  <Col md={6}>
-                    <strong>Country:</strong> {selectedVendorAccount.country || "NA"}
-                  </Col>
-                  <Col md={6}>
-                    <strong>Created Date:</strong> {formatDate(selectedVendorAccount.createdAt)}
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <strong>Created Time:</strong> {formatTime(selectedVendorAccount.createdAt)}
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-          )}
-        </Modal.Body>
-      </Modal>
-    </>
-  );
+            {/* Modal for displaying detailed Vendor Account Information */}
+            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Vendor Account Details</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {selectedVendorAccount && ( // Only render if a vendor account is selected
+                        <Card className="shadow-sm border-0">
+                            <Card.Body>
+                                <Row className="mb-2">
+                                    <Col md={6}>
+                                        <strong>Name:</strong> {selectedVendorAccount.vendorName || "N/A"}
+                                    </Col>
+                                    <Col md={6}>
+                                        <strong>Mobile:</strong> {selectedVendorAccount.vendorMobile || "N/A"}
+                                    </Col>
+                                </Row>
+                                <Row className="mb-2">
+                                    <Col md={6}>
+                                        <strong>Query License:</strong> {selectedVendorAccount.query_license || "NA"}
+                                    </Col>
+                                    <Col md={6}>
+                                        <strong>Mining License:</strong> {selectedVendorAccount.mining_license || "NA"}
+                                    </Col>
+                                </Row>
+                                <Row className="mb-2">
+                                    <Col md={6}>
+                                        <strong>Nearby Village:</strong> {selectedVendorAccount.near_village || "NA"}
+                                    </Col>
+                                    <Col md={6}>
+                                        <strong>Tehsil:</strong> {selectedVendorAccount.tehsil || "NA"}
+                                    </Col>
+                                </Row>
+                                <Row className="mb-2">
+                                    <Col md={6}>
+                                        <strong>District:</strong> {selectedVendorAccount.district || "NA"}
+                                    </Col>
+                                    <Col md={6}>
+                                        <strong>State:</strong> {selectedVendorAccount.state || "NA"}
+                                    </Col>
+                                </Row>
+                                <Row className="mb-2">
+                                    <Col md={6}>
+                                        <strong>Country:</strong> {selectedVendorAccount.country || "NA"}
+                                    </Col>
+                                    <Col md={6}>
+                                        <strong>Created Date:</strong> {formatDate(selectedVendorAccount.createdAt)}
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col>
+                                        <strong>Created Time:</strong> {formatTime(selectedVendorAccount.createdAt)}
+                                    </Col>
+                                </Row>
+                            </Card.Body>
+                        </Card>
+                    )}
+                </Modal.Body>
+            </Modal>
+        </>
+    );
 };
 
 export default ViewVendorAccount;
+
 

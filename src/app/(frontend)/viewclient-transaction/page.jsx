@@ -472,7 +472,7 @@ const ViewClientTransaction = () => {
                     <FaRupeeSign />{txn.totalAmountclient?.toFixed(2)}
                   </td>
                   <td>
-                    <FaRupeeSign />{(txn.totalAmount - txn.totalAmountclient).toFixed(2) || txn.remainingAmount?.toFixed(2)}
+                    <FaRupeeSign />{txn.remainingAmount?.toFixed(2)||(txn.totalAmount - txn.totalAmountclient).toFixed(2)}
                   </td>
                   <td>
                     <Button variant={txn.paymentstatus === "pending" ? "danger" : "success"}

@@ -231,7 +231,6 @@
 //   const time = new Date(dateString);
 //   return time.toLocaleTimeString("en-US", options); // US format = HH:MM:SS AM/PM
 // };
-
 // const ViewClientAccount = () => {
 //   const router = useRouter(); // Initialize router for navigation
 //   const [userRole, setUserRole] = useState(null); // State to store the user's role for access control
@@ -506,69 +505,51 @@
 // };
 // export default ViewClientAccount;
 
-
-"use client"; // Ensures this component uses client-side features (like localStorage, router)
-
+"use client"; // Ensures this component runs on the browser side (needed for localStorage and hooks)
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Form, InputGroup, Spinner, Alert, Modal, Card } from "react-bootstrap";
-import { FaEye, FaTrash, FaSearch, FaClipboard, FaAngleLeft, FaAngleRight } from "react-icons/fa"; // Icons
+import { FaEye, FaTrash, FaSearch, FaClipboard, FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import Header from "../components/Header";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-
-// 📆 Format date as DD/MM/YYYY for Indian format
-const formatDate = (date) =>
-  new Date(date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    timeZone: "Asia/Kolkata",
-  });
-
-// 🕓 Format time as HH:MM:SS AM/PM
-const formatTime = (date) =>
-  new Date(date).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Kolkata",
-  });
-
+// Format date to DD/MM/YYYY
+const formatDate = (date) => new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Asia/Kolkata" });
+// Format time to HH:MM:SS AM/PM
+const formatTime = (date) => new Date(date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Kolkata" });
 const ViewClientAccount = () => {
   const router = useRouter();
 
-  // 🧠 Track user role for access control
+  // Store user's role and authorization
   const [userRole, setUserRole] = useState(null);
 
-  // 🌐 Fetched accounts (current page only)
-  const [accounts, setAccounts] = useState([]);
+  // All client accounts fetched from API
+  const [allAccounts, setAllAccounts] = useState([]);
 
-  // 🔎 Filtered accounts shown in search results (on current page)
+  // Accounts filtered by search term
   const [filteredAccounts, setFilteredAccounts] = useState([]);
 
+  // State to store user's search input
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 📥 Modal handling
+  // Modal logic
   const [showModal, setShowModal] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
 
-  // 📊 Pagination state
-  const [page, setPage] = useState(1); // current page
-  const [totalPages, setTotalPages] = useState(1); // total number of pages
+  // Pagination
+  const itemsPerPage = 5; // Number of rows per page
+  const [currentPage, setCurrentPage] = useState(1); // Current page number
 
+  // UI states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ✅ Check user access from localStorage on page load
+  // 🧠 Check user's role (authorization)
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
         setUserRole(parsed.role);
-
-        // Redirect if unauthorized
         if (parsed.role !== "admin" && parsed.role !== "manager") {
           setError("You do not have permission. Redirecting...");
           setTimeout(() => {
@@ -577,171 +558,127 @@ const ViewClientAccount = () => {
           }, 1500);
         }
       } catch (err) {
-        console.error("Role parse failed:", err);
+        console.error("Error parsing user:", err);
+        setError("Login again.");
       }
     } else {
       setUserRole("unauthorized");
     }
   }, []);
 
-  // 🔁 Fetch accounts based on current page
+  // 📥 Fetch all client accounts on mount
   useEffect(() => {
     const fetchAccounts = async () => {
       if (userRole === "admin" || userRole === "manager") {
         setLoading(true);
         try {
-          const res = await axios.get(`/api/client-accounts?page=${page}&limit=5`);
-          const data = res.data.docs;
-          setAccounts(data);
-          setFilteredAccounts(data);
-          setTotalPages(res.data.totalPages || 1); // Fallback if not sent
+          const res = await axios.get("/api/client-accounts?limit=10000"); // fetch all (you can use server-side pagination later)
+          setAllAccounts(res.data.docs);
+          setFilteredAccounts(res.data.docs); // Initially show everything
         } catch (err) {
-          setError("Failed to load client accounts.");
+          console.error("API Error:", err);
+          setError("Failed to fetch client accounts.");
         } finally {
           setLoading(false);
         }
       }
     };
     fetchAccounts();
-  }, [userRole, page]);
+  }, [userRole]);
 
-  // 🔎 Filter by name on current page
+  // 🔎 Handle global search (case-insensitive)
   const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-    const filtered = accounts.filter((acc) =>
-      acc.clientName?.toLowerCase().includes(term)
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    setCurrentPage(1); // Always go to page 1 after search
+
+    const filtered = allAccounts.filter((acc) =>
+      acc.clientName?.toLowerCase().includes(value)
     );
     setFilteredAccounts(filtered);
   };
 
-  // ❌ Delete client account
+  // ❌ Delete account
   const deleteAccount = async (id) => {
-    if (confirm("Are you sure? This can't be undone.")) {
+    if (window.confirm("Are you sure?")) {
       try {
         await axios.delete(`/api/client-accounts/${id}`);
-        const updated = accounts.filter((acc) => acc.id !== id);
-        setAccounts(updated);
-        setFilteredAccounts(updated);
+        const updated = allAccounts.filter((acc) => acc.id !== id);
+        setAllAccounts(updated);
+        const filtered = updated.filter((acc) =>
+          acc.clientName?.toLowerCase().includes(searchTerm)
+        );
+        setFilteredAccounts(filtered);
         alert("Deleted successfully.");
-      } catch (err) {
-        alert("Deletion failed.");
+      } catch {
+        alert("Failed to delete.");
       }
     }
   };
 
-  // 👁️ Show client details in modal
+  // 👁️ Show modal
   const handleView = (acc) => {
     setSelectedAccount(acc);
     setShowModal(true);
   };
 
-  // 🧭 Build pagination buttons
+  // 📃 Get current page items
+  const currentItems = filteredAccounts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage);
+
+  // ⏭️ Pagination rendering
   const renderPagination = () => {
-    const buttons = [];
+    const pages = [];
 
-    if (page > 1) {
-      buttons.push(
-        <Button key="prev" onClick={() => setPage(page - 1)}>
-          <FaAngleLeft /> Prev
-        </Button>
-      );
-    }
-    
-    // Always show first page button
-    buttons.push(
-      <Button 
-        key="page-1" 
-        onClick={() => setPage(1)}
-        variant={page === 1 ? 'dark' : undefined}
-      >
-        1
-      </Button>
-    );
-
-    // Show previous page button if not adjacent to first page
-    if (page - 1 > 2) {
-      buttons.push(<span key="ellipsis1" className="align-self-center">...</span>);
+    if (currentPage > 1) {
+      pages.push(<Button key="prev" onClick={() => setCurrentPage(currentPage - 1)}><FaAngleLeft /> Prev</Button>);
     }
 
-    // Show previous page button if not first page
-    if (page > 2) {
-      buttons.push(
-        <Button key={`page-${page - 1}`} onClick={() => setPage(page - 1)}>
-          {page - 1}
-        </Button>
-      );
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+        pages.push(
+          <Button
+            key={i}
+            variant={i === currentPage ? "dark" : "outline-primary"}
+            onClick={() => setCurrentPage(i)}
+          >
+            {i}
+          </Button>
+        );
+      } else if (
+        (i === currentPage - 2 && currentPage > 3) ||
+        (i === currentPage + 2 && currentPage < totalPages - 2)
+      ) {
+        pages.push(<span key={`ellipsis-${i}`} className="mx-2">...</span>);
+      }
     }
 
-    // Show current page if not first or last
-    if (page > 1 && page < totalPages) {
-      buttons.push(
-        <Button key={`page-${page}`} variant="dark" disabled>
-          {page}
-        </Button>
-      );
+    if (currentPage < totalPages) {
+      pages.push(<Button key="next" onClick={() => setCurrentPage(currentPage + 1)}>Next <FaAngleRight /></Button>);
     }
 
-    // Show next page button if not last page
-    if (page < totalPages - 1) {
-      buttons.push(
-        <Button key={`page-${page + 1}`} onClick={() => setPage(page + 1)}>
-          {page + 1}
-        </Button>
-      );
-    }
-
-    // Show ellipsis if needed
-    if (page < totalPages - 2) {
-      buttons.push(<span key="ellipsis2" className="align-self-center">...</span>);
-    }
-
-    // Show last page button if not already shown
-    if (totalPages > 1 && !buttons.some(btn => btn.key === `page-${totalPages}`)) {
-      buttons.push(
-        <Button 
-          key={`page-${totalPages}`} 
-          onClick={() => setPage(totalPages)}
-          variant={page === totalPages ? 'dark' : undefined}
-        >
-          {totalPages}
-        </Button>
-      );
-    }
-
-    // Next button
-    if (page < totalPages) {
-      buttons.push(
-        <Button key="next" onClick={() => setPage(page + 1)}>
-          Next <FaAngleRight />
-        </Button>
-      );
-    }
-
-    return (
-      <div className="d-flex flex-wrap gap-2 justify-content-center mt-3">
-        {buttons}
-      </div>
-    );
+    return <div className="d-flex flex-wrap gap-2 justify-content-center my-3">{pages}</div>;
   };
-  // 🌀 Show spinner while loading
+
+  // ⌛ Show spinner while loading
   if (loading || userRole === null) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
         <Spinner animation="border" />
-        <p className="ms-3">Loading, please wait...</p>
+        <p className="ms-2">Loading...</p>
       </div>
     );
   }
 
-  // 🚫 Unauthorized fallback
+  // 🚫 Unauthorized
   if (userRole !== "admin" && userRole !== "manager") {
     return (
       <Container className="text-center mt-5">
-        <Alert variant="danger">
-          <FaClipboard className="me-2" />
-          {error || "Access Denied"}
-        </Alert>
+        <Alert variant="danger"><FaClipboard className="me-2" /> {error}</Alert>
       </Container>
     );
   }
@@ -751,16 +688,16 @@ const ViewClientAccount = () => {
       <Header />
 
       <Container fluid className="py-3">
-        <Row className="mb-3 align-items-center text-center">
+        <Row className="mb-3 text-center align-items-center">
           <Col xs={12} md={6}>
             <h4><FaClipboard className="me-2" />View Client Accounts</h4>
           </Col>
           <Col xs={12} md={6}>
-            <InputGroup className="mx-auto" style={{ maxWidth: 400 }}>
+            <InputGroup style={{ maxWidth: 400 }} className="mx-auto">
               <InputGroup.Text><FaSearch /></InputGroup.Text>
               <Form.Control
                 type="text"
-                placeholder="Search by Client Name..."
+                placeholder="Search by Client name"
                 value={searchTerm}
                 onChange={handleSearch}
               />
@@ -768,66 +705,54 @@ const ViewClientAccount = () => {
           </Col>
         </Row>
 
-        {error ? (
-          <Alert variant="danger">{error}</Alert>
-        ) : (
-          <>
-            <div className="table-responsive">
-              <Table bordered hover responsive className="text-center align-middle">
-                <thead className="table-dark">
-                  <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Mobile</th>
-                    <th>Query License</th>
-                    <th>Village</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Actions</th>
+        <div className="table-responsive">
+          <Table bordered hover className="text-center align-middle">
+            <thead className="table-dark">
+              <tr>
+                <th>S.No</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Query License</th>
+                <th>Village</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentItems.length > 0 ? (
+                currentItems.map((acc, i) => (
+                  <tr key={acc.id}>
+                    <td>{(currentPage - 1) * itemsPerPage + i + 1}</td>
+                    <td>{acc.clientName}</td>
+                    <td>{acc.clientMobile}</td>
+                    <td>{acc.query_license}</td>
+                    <td>{acc.near_village}</td>
+                    <td>{formatDate(acc.clientCreatedAt)}</td>
+                    <td>{formatTime(acc.clientCreatedAt)}</td>
+                    <td className="d-flex gap-2 justify-content-center flex-wrap">
+                      <Button variant="info" onClick={() => handleView(acc)}><FaEye /></Button>
+                      <Button variant="danger" onClick={() => deleteAccount(acc.id)}><FaTrash /></Button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredAccounts.length > 0 ? (
-                    filteredAccounts.map((acc, i) => (
-                      <tr key={acc.id}>
-                        <td>{i + 1}</td>
-                        <td>{acc.clientName}</td>
-                        <td>{acc.clientMobile}</td>
-                        <td>{acc.query_license}</td>
-                        <td>{acc.near_village}</td>
-                        <td>{formatDate(acc.clientCreatedAt)}</td>
-                        <td>{formatTime(acc.clientCreatedAt)}</td>
-                        <td className="d-flex gap-2 justify-content-center flex-wrap">
-                          <Button variant="info" onClick={() => handleView(acc)}>
-                            <FaEye />
-                          </Button>
-                          <Button variant="danger" onClick={() => deleteAccount(acc.id)}>
-                            <FaTrash />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="8" className="text-secondary fw-semibold">
-                        No matching records found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="8" className="text-secondary fw-bold">No results found.</td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </div>
 
-            {/* Pagination */}
-            {renderPagination()}
-          </>
-        )}
+        {/* Pagination */}
+        {renderPagination()}
       </Container>
 
-      {/* View Modal */}
+      {/* Modal for client details */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
         <Modal.Header closeButton>
-          <Modal.Title>Client Details</Modal.Title>
+          <Modal.Title>Client Account Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedAccount && (
@@ -861,5 +786,4 @@ const ViewClientAccount = () => {
     </>
   );
 };
-
 export default ViewClientAccount;
