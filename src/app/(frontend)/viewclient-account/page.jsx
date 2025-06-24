@@ -211,124 +211,206 @@
 // };
 // export default ViewClientAccount;
 
-// //pages/view-client-account.jsx
+
 // "use client"; // Enables client-side interactivity in Next.js
 // import React, { useEffect, useState } from "react";
 // import { Table, Button, Container, Modal, Card, Row, Col, Form, InputGroup, Spinner, Alert } from "react-bootstrap";
-// import { FaEye, FaTrash, FaSearch, FaClipboard } from "react-icons/fa";
+// import { FaEye, FaTrash, FaSearch, FaClipboard } from "react-icons/fa"; // Icons for View, Delete, Search, Clipboard
+// import { useRouter } from "next/navigation"; // For programmatic redirection
 // import Header from "../components/Header"; // Reuse your Header component
-// import axios from "axios"; // We'll use axios for API calls
-
-// // Helper function to format date to DD/MM/YYYY
+// import axios from "axios"; // Using axios for API calls for consistency and features
+// // Helper function to format date to DD/MM/YYYY for Indian context
 // const formatDate = (dateString) => {
-//   const options = { day: '2-digit', month: '2-digit', year: 'numeric',timeZone: "Asia/Kolkata", };
+//   const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: "Asia/Kolkata" };
 //   const date = new Date(dateString);
 //   return date.toLocaleDateString("en-GB", options); // British format = DD/MM/YYYY
 // };
-
-// // Helper function to format time to HH:MM:SS AM/PM
+// // Helper function to format time to HH:MM:SS AM/PM for Indian context
 // const formatTime = (dateString) => {
-//   const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: "Asia/Kolkata", };
+//   const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: "Asia/Kolkata" };
 //   const time = new Date(dateString);
 //   return time.toLocaleTimeString("en-US", options); // US format = HH:MM:SS AM/PM
 // };
 
 // const ViewClientAccount = () => {
-//   const [accounts, setAccounts] = useState([]); // All client accounts
-//   const [filteredAccounts, setFilteredAccounts] = useState([]); // For search filtering
-//   const [searchTerm, setSearchTerm] = useState(""); // User's search input
-//   const [loading, setLoading] = useState(true); // Loading spinner control
-//   const [error, setError] = useState(""); // Display error messages if API fails
-//   const [showModal, setShowModal] = useState(false); // Modal visibility
-//   const [selectedAccount, setSelectedAccount] = useState(null); // Data to show in modal
+//   const router = useRouter(); // Initialize router for navigation
+//   const [userRole, setUserRole] = useState(null); // State to store the user's role for access control
 
-//   // Fetch data from Payload CMS when the component mounts
+//   const [accounts, setAccounts] = useState([]); // Stores all client accounts fetched from the API
+//   const [filteredAccounts, setFilteredAccounts] = useState([]); // Stores accounts after applying search filter
+//   const [searchTerm, setSearchTerm] = useState(""); // User's input for the search bar
+
+//   const [loading, setLoading] = useState(true); // Controls the display of a loading spinner
+//   const [error, setError] = useState(""); // Stores and displays any error messages
+
+//   const [showModal, setShowModal] = useState(false); // Controls the visibility of the client details modal
+//   const [selectedAccount, setSelectedAccount] = useState(null); // Stores the data of the client account selected for viewing in the modal
+
+//   // 🚀 ACCESS CONTROL: Check user role immediately on component mount
 //   useEffect(() => {
-//     const fetchAccounts = async () => {
-//       try {
-//         const response = await axios.get("/api/client-accounts");
-//         const data = response.data.docs; // Payload CMS returns { docs: [...] }
-//         setAccounts(data);
-//         setFilteredAccounts(data);
-//       } catch (err) {
-//         setError("Failed to load client accounts. Please try again.");
-//       } finally {
-//         setLoading(false);
+//     if (typeof window !== "undefined") { // Ensure this code runs only in the browser
+//       const userData = localStorage.getItem("user");
+//       let role = null;
+//       if (userData) {
+//         try {
+//           const parsedUser = JSON.parse(userData);
+//           role = parsedUser.role;
+//           setUserRole(role); // Set the role to state
+//         } catch (parseError) {
+//           console.error("Error parsing user data from localStorage in ViewClientAccount:", parseError);
+//           // If parsing fails, default to an unauthorized state
+//         }
 //       }
-//     };
 
-//     fetchAccounts();
-//   }, []);
+//       // If the user's role is not 'admin' or 'manager', redirect them.
+//       // This is a client-side gate; server-side validation is also paramount.
+//       if (role !== 'admin' && role !== 'manager') {
+//         console.warn(`Unauthorized access attempt to ViewClientAccount by user with role: ${role || 'undefined'}. Redirecting...`);
+//         setError("You do not have permission to access this page. Redirecting...");
+//         // Use a slight delay for user to see the message before redirect
+//         setTimeout(() => {
+//           localStorage.clear()
+//           window.location.href = '/api/logout'
+//         }, 1500); // Redirect after 1.5 seconds
+//       } else {
+//         // If authorized, proceed to fetch data
+//         setLoading(false); // End initial loading for role check
+//       }
+//     }
+//   }, [router]); // Re-run if router object changes (rare)
 
-//   // Handle user search input and filter accounts
+//   // 🚀 PERFORMANCE / DATA FETCHING: Fetch data from Payload CMS when the component mounts
+//   // This useEffect will run only if the userRole is determined to be 'admin' or 'manager'
+//   useEffect(() => {
+//     // Only fetch accounts if the user is authorized (admin or manager)
+//     if (userRole === 'admin' || userRole === 'manager') {
+//       const fetchAccounts = async () => {
+//         setLoading(true); // Start loading before fetching data
+//         setError(""); // Clear previous errors
+//         try {
+//           // Make a GET request to your client-accounts API endpoint
+//           const response = await axios.get("/api/client-accounts");
+//           console.log(response.data);
+//           const data = response.data.docs; // Payload CMS typically returns data in a 'docs' array
+//           setAccounts(data); // Store all fetched accounts
+//           setFilteredAccounts(data); // Initialize filtered accounts with all accounts
+//         } catch (err) {
+//           console.error("Failed to fetch client accounts:", err);
+//           setError("Failed to load client accounts. Please try again.");
+//         } finally {
+//           setLoading(false); // End loading after fetch attempt
+//         }
+//       };
+
+//       fetchAccounts();
+//     } else if (userRole !== null) { // If userRole is determined but not authorized
+//       setLoading(false); // Stop loading as no data will be fetched
+//     }
+//   }, [userRole]); // Dependency on userRole ensures fetch happens after role is set
+
+//   // Handle user search input and filter accounts dynamically
 //   const handleSearch = (e) => {
-//     const value = e.target.value.toLowerCase();
-//     setSearchTerm(value);
+//     const value = e.target.value.toLowerCase(); // Get search term and convert to lower case for case-insensitive search
+//     setSearchTerm(value); // Update search term state
 
+//     // Filter the original 'accounts' array, not the already filtered one
 //     const filtered = accounts.filter((acc) =>
+//       // Check if clientName, clientMobile, query_license, or mining_license includes the search term
 //       acc.clientName?.toLowerCase().includes(value) ||
 //       acc.clientMobile?.includes(value) ||
 //       acc.query_license?.toLowerCase().includes(value) ||
 //       acc.mining_license?.toLowerCase().includes(value)
 //     );
 
-//     setFilteredAccounts(filtered);
+//     setFilteredAccounts(filtered); // Update the displayed accounts
 //   };
 
 //   // Handle delete operation by calling DELETE API
 //   const deleteAccount = async (id) => {
-//     if (window.confirm("Are you sure you want to delete this client account?")) {
+//     // Confirmation dialog before deletion
+//     if (window.confirm("Are you sure you want to delete this client account? This action cannot be undone.")) {
 //       try {
-//         await axios.delete(`/api/client-accounts/${id}`);
+//         await axios.delete(`/api/client-accounts/${id}`); // Send DELETE request to the API
+//         // Update both accounts and filteredAccounts states to reflect the deletion immediately
 //         const updated = accounts.filter((acc) => acc.id !== id);
 //         setAccounts(updated);
 //         setFilteredAccounts(updated);
+//         alert("Client account deleted successfully!"); // Success feedback
 //       } catch (err) {
-//         alert("Error deleting client account.");
+//         console.error("Error deleting client account:", err);
+//         alert("Error deleting client account. Please try again."); // Error feedback
 //       }
 //     }
 //   };
 
-//   // Open modal and set selected client account
+//   // Open modal and set the selected client account data to be displayed
 //   const handleView = (acc) => {
-//     setSelectedAccount(acc);
-//     setShowModal(true);
+//     setSelectedAccount(acc); // Store the account object
+//     setShowModal(true); // Show the modal
 //   };
 
+//   // 🚀 PERFORMANCE: Show loading spinner while initial data or user role is being determined
+//   if (loading || userRole === null) {
+//     return (
+//       <div className="d-flex justify-content-center align-items-center vh-100">
+//         <Spinner animation="border" variant="primary" />
+//         <p className="fw-semibold my-2 ms-2">Loading Please Wait...</p>
+//       </div>
+//     );
+//   }
+
+//   // Display unauthorized message if user role is not admin or manager
+//   if (userRole !== 'admin' && userRole !== 'manager') {
+//     return (
+//       <>
+//         <Container className="mt-5 text-center">
+//           <Alert variant="danger" className="fw-semibold">
+//             <FaClipboard className="me-2" /> {/* Reused icon for consistency with original code */}
+//             You do not have permission to access this page. Redirecting...
+//           </Alert>
+//         </Container>
+//       </>
+//     );
+//   }
+
+//   // Main component render for authorized users
 //   return (
 //     <>
-//       <Header />
+//       <Header /> {/* Renders the consistent navigation header */}
 
 //       <Container fluid className="py-3">
 //         <Row className="text-center align-items-center mb-3">
 //           <Col xs={12} md={6}>
 //             <h4 className="fw-bold">
-//               <FaClipboard className="me-2" />
+//               <FaClipboard className="me-2" /> {/* Icon for visual appeal */}
 //               View All Client's Accounts
 //             </h4>
 //           </Col>
 //           <Col xs={12} md={6} className="mt-2 mt-md-0">
 //             <InputGroup className="mx-auto" style={{ maxWidth: "400px" }}>
-//               <InputGroup.Text><FaSearch /></InputGroup.Text>
+//               <InputGroup.Text><FaSearch /></InputGroup.Text> {/* Search icon */}
 //               <Form.Control
 //                 type="text"
-//                 placeholder="Search by Name, Mobile, License"
+//                 placeholder="Search by Name, Mobile, or License"
 //                 value={searchTerm}
-//                 onChange={handleSearch}
+//                 onChange={handleSearch} // Triggers filtering on input change
 //               />
 //             </InputGroup>
 //           </Col>
 //         </Row>
 
-//         {/* Show loading spinner */}
+//         {/* Conditional rendering based on loading state, error state, or data availability */}
 //         {loading ? (
+//           // Display spinner while data is being fetched
 //           <div className="text-center py-5">
 //             <Spinner animation="border" variant="primary" />
 //             <p className="mt-3">Loading client accounts...</p>
 //           </div>
 //         ) : error ? (
+//           // Display error message if API call failed
 //           <Alert variant="danger" className="text-center">{error}</Alert>
 //         ) : (
+//           // Display table if data is loaded successfully
 //           <div className="table-responsive">
 //             <Table className="table-bordered table-hover text-center align-middle">
 //               <thead className="table-dark">
@@ -337,7 +419,7 @@
 //                   <th>Name</th>
 //                   <th>Mobile</th>
 //                   <th>Query License</th>
-//                   <th>Mining License</th>
+//                   <th>Nearby Village</th>
 //                   <th>Date</th>
 //                   <th>Time</th>
 //                   <th>Actions</th>
@@ -345,28 +427,32 @@
 //               </thead>
 //               <tbody>
 //                 {filteredAccounts.length > 0 ? (
+//                   // Map through filteredAccounts to display each client account row
 //                   filteredAccounts.map((acc, index) => (
 //                     <tr key={acc.id}>
 //                       <td>{index + 1}</td>
 //                       <td>{acc.clientName}</td>
 //                       <td>{acc.clientMobile}</td>
-//                       <td>{acc.query_license||"-"}</td>
-//                       <td>{acc.mining_license||"-"}</td>
-//                       <td>{formatDate(acc.clientCreatedAt)}</td>
-//                       <td>{formatTime(acc.clientCreatedAt)}</td>
+//                       <td>{acc.query_license}</td>
+//                       <td>{acc.near_village}</td>
+//                       <td>{formatDate(acc.clientCreatedAt)}</td> {/* Formatted date */}
+//                       <td>{formatTime(acc.clientCreatedAt)}</td> {/* Formatted time */}
 //                       <td>
-//                       <div className="d-flex flex-wrap justify-content-center align-items-center gap-2">
-//                         <Button variant="info" onClick={() => handleView(acc)}>
-//                           <FaEye className="fs-5 fw-bold"/>
-//                         </Button>
-//                         <Button variant="danger" onClick={() => deleteAccount(acc.id)}>
-//                           <FaTrash className="fs-5 fw-bold"/>
-//                         </Button>
-//                       </div>
+//                         <div className="d-flex flex-wrap justify-content-center align-items-center gap-2">
+//                           {/* View button to open modal with full details */}
+//                           <Button variant="info" onClick={() => handleView(acc)}>
+//                             <FaEye className="fs-5 fw-bold" />
+//                           </Button>
+//                           {/* Delete button to remove the account */}
+//                           <Button variant="danger" onClick={() => deleteAccount(acc.id)}>
+//                             <FaTrash className="fs-5 fw-bold" />
+//                           </Button>
+//                         </div>
 //                       </td>
 //                     </tr>
 //                   ))
 //                 ) : (
+//                   // Message displayed when no accounts match the search or no accounts exist
 //                   <tr>
 //                     <td colSpan="8" className="text-secondary fw-bold fs-5">
 //                       No Client Accounts Found.
@@ -379,37 +465,36 @@
 //         )}
 //       </Container>
 
-//       {/* Modal to view client details */}
+//       {/* Modal component to display detailed client account information */}
 //       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
 //         <Modal.Header closeButton>
 //           <Modal.Title>Client Account Details</Modal.Title>
 //         </Modal.Header>
 //         <Modal.Body>
-//           {selectedAccount && (
+//           {selectedAccount && ( // Only render if an account is selected
 //             <Card className="shadow-sm border-0">
 //               <Card.Body>
+//                 {/* Display client details in a structured way using Bootstrap Rows and Cols */}
 //                 <Row className="mb-2">
 //                   <Col md={6}><strong>Name:</strong> {selectedAccount.clientName}</Col>
 //                   <Col md={6}><strong>Mobile:</strong> {selectedAccount.clientMobile}</Col>
 //                 </Row>
 //                 <Row className="mb-2">
-//                   <Col md={6}><strong>Query License:</strong> {selectedAccount.query_license||"-"}</Col>
-//                   <Col md={6}><strong>Mining License:</strong> {selectedAccount.mining_license||"-"}</Col>
+//                   <Col md={6}><strong>Query License:</strong> {selectedAccount.query_license}</Col>
+//                   <Col md={6}><strong>Nearby Village:</strong> {selectedAccount.near_village}</Col>
 //                 </Row>
 //                 <Row className="mb-2">
-//                   <Col md={6}><strong>Village:</strong> {selectedAccount.near_village||"-"}</Col>
-//                   <Col md={6}><strong>Tehsil:</strong> {selectedAccount.tehsil||"-"}</Col>
+//                   <Col md={6}><strong>Mining License:</strong> {selectedAccount.mining_license || "NA"}</Col>
+//                   <Col md={6}><strong>Tehsil:</strong> {selectedAccount.tehsil || "NA"}</Col>
 //                 </Row>
 //                 <Row className="mb-2">
-//                   <Col md={6}><strong>District:</strong> {selectedAccount.district||"-"}</Col>
-//                   <Col md={6}><strong>State:</strong> {selectedAccount.state||"-"}</Col>
+//                   <Col md={6}><strong>District:</strong> {selectedAccount.district || "NA"}</Col>
+//                   <Col md={6}><strong>State:</strong> {selectedAccount.state || "NA"}</Col>
 //                 </Row>
 //                 <Row className="mb-2">
-//                   <Col md={6}><strong>Country:</strong> {selectedAccount.country||"-"}</Col>
-//                   <Col md={6}><strong>Date:</strong> {formatDate(selectedAccount.clientCreatedAt)}</Col>
-//                 </Row>
-//                 <Row>
-//                   <Col><strong>Time:</strong> {formatTime(selectedAccount.clientCreatedAt)}</Col>
+//                   <Col md={6}><strong>Country:</strong> {selectedAccount.country || "NA"}</Col>
+//                   <Col md={6}><strong>Created At:</strong> {formatDate(selectedAccount.clientCreatedAt)} {formatTime(selectedAccount.clientCreatedAt)}
+//                   </Col>
 //                 </Row>
 //               </Card.Body>
 //             </Card>
@@ -419,284 +504,345 @@
 //     </>
 //   );
 // };
-
 // export default ViewClientAccount;
 
-"use client"; // Enables client-side interactivity in Next.js
+
+"use client"; // Ensures this component uses client-side features (like localStorage, router)
+
 import React, { useEffect, useState } from "react";
-import { Table, Button, Container, Modal, Card, Row, Col, Form, InputGroup, Spinner, Alert } from "react-bootstrap";
-import { FaEye, FaTrash, FaSearch, FaClipboard } from "react-icons/fa"; // Icons for View, Delete, Search, Clipboard
-import { useRouter } from "next/navigation"; // For programmatic redirection
-import Header from "../components/Header"; // Reuse your Header component
-import axios from "axios"; // Using axios for API calls for consistency and features
+import { Container, Row, Col, Table, Button, Form, InputGroup, Spinner, Alert, Modal, Card } from "react-bootstrap";
+import { FaEye, FaTrash, FaSearch, FaClipboard, FaAngleLeft, FaAngleRight } from "react-icons/fa"; // Icons
+import Header from "../components/Header";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
-// Helper function to format date to DD/MM/YYYY for Indian context
-const formatDate = (dateString) => {
-  const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: "Asia/Kolkata" };
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-GB", options); // British format = DD/MM/YYYY
-};
+// 📆 Format date as DD/MM/YYYY for Indian format
+const formatDate = (date) =>
+  new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  });
 
-// Helper function to format time to HH:MM:SS AM/PM for Indian context
-const formatTime = (dateString) => {
-  const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: "Asia/Kolkata" };
-  const time = new Date(dateString);
-  return time.toLocaleTimeString("en-US", options); // US format = HH:MM:SS AM/PM
-};
+// 🕓 Format time as HH:MM:SS AM/PM
+const formatTime = (date) =>
+  new Date(date).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
+  });
 
 const ViewClientAccount = () => {
-  const router = useRouter(); // Initialize router for navigation
-  const [userRole, setUserRole] = useState(null); // State to store the user's role for access control
+  const router = useRouter();
 
-  const [accounts, setAccounts] = useState([]); // Stores all client accounts fetched from the API
-  const [filteredAccounts, setFilteredAccounts] = useState([]); // Stores accounts after applying search filter
-  const [searchTerm, setSearchTerm] = useState(""); // User's input for the search bar
+  // 🧠 Track user role for access control
+  const [userRole, setUserRole] = useState(null);
 
-  const [loading, setLoading] = useState(true); // Controls the display of a loading spinner
-  const [error, setError] = useState(""); // Stores and displays any error messages
+  // 🌐 Fetched accounts (current page only)
+  const [accounts, setAccounts] = useState([]);
 
-  const [showModal, setShowModal] = useState(false); // Controls the visibility of the client details modal
-  const [selectedAccount, setSelectedAccount] = useState(null); // Stores the data of the client account selected for viewing in the modal
+  // 🔎 Filtered accounts shown in search results (on current page)
+  const [filteredAccounts, setFilteredAccounts] = useState([]);
 
-  // 🚀 ACCESS CONTROL: Check user role immediately on component mount
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // 📥 Modal handling
+  const [showModal, setShowModal] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+
+  // 📊 Pagination state
+  const [page, setPage] = useState(1); // current page
+  const [totalPages, setTotalPages] = useState(1); // total number of pages
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // ✅ Check user access from localStorage on page load
   useEffect(() => {
-    if (typeof window !== "undefined") { // Ensure this code runs only in the browser
-      const userData = localStorage.getItem("user");
-      let role = null;
-      if (userData) {
-        try {
-          const parsedUser = JSON.parse(userData);
-          role = parsedUser.role;
-          setUserRole(role); // Set the role to state
-        } catch (parseError) {
-          console.error("Error parsing user data from localStorage in ViewClientAccount:", parseError);
-          // If parsing fails, default to an unauthorized state
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        const parsed = JSON.parse(userData);
+        setUserRole(parsed.role);
+
+        // Redirect if unauthorized
+        if (parsed.role !== "admin" && parsed.role !== "manager") {
+          setError("You do not have permission. Redirecting...");
+          setTimeout(() => {
+            localStorage.clear();
+            router.push("/api/logout");
+          }, 1500);
         }
+      } catch (err) {
+        console.error("Role parse failed:", err);
       }
-
-      // If the user's role is not 'admin' or 'manager', redirect them.
-      // This is a client-side gate; server-side validation is also paramount.
-      if (role !== 'admin' && role !== 'manager') {
-        console.warn(`Unauthorized access attempt to ViewClientAccount by user with role: ${role || 'undefined'}. Redirecting...`);
-        setError("You do not have permission to access this page. Redirecting...");
-        // Use a slight delay for user to see the message before redirect
-        setTimeout(() => {
-          localStorage.clear()
-          window.location.href = '/api/logout'
-        }, 1500); // Redirect after 1.5 seconds
-      } else {
-        // If authorized, proceed to fetch data
-        setLoading(false); // End initial loading for role check
-      }
+    } else {
+      setUserRole("unauthorized");
     }
-  }, [router]); // Re-run if router object changes (rare)
+  }, []);
 
-  // 🚀 PERFORMANCE / DATA FETCHING: Fetch data from Payload CMS when the component mounts
-  // This useEffect will run only if the userRole is determined to be 'admin' or 'manager'
+  // 🔁 Fetch accounts based on current page
   useEffect(() => {
-    // Only fetch accounts if the user is authorized (admin or manager)
-    if (userRole === 'admin' || userRole === 'manager') {
-      const fetchAccounts = async () => {
-        setLoading(true); // Start loading before fetching data
-        setError(""); // Clear previous errors
+    const fetchAccounts = async () => {
+      if (userRole === "admin" || userRole === "manager") {
+        setLoading(true);
         try {
-          // Make a GET request to your client-accounts API endpoint
-          const response = await axios.get("/api/client-accounts");
-          console.log(response.data);
-          const data = response.data.docs; // Payload CMS typically returns data in a 'docs' array
-          setAccounts(data); // Store all fetched accounts
-          setFilteredAccounts(data); // Initialize filtered accounts with all accounts
+          const res = await axios.get(`/api/client-accounts?page=${page}&limit=5`);
+          const data = res.data.docs;
+          setAccounts(data);
+          setFilteredAccounts(data);
+          setTotalPages(res.data.totalPages || 1); // Fallback if not sent
         } catch (err) {
-          console.error("Failed to fetch client accounts:", err);
-          setError("Failed to load client accounts. Please try again.");
+          setError("Failed to load client accounts.");
         } finally {
-          setLoading(false); // End loading after fetch attempt
+          setLoading(false);
         }
-      };
+      }
+    };
+    fetchAccounts();
+  }, [userRole, page]);
 
-      fetchAccounts();
-    } else if (userRole !== null) { // If userRole is determined but not authorized
-      setLoading(false); // Stop loading as no data will be fetched
-    }
-  }, [userRole]); // Dependency on userRole ensures fetch happens after role is set
-
-  // Handle user search input and filter accounts dynamically
+  // 🔎 Filter by name on current page
   const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase(); // Get search term and convert to lower case for case-insensitive search
-    setSearchTerm(value); // Update search term state
-
-    // Filter the original 'accounts' array, not the already filtered one
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
     const filtered = accounts.filter((acc) =>
-      // Check if clientName, clientMobile, query_license, or mining_license includes the search term
-      acc.clientName?.toLowerCase().includes(value) ||
-      acc.clientMobile?.includes(value) ||
-      acc.query_license?.toLowerCase().includes(value) ||
-      acc.mining_license?.toLowerCase().includes(value)
+      acc.clientName?.toLowerCase().includes(term)
     );
-
-    setFilteredAccounts(filtered); // Update the displayed accounts
+    setFilteredAccounts(filtered);
   };
 
-  // Handle delete operation by calling DELETE API
+  // ❌ Delete client account
   const deleteAccount = async (id) => {
-    // Confirmation dialog before deletion
-    if (window.confirm("Are you sure you want to delete this client account? This action cannot be undone.")) {
+    if (confirm("Are you sure? This can't be undone.")) {
       try {
-        await axios.delete(`/api/client-accounts/${id}`); // Send DELETE request to the API
-        // Update both accounts and filteredAccounts states to reflect the deletion immediately
+        await axios.delete(`/api/client-accounts/${id}`);
         const updated = accounts.filter((acc) => acc.id !== id);
         setAccounts(updated);
         setFilteredAccounts(updated);
-        alert("Client account deleted successfully!"); // Success feedback
+        alert("Deleted successfully.");
       } catch (err) {
-        console.error("Error deleting client account:", err);
-        alert("Error deleting client account. Please try again."); // Error feedback
+        alert("Deletion failed.");
       }
     }
   };
 
-  // Open modal and set the selected client account data to be displayed
+  // 👁️ Show client details in modal
   const handleView = (acc) => {
-    setSelectedAccount(acc); // Store the account object
-    setShowModal(true); // Show the modal
+    setSelectedAccount(acc);
+    setShowModal(true);
   };
 
-  // 🚀 PERFORMANCE: Show loading spinner while initial data or user role is being determined
+  // 🧭 Build pagination buttons
+  const renderPagination = () => {
+    const buttons = [];
+
+    if (page > 1) {
+      buttons.push(
+        <Button key="prev" onClick={() => setPage(page - 1)}>
+          <FaAngleLeft /> Prev
+        </Button>
+      );
+    }
+    
+    // Always show first page button
+    buttons.push(
+      <Button 
+        key="page-1" 
+        onClick={() => setPage(1)}
+        variant={page === 1 ? 'dark' : undefined}
+      >
+        1
+      </Button>
+    );
+
+    // Show previous page button if not adjacent to first page
+    if (page - 1 > 2) {
+      buttons.push(<span key="ellipsis1" className="align-self-center">...</span>);
+    }
+
+    // Show previous page button if not first page
+    if (page > 2) {
+      buttons.push(
+        <Button key={`page-${page - 1}`} onClick={() => setPage(page - 1)}>
+          {page - 1}
+        </Button>
+      );
+    }
+
+    // Show current page if not first or last
+    if (page > 1 && page < totalPages) {
+      buttons.push(
+        <Button key={`page-${page}`} variant="dark" disabled>
+          {page}
+        </Button>
+      );
+    }
+
+    // Show next page button if not last page
+    if (page < totalPages - 1) {
+      buttons.push(
+        <Button key={`page-${page + 1}`} onClick={() => setPage(page + 1)}>
+          {page + 1}
+        </Button>
+      );
+    }
+
+    // Show ellipsis if needed
+    if (page < totalPages - 2) {
+      buttons.push(<span key="ellipsis2" className="align-self-center">...</span>);
+    }
+
+    // Show last page button if not already shown
+    if (totalPages > 1 && !buttons.some(btn => btn.key === `page-${totalPages}`)) {
+      buttons.push(
+        <Button 
+          key={`page-${totalPages}`} 
+          onClick={() => setPage(totalPages)}
+          variant={page === totalPages ? 'dark' : undefined}
+        >
+          {totalPages}
+        </Button>
+      );
+    }
+
+    // Next button
+    if (page < totalPages) {
+      buttons.push(
+        <Button key="next" onClick={() => setPage(page + 1)}>
+          Next <FaAngleRight />
+        </Button>
+      );
+    }
+
+    return (
+      <div className="d-flex flex-wrap gap-2 justify-content-center mt-3">
+        {buttons}
+      </div>
+    );
+  };
+  // 🌀 Show spinner while loading
   if (loading || userRole === null) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
-        <Spinner animation="border" variant="primary" />
-        <p className="fw-semibold my-2 ms-2">Loading Please Wait...</p>
+        <Spinner animation="border" />
+        <p className="ms-3">Loading, please wait...</p>
       </div>
     );
   }
 
-  // Display unauthorized message if user role is not admin or manager
-  if (userRole !== 'admin' && userRole !== 'manager') {
+  // 🚫 Unauthorized fallback
+  if (userRole !== "admin" && userRole !== "manager") {
     return (
-      <>
-        <Container className="mt-5 text-center">
-          <Alert variant="danger" className="fw-semibold">
-            <FaClipboard className="me-2" /> {/* Reused icon for consistency with original code */}
-            You do not have permission to access this page. Redirecting...
-          </Alert>
-        </Container>
-      </>
+      <Container className="text-center mt-5">
+        <Alert variant="danger">
+          <FaClipboard className="me-2" />
+          {error || "Access Denied"}
+        </Alert>
+      </Container>
     );
   }
 
-  // Main component render for authorized users
   return (
     <>
-      <Header /> {/* Renders the consistent navigation header */}
+      <Header />
 
       <Container fluid className="py-3">
-        <Row className="text-center align-items-center mb-3">
+        <Row className="mb-3 align-items-center text-center">
           <Col xs={12} md={6}>
-            <h4 className="fw-bold">
-              <FaClipboard className="me-2" /> {/* Icon for visual appeal */}
-              View All Client's Accounts
-            </h4>
+            <h4><FaClipboard className="me-2" />View Client Accounts</h4>
           </Col>
-          <Col xs={12} md={6} className="mt-2 mt-md-0">
-            <InputGroup className="mx-auto" style={{ maxWidth: "400px" }}>
-              <InputGroup.Text><FaSearch /></InputGroup.Text> {/* Search icon */}
+          <Col xs={12} md={6}>
+            <InputGroup className="mx-auto" style={{ maxWidth: 400 }}>
+              <InputGroup.Text><FaSearch /></InputGroup.Text>
               <Form.Control
                 type="text"
-                placeholder="Search by Name, Mobile, or License"
+                placeholder="Search by Client Name..."
                 value={searchTerm}
-                onChange={handleSearch} // Triggers filtering on input change
+                onChange={handleSearch}
               />
             </InputGroup>
           </Col>
         </Row>
 
-        {/* Conditional rendering based on loading state, error state, or data availability */}
-        {loading ? (
-          // Display spinner while data is being fetched
-          <div className="text-center py-5">
-            <Spinner animation="border" variant="primary" />
-            <p className="mt-3">Loading client accounts...</p>
-          </div>
-        ) : error ? (
-          // Display error message if API call failed
-          <Alert variant="danger" className="text-center">{error}</Alert>
+        {error ? (
+          <Alert variant="danger">{error}</Alert>
         ) : (
-          // Display table if data is loaded successfully
-          <div className="table-responsive">
-            <Table className="table-bordered table-hover text-center align-middle">
-              <thead className="table-dark">
-                <tr>
-                  <th>S.No</th>
-                  <th>Name</th>
-                  <th>Mobile</th>
-                  <th>Query License</th>
-                  <th>Nearby Village</th>
-                  <th>Date</th>
-                  <th>Time</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAccounts.length > 0 ? (
-                  // Map through filteredAccounts to display each client account row
-                  filteredAccounts.map((acc, index) => (
-                    <tr key={acc.id}>
-                      <td>{index + 1}</td>
-                      <td>{acc.clientName}</td>
-                      <td>{acc.clientMobile}</td>
-                      <td>{acc.query_license}</td>
-                      <td>{acc.near_village}</td>
-                      <td>{formatDate(acc.clientCreatedAt)}</td> {/* Formatted date */}
-                      <td>{formatTime(acc.clientCreatedAt)}</td> {/* Formatted time */}
-                      <td>
-                        <div className="d-flex flex-wrap justify-content-center align-items-center gap-2">
-                          {/* View button to open modal with full details */}
+          <>
+            <div className="table-responsive">
+              <Table bordered hover responsive className="text-center align-middle">
+                <thead className="table-dark">
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Query License</th>
+                    <th>Village</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAccounts.length > 0 ? (
+                    filteredAccounts.map((acc, i) => (
+                      <tr key={acc.id}>
+                        <td>{i + 1}</td>
+                        <td>{acc.clientName}</td>
+                        <td>{acc.clientMobile}</td>
+                        <td>{acc.query_license}</td>
+                        <td>{acc.near_village}</td>
+                        <td>{formatDate(acc.clientCreatedAt)}</td>
+                        <td>{formatTime(acc.clientCreatedAt)}</td>
+                        <td className="d-flex gap-2 justify-content-center flex-wrap">
                           <Button variant="info" onClick={() => handleView(acc)}>
-                            <FaEye className="fs-5 fw-bold" />
+                            <FaEye />
                           </Button>
-                          {/* Delete button to remove the account */}
                           <Button variant="danger" onClick={() => deleteAccount(acc.id)}>
-                            <FaTrash className="fs-5 fw-bold" />
+                            <FaTrash />
                           </Button>
-                        </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="8" className="text-secondary fw-semibold">
+                        No matching records found.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  // Message displayed when no accounts match the search or no accounts exist
-                  <tr>
-                    <td colSpan="8" className="text-secondary fw-bold fs-5">
-                      No Client Accounts Found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
-          </div>
+                  )}
+                </tbody>
+              </Table>
+            </div>
+
+            {/* Pagination */}
+            {renderPagination()}
+          </>
         )}
       </Container>
 
-      {/* Modal component to display detailed client account information */}
+      {/* View Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
         <Modal.Header closeButton>
-          <Modal.Title>Client Account Details</Modal.Title>
+          <Modal.Title>Client Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {selectedAccount && ( // Only render if an account is selected
-            <Card className="shadow-sm border-0">
+          {selectedAccount && (
+            <Card>
               <Card.Body>
-                {/* Display client details in a structured way using Bootstrap Rows and Cols */}
                 <Row className="mb-2">
                   <Col md={6}><strong>Name:</strong> {selectedAccount.clientName}</Col>
                   <Col md={6}><strong>Mobile:</strong> {selectedAccount.clientMobile}</Col>
                 </Row>
                 <Row className="mb-2">
                   <Col md={6}><strong>Query License:</strong> {selectedAccount.query_license}</Col>
-                  <Col md={6}><strong>Nearby Village:</strong> {selectedAccount.near_village}</Col>
+                  <Col md={6}><strong>Mining License:</strong> {selectedAccount.mining_license || "NA"}</Col>
                 </Row>
                 <Row className="mb-2">
-                  <Col md={6}><strong>Mining License:</strong> {selectedAccount.mining_license || "NA"}</Col>
+                  <Col md={6}><strong>Village:</strong> {selectedAccount.near_village}</Col>
                   <Col md={6}><strong>Tehsil:</strong> {selectedAccount.tehsil || "NA"}</Col>
                 </Row>
                 <Row className="mb-2">
@@ -705,8 +851,7 @@ const ViewClientAccount = () => {
                 </Row>
                 <Row className="mb-2">
                   <Col md={6}><strong>Country:</strong> {selectedAccount.country || "NA"}</Col>
-                  <Col md={6}><strong>Created At:</strong> {formatDate(selectedAccount.clientCreatedAt)} {formatTime(selectedAccount.clientCreatedAt)}
-                  </Col>
+                  <Col md={6}><strong>Created At:</strong> {formatDate(selectedAccount.clientCreatedAt)} {formatTime(selectedAccount.clientCreatedAt)}</Col>
                 </Row>
               </Card.Body>
             </Card>
@@ -718,176 +863,3 @@ const ViewClientAccount = () => {
 };
 
 export default ViewClientAccount;
-// {
-//   "docs": [
-//       {
-//           "id": 29,
-//           "clientName": "Mansi Govil",
-//           "clientMobile": "0592913019",
-//           "query_license": "Query License123",
-//           "mining_license": "Mining License21345",
-//           "near_village": "phodi",
-//           "tehsil": "Ratanada",
-//           "district": "Jodhpur",
-//           "state": "RAJASTHAN",
-//           "country": "India",
-//           "clientCreatedAt": "2025-06-22T11:09:11.445Z",
-//           "clientUpdatedAt": "2025-06-22T11:09:11.445Z",
-//           "updatedAt": "2025-06-22T11:09:11.567Z",
-//           "createdAt": "2025-06-22T11:09:11.452Z"
-//       },
-//       {
-//           "id": 28,
-//           "clientName": "H&m",
-//           "clientMobile": "9865743201",
-//           "query_license": "123456789",
-//           "mining_license": "mining",
-//           "near_village": "banaras",
-//           "tehsil": "chowk",
-//           "district": "varansi",
-//           "state": "UP",
-//           "country": "India",
-//           "clientCreatedAt": "2025-06-22T04:11:55.638Z",
-//           "clientUpdatedAt": "2025-06-22T04:11:55.638Z",
-//           "updatedAt": "2025-06-22T04:11:55.759Z",
-//           "createdAt": "2025-06-22T04:11:55.399Z"
-//       },
-//       {
-//           "id": 27,
-//           "clientName": "a",
-//           "clientMobile": "9694716263",
-//           "query_license": "12",
-//           "mining_license": "21",
-//           "near_village": "j",
-//           "tehsil": "r",
-//           "district": "jo",
-//           "state": "Rajasthan",
-//           "country": "India",
-//           "clientCreatedAt": "2025-06-21T19:35:28.756Z",
-//           "clientUpdatedAt": "2025-06-21T19:35:28.756Z",
-//           "updatedAt": "2025-06-21T19:35:30.127Z",
-//           "createdAt": "2025-06-21T19:35:30.143Z"
-//       },
-//       {
-//           "id": 26,
-//           "clientName": "Harshit tak",
-//           "clientMobile": "7977189963",
-//           "query_license": "Devopsfarm@2025",
-//           "mining_license": "Mining License1234",
-//           "near_village": "paota",
-//           "tehsil": "",
-//           "district": "",
-//           "state": "",
-//           "country": "",
-//           "clientCreatedAt": "2025-06-21T09:50:32.039Z",
-//           "clientUpdatedAt": "2025-06-21T09:50:32.039Z",
-//           "updatedAt": "2025-06-21T09:50:32.147Z",
-//           "createdAt": "2025-06-21T09:50:32.448Z"
-//       },
-//       {
-//           "id": 25,
-//           "clientName": "shreyash",
-//           "clientMobile": "3590119021",
-//           "query_license": "shreyash@1234",
-//           "mining_license": "mining-MBM",
-//           "near_village": "Jodhpur",
-//           "tehsil": "Basni",
-//           "district": "Jodhpur",
-//           "state": "RAJASTHAN",
-//           "country": "India",
-//           "clientCreatedAt": "2025-06-21T09:48:22.660Z",
-//           "clientUpdatedAt": "2025-06-21T09:48:22.660Z",
-//           "updatedAt": "2025-06-21T09:48:22.791Z",
-//           "createdAt": "2025-06-21T09:48:23.076Z"
-//       },
-//       {
-//           "id": 24,
-//           "clientName": "Hiamnshu Govil",
-//           "clientMobile": "1098274635",
-//           "query_license": "Query License23415",
-//           "mining_license": "21062025",
-//           "near_village": "Salawas",
-//           "tehsil": "Goverdhan",
-//           "district": "Bharatpur",
-//           "state": "Rajasthan",
-//           "country": "India",
-//           "clientCreatedAt": "2025-06-21T08:01:51.688Z",
-//           "clientUpdatedAt": "2025-06-21T08:01:51.688Z",
-//           "updatedAt": "2025-06-21T08:01:51.817Z",
-//           "createdAt": "2025-06-21T08:01:52.035Z"
-//       },
-//       {
-//           "id": 23,
-//           "clientName": "Hiamnshu Govil",
-//           "clientMobile": "9012837456",
-//           "query_license": "Devopsfarm@2025",
-//           "mining_license": "Mining License1234",
-//           "near_village": "Salawas",
-//           "tehsil": "Phalodi",
-//           "district": "Jodhpur",
-//           "state": "Raj",
-//           "country": "India",
-//           "clientCreatedAt": "2025-06-21T08:00:24.924Z",
-//           "clientUpdatedAt": "2025-06-21T08:00:24.924Z",
-//           "updatedAt": "2025-06-21T08:00:25.122Z",
-//           "createdAt": "2025-06-21T08:00:25.319Z"
-//       },
-//       {
-//           "id": 20,
-//           "clientName": "ABC",
-//           "clientMobile": "9135901192",
-//           "query_license": "241101",
-//           "mining_license": "33333333",
-//           "near_village": "Jodhpur",
-//           "tehsil": "Ratanada",
-//           "district": "Jodhpur",
-//           "state": "RAJASTHAN",
-//           "country": "India",
-//           "clientCreatedAt": "2025-06-19T12:50:33.349Z",
-//           "clientUpdatedAt": "2025-06-19T12:50:33.349Z",
-//           "updatedAt": "2025-06-19T12:50:33.965Z",
-//           "createdAt": "2025-06-19T12:50:34.001Z"
-//       },
-//       {
-//           "id": 19,
-//           "clientName": "Mayank Govil",
-//           "clientMobile": "0462611036",
-//           "query_license": "1234",
-//           "mining_license": "Mining License213456",
-//           "near_village": "paota",
-//           "tehsil": "",
-//           "district": "",
-//           "state": "Rajasthan",
-//           "country": "India",
-//           "clientCreatedAt": "2025-06-18T11:36:20.365Z",
-//           "clientUpdatedAt": "2025-06-18T11:36:20.365Z",
-//           "updatedAt": "2025-06-18T11:36:21.324Z",
-//           "createdAt": "2025-06-18T11:36:21.207Z"
-//       },
-//       {
-//           "id": 18,
-//           "clientName": "Raj",
-//           "clientMobile": "9928765103",
-//           "query_license": "123",
-//           "mining_license": "557",
-//           "near_village": "Paota",
-//           "tehsil": "Polar ",
-//           "district": "Jodhpur ",
-//           "state": "Rajasthan ",
-//           "country": "India",
-//           "clientCreatedAt": "2025-06-18T10:21:53.635Z",
-//           "clientUpdatedAt": "2025-06-18T10:21:53.635Z",
-//           "updatedAt": "2025-06-18T10:21:56.669Z",
-//           "createdAt": "2025-06-18T10:21:56.570Z"
-//       }
-//   ],
-//   "hasNextPage": true,
-//   "hasPrevPage": false,
-//   "limit": 10,
-//   "nextPage": 2,
-//   "page": 1,
-//   "pagingCounter": 1,
-//   "prevPage": null,
-//   "totalDocs": 21,
-//   "totalPages": 3
-// }

@@ -451,7 +451,7 @@ const ViewClientTransaction = () => {
                 <th>Total Amount(<FaRupeeSign />)</th>
                 <th>Received Amount(<FaRupeeSign />)</th>
                 <th>Remaining Amount(<FaRupeeSign />)</th>
-                <th>Payment Status</th>
+                <th>Transaction Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -509,8 +509,8 @@ const ViewClientTransaction = () => {
             <Modal.Title className="d-flex align-items-center gap-2">
               <FaClipboard className="text-primary" />
               <span className="fs-5">Client Transaction Details</span>
-              <Button variant="outline-danger" size="sm" className="ms-auto" onClick={downloadPDF} title="Download as PDF">
-                <FaFilePdf className="me-1" /> PDF
+              <Button variant="outline-warning" size="sm" className="ms-auto rounded-pill fw-bold fs-6 text-center justify-content-center align-items-center d-flex gap-1 text-dark" onClick={downloadPDF} title="Download as PDF">
+                <FaFilePdf className="me-1" />PDF
               </Button>
             </Modal.Title>
           </Modal.Header>
@@ -559,7 +559,7 @@ const ViewClientTransaction = () => {
                     <p>
                       <strong>Payment Status:</strong>{" "}
                       <Badge bg={selectedTransaction.paymentstatus === "pending" ? "danger" : "success"}>
-                        {selectedTransaction.paymentstatus}
+                        <span className="rounded-pill fw-semibold fs-6 text-white text-center text-capitalize p-2">{selectedTransaction.paymentstatus}</span>
                       </Badge>
                     </p>
                     <p><strong>Transaction Description:</strong> {selectedTransaction.description || "N/A"}</p>

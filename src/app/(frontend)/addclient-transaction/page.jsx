@@ -1332,7 +1332,7 @@ const AddClientTransaction = () => {
                   <Col md={6} className="mb-3">
                     <Form.Group>
                       <Form.Label className="fw-bold fs-5">
-                        <FaMapMarkerAlt className="me-1" /> Village
+                        <FaMapMarkerAlt className="me-1" /> NearBy Village
                         <span className="text-danger ms-1">*</span>
                       </Form.Label>
                       <Form.Control
@@ -1463,7 +1463,7 @@ const AddClientTransaction = () => {
                   <Col md={6}>
                     <Form.Group>
                       <Form.Label className="fw-bold fs-5">
-                        Total Amount (Our Side) <FontAwesomeIcon icon={faIndianRupeeSign} />
+                        Total Amount Our Side (<FontAwesomeIcon icon={faIndianRupeeSign} />)
                       </Form.Label>
                       <Form.Control
                         value={getTotalAmount().toFixed(2)} // Display with 2 decimal places
@@ -1475,7 +1475,7 @@ const AddClientTransaction = () => {
                   <Col md={6}>
                     <Form.Group>
                       <Form.Label className="fw-bold fs-5">
-                        Total Amount (Client Paid) <FontAwesomeIcon icon={faIndianRupeeSign} />
+                        Total Client Paid Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)
                       </Form.Label>
                       <Form.Control
                         value={getTotalAmountClient().toFixed(2)}
@@ -1489,7 +1489,7 @@ const AddClientTransaction = () => {
                 {/* Remaining Amount Field */}
                 <Form.Group className="mb-4">
                   <Form.Label className="fw-bold fs-5">
-                    Remaining Balance <FontAwesomeIcon icon={faIndianRupeeSign} />
+                    Remaining Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)
                   </Form.Label>
                   <Form.Control
                     value={getRemainingAmount().toFixed(2)}
