@@ -644,7 +644,7 @@ const ViewClientTransaction = () => {
   const [error, setError] = useState(""); // Error message displayed using Alert
 
   // Pagination states
-  const itemsPerPage = 5; // Number of transactions per page
+  const itemsPerPage = 10; // Number of transactions per page
   const [currentPage, setCurrentPage] = useState(1); // Current page number
 
   // Validate user role using localStorage
@@ -741,6 +741,41 @@ const ViewClientTransaction = () => {
   };
 
   // Function to download PDF
+  // const downloadPDF = async () => {
+  //   if (typeof window === 'undefined' || !selectedTransaction) return;
+
+  //   try {
+  //     // Dynamically import html2pdf only on the client side
+  //     const html2pdf = (await import('html2pdf.js')).default;
+
+  //     const element = document.getElementById("pdf-content");
+  //     if (!element) return;
+
+  //     const opt = {
+  //       margin: 0.5,
+  //       filename: `Client_Transaction_${selectedTransaction.clientName?.clientName || "Details"}.pdf`,
+  //       image: { type: "jpeg", quality: 0.98 },
+  //       html2canvas: {
+  //         scale: 2,
+  //         useCORS: true,
+  //         logging: true,
+  //         scrollY: 0
+  //       },
+  //       jsPDF: {
+  //         unit: "in",
+  //         format: "a4",
+  //         orientation: "portrait"
+  //       },
+  //     };
+
+  //     await html2pdf().set(opt).from(element).save();
+  //   } catch (error) {
+  //     console.error('Error generating PDF:', error);
+  //     alert('Error generating PDF. Please try again.');
+  //   }
+  // };
+
+  // Function to download PDF
   const downloadPDF = async () => {
     if (typeof window === 'undefined' || !selectedTransaction) return;
 
@@ -751,24 +786,59 @@ const ViewClientTransaction = () => {
       const element = document.getElementById("pdf-content");
       if (!element) return;
 
+      // Create a new div to hold the content for PDF generation
+      // This helps in isolating the content and applying specific styles for PDF
+      const pdfContentWrapper = document.createElement('div');
+      pdfContentWrapper.innerHTML = element.innerHTML;
+
+      // Apply inline styles to the wrapper for consistent layout
+      // These styles are critical for maintaining the layout across different devices
+      pdfContentWrapper.style.padding = '20px'; // Add some padding
+      pdfContentWrapper.style.fontFamily = 'Arial, sans-serif'; // Consistent font
+      pdfContentWrapper.style.fontSize = '12px'; // Base font size
+
+      // Adjust specific elements within the wrapper if needed for PDF
+      // For example, force table layouts or image sizes
+      const tables = pdfContentWrapper.querySelectorAll('table');
+      tables.forEach(table => {
+        table.style.width = '100%';
+        table.style.borderCollapse = 'collapse';
+      });
+      const cells = pdfContentWrapper.querySelectorAll('th, td');
+      cells.forEach(cell => {
+        cell.style.padding = '8px';
+        cell.style.border = '1px solid #ddd';
+      });
+
       const opt = {
         margin: 0.5,
         filename: `Client_Transaction_${selectedTransaction.clientName?.clientName || "Details"}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: {
-          scale: 2,
+          scale: 2, // Keep scale consistent for better resolution
           useCORS: true,
           logging: true,
-          scrollY: 0
+          scrollY: 0,
+          // Explicitly set width and height to control the rendering area
+          // This can prevent content from being cut off or scaled inconsistently
+          windowWidth: pdfContentWrapper.scrollWidth,
+          windowHeight: pdfContentWrapper.scrollHeight
         },
         jsPDF: {
           unit: "in",
           format: "a4",
           orientation: "portrait"
         },
+        // Add `pagebreak` option for controlled page breaks in case of long content
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
-      await html2pdf().set(opt).from(element).save();
+      // Use the created wrapper element for PDF generation
+      await html2pdf().set(opt).from(pdfContentWrapper).save();
+
+      // Clean up the temporary wrapper if it was appended to the body
+      // In this case, we are passing the element directly, so no need to remove from DOM.
+
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
@@ -776,26 +846,59 @@ const ViewClientTransaction = () => {
   };
 
 
-  const togglePaymentStatus = async (id) => {
-    const updated = allTransactions.map((txn) => {
-      if (txn.id === id) {
-        const newStatus = txn.paymentstatus === "pending" ? "paid" : "pending";
-        fetch(`/api/client-transaction/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ paymentstatus: newStatus }),
-        });
-        return { ...txn, paymentstatus: newStatus };
-      }
-      return txn;
-    });
+  // const togglePaymentStatus = async (id) => {
+  //   const updated = allTransactions.map((txn) => {
+  //     if (txn.id === id) {
+  //       const newStatus = txn.paymentstatus === "pending" ? "paid" : "pending";
+  //       fetch(`/api/client-transaction/${id}`, {
+  //         method: "PATCH",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ paymentstatus: newStatus }),
+  //       });
+  //       return { ...txn, paymentstatus: newStatus };
+  //     }
+  //     return txn;
+  //   });
 
-    setAllTransactions(updated);
-    setFilteredTransactions(updated);
-    window.location.reload();
-  };
+  //   setAllTransactions(updated);
+  //   setFilteredTransactions(updated);
+  // };
 
   // Get current page items for display
+  
+  const togglePaymentStatus = async (id) => {
+    try {
+      // Find the transaction to get current status
+      const transactionToUpdate = allTransactions.find(txn => txn.id === id);
+      if (!transactionToUpdate) return;
+  
+      const newStatus = transactionToUpdate.paymentstatus === "pending" ? "paid" : "pending";
+      
+      // Update on the server
+      await fetch(`/api/client-transaction/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentstatus: newStatus }),
+      });
+  
+      // Update the allTransactions state
+      const updatedAllTransactions = allTransactions.map(txn => 
+        txn.id === id ? { ...txn, paymentstatus: newStatus } : txn
+      );
+  
+      // Update the filteredTransactions state while preserving the current filter
+      const updatedFilteredTransactions = filteredTransactions.map(txn =>
+        txn.id === id ? { ...txn, paymentstatus: newStatus } : txn
+      );
+  
+      setAllTransactions(updatedAllTransactions);
+      setFilteredTransactions(updatedFilteredTransactions);
+  
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+      setError("Failed to update payment status. Please try again.");
+    }
+  };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
