@@ -597,7 +597,7 @@ const ViewVendorAccount = () => {
     const [selectedVendorAccount, setSelectedVendorAccount] = useState(null);
 
     // Pagination states
-    const itemsPerPage = 10; // Number of rows per page
+    const itemsPerPage = 10; // Number of rows per page is 10
     const [currentPage, setCurrentPage] = useState(1); // Current page number
 
 

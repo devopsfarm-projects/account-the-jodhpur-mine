@@ -644,7 +644,7 @@ const ViewClientTransaction = () => {
   const [error, setError] = useState(""); // Error message displayed using Alert
 
   // Pagination states
-  const itemsPerPage = 10; // Number of transactions per page
+  const itemsPerPage = 10; // Number of transactions per page is 10
   const [currentPage, setCurrentPage] = useState(1); // Current page number
 
   // Validate user role using localStorage

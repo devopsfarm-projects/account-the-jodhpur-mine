@@ -514,7 +514,7 @@ const ViewExpense = () => {
   const [error, setError] = useState(null);
 
   // Pagination states
-  const itemsPerPage = 10; // Number of rows per page
+  const itemsPerPage = 10; // Number of rows per page is 10
   const [currentPage, setCurrentPage] = useState(1); // Current page number
 
   // Effect to check user role on component mount for authorization
