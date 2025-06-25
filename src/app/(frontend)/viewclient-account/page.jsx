@@ -536,7 +536,7 @@ const ViewClientAccount = () => {
   const [selectedAccount, setSelectedAccount] = useState(null);
 
   // Pagination
-  const itemsPerPage = 5; // Number of rows per page
+  const itemsPerPage = 10; // Number of rows per page
   const [currentPage, setCurrentPage] = useState(1); // Current page number
 
   // UI states

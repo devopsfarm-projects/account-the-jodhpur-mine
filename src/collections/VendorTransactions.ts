@@ -15,14 +15,16 @@ export const VendorTransactions: CollectionConfig = {
       required: true,
     },
     {
-      name: 'totalAmount',
-      type: 'number',
-      required: true,
+      name:'query_license',
+      type:'relationship',
+      relationTo:'vendor',
+      required:true,
     },
     {
-      name: 'tokenAmount',
-      type: 'number',
-      required: true,
+      name:'near_village',
+      type:'relationship',
+      relationTo:'vendor',
+      required:true,
     },
     {
       name: 'workingStage',
@@ -41,11 +43,30 @@ export const VendorTransactions: CollectionConfig = {
         },
       ],
     },
-
     {
-      name: 'totalCredit',
-      type: 'number',
+      name: 'workingStagevendor',
+      type: 'array',
      
+      fields: [
+        {
+          name: 'workingStagevendor',
+          type: 'text',
+         
+        },
+        {
+          name: 'workingDescriptionvendor',
+          type: 'text',
+         
+        },
+      ],
+    },
+    {
+      name: 'totalAmount',
+      type: 'number',
+    },
+    {
+      name:'totalAmountvendor',
+      type:'number',
     },
     {
       name: 'remainingAmount',
@@ -65,7 +86,11 @@ export const VendorTransactions: CollectionConfig = {
     {
       name: 'vendorUpdatedAt',
       type: 'date',
-      
     },
+    {
+      name:'paymentstatus',
+      type:'text',
+      defaultValue:'pending',
+    }
   ],
 }

@@ -220,8 +220,8 @@ export interface ClientTransaction {
 export interface VendorTransaction {
   id: number;
   vendorName: number | Vendor;
-  totalAmount: number;
-  tokenAmount: number;
+  query_license: number | Vendor;
+  near_village: number | Vendor;
   workingStage?:
     | {
         workingStage?: string | null;
@@ -229,11 +229,20 @@ export interface VendorTransaction {
         id?: string | null;
       }[]
     | null;
-  totalCredit?: number | null;
+  workingStagevendor?:
+    | {
+        workingStagevendor?: string | null;
+        workingDescriptionvendor?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  totalAmount?: number | null;
+  totalAmountvendor?: number | null;
   remainingAmount?: number | null;
   description?: string | null;
   vendorCreatedAt?: string | null;
   vendorUpdatedAt?: string | null;
+  paymentstatus?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -445,8 +454,8 @@ export interface ClientTransactionSelect<T extends boolean = true> {
  */
 export interface VendorTransactionSelect<T extends boolean = true> {
   vendorName?: T;
-  totalAmount?: T;
-  tokenAmount?: T;
+  query_license?: T;
+  near_village?: T;
   workingStage?:
     | T
     | {
@@ -454,11 +463,20 @@ export interface VendorTransactionSelect<T extends boolean = true> {
         workingDescription?: T;
         id?: T;
       };
-  totalCredit?: T;
+  workingStagevendor?:
+    | T
+    | {
+        workingStagevendor?: T;
+        workingDescriptionvendor?: T;
+        id?: T;
+      };
+  totalAmount?: T;
+  totalAmountvendor?: T;
   remainingAmount?: T;
   description?: T;
   vendorCreatedAt?: T;
   vendorUpdatedAt?: T;
+  paymentstatus?: T;
   updatedAt?: T;
   createdAt?: T;
 }
