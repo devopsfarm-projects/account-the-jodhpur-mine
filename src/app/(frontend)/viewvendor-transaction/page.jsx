@@ -526,7 +526,7 @@ const ViewVendorTransaction = () => {
   const [error, setError] = useState("");
 
   // Pagination states
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
   // Validate user role using localStorage

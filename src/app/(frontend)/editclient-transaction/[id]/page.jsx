@@ -815,7 +815,7 @@ const EditClientTransaction = () => {
       near_village: nearVillageId,
       paymentstatus: form.paymentstatus, // This is also read-only in the UI, but part of the collection config
       clientCreatedAt: clientCreatedAt, // Read-only, send existing value
-      clientUpdatedAt: clientUpdatedAt, // Add this line
+      clientUpdatedAt: new Date().toISOString(), // Add this line
 
       totalAmount: getTotalAmount(), // This is editable from the UI
       totalAmountclient: getTotalAmountClient(), // This is editable from the UI
@@ -940,8 +940,7 @@ const EditClientTransaction = () => {
             </Col>
             <Col sm={4}>
             <Form.Label className="fw-bold fs-5 text-center text-wrap text-capitalize">transaction Payment Status</Form.Label>
-            <div className={`p-2 rounded text-center fw-bold text-uppercase ${form.paymentstatus === 'paid' ? 'bg-success text-white' :
-              form.paymentstatus === 'pending' ? 'bg-warning text-dark' : 'bg-danger text-white'}`}>
+            <div className={`p-2 rounded text-center fw-bold text-uppercase ${form.paymentstatus === 'paid' ? 'bg-success text-white' : form.paymentstatus === 'pending' ? 'bg-warning text-dark' : 'bg-danger text-white'}`}>
               {form.paymentstatus || 'N/A'}
             </div>
           </Col>

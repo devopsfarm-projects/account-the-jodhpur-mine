@@ -697,7 +697,7 @@ const EditExpense = () => {
         throw new Error(errorData.message || "Failed to save changes.");
       }
 
-      alert("Expense updated successfully!");
+      //alert("Expense updated successfully!");
       router.push("/view-expense"); // Navigate back on success
     } catch (error) {
       console.error("Error saving:", error);

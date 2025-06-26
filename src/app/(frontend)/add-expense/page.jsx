@@ -540,7 +540,7 @@ const AddExpense = () => {
       setTimeout(() => {
         handleReset();
         router.push('/view-expense');
-      }, 2000);
+      }, 1000);
     } catch (err) {
       console.error("Error saving expense:", err);
       setError(err.message || 'An unexpected error occurred');
