@@ -320,6 +320,7 @@
 // };
 // export default AddClientAccount;
 
+// page.jsx addclient-account
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
