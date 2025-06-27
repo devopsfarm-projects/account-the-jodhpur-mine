@@ -685,12 +685,339 @@
 // export default AddVendorAccount;
 
 //page.jsx addvendor-account
-'use client';
+// 'use client';
+// import React, { useState, useEffect } from 'react';
+// import { useRouter } from 'next/navigation';
+// import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
+// import Header from '../components/Header';
 
+// const AddVendorAccount = () => {
+//   const router = useRouter();
+
+//   const [formData, setFormData] = useState({
+//     vendorName: '',
+//     vendorMobile: '',
+//     query_license: '',
+//     mining_license: '',
+//     near_village: '',
+//     tehsil: '',
+//     district: '',
+//     state: '',
+//     country: ''
+//   });
+
+//   const [validated, setValidated] = useState(false);
+//   const [showAlert, setShowAlert] = useState(false);
+//   const [alertMessage, setAlertMessage] = useState('');
+//   const [alertVariant, setAlertVariant] = useState('success');
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+//   const [userRole, setUserRole] = useState(null);
+
+//   useEffect(() => {
+//     if (typeof window !== "undefined") {
+//       const userData = localStorage.getItem("user");
+//       let role;
+//       if (userData) {
+//         try {
+//           const parsedUser = JSON.parse(userData);
+//           role = parsedUser.role;
+//           setUserRole(role);
+//         } catch (error) {
+//           console.error("Error parsing user data from localStorage:", error);
+//         }
+//       }
+
+//       if (role !== 'admin' && role !== 'manager') {
+//         setTimeout(() => {
+//           localStorage.clear();
+//           window.location.href = '/api/logout';
+//         }, 1500);
+//       }
+//     }
+//   }, [router]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData({
+//       ...formData,
+//       [name]: value
+//     });
+//   };
+
+//   const resetForm = () => {
+//     setFormData({
+//       vendorName: '',
+//       vendorMobile: '',
+//       query_license: '',
+//       mining_license: '',
+//       near_village: '',
+//       tehsil: '',
+//       district: '',
+//       state: '',
+//       country: ''
+//     });
+//     setValidated(false);
+//   };
+
+//   const getFormattedDate = () => {
+//     const now = new Date();
+//     return now.toISOString();
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     const form = e.currentTarget;
+//     setValidated(true);
+
+//     if (form.checkValidity() === false) {
+//       e.stopPropagation();
+//       return;
+//     }
+
+//     setIsSubmitting(true);
+
+//     try {
+//       // Check for existing vendor with same name, license, and village
+//       const checkRes = await fetch('/api/vendor');
+//       const existingVendors = await checkRes.json();
+
+//       const isDuplicate = existingVendors?.docs?.some((vendor) =>
+//         vendor.vendorName?.toLowerCase() === formData.vendorName.toLowerCase() &&
+//         vendor.query_license?.toLowerCase() === formData.query_license.toLowerCase() &&
+//         vendor.near_village?.toLowerCase() === formData.near_village.toLowerCase()
+//       );
+
+//       if (isDuplicate) {
+//         setAlertVariant('danger');
+//         setAlertMessage('This vendor account already exists. Duplicate combination not allowed.');
+//         setShowAlert(true);
+//         setIsSubmitting(false);
+
+//         setTimeout(() => {
+//           resetForm();
+//           setShowAlert(false);
+//         }, 3000);
+
+//         return;
+//       }
+
+//       const newVendor = {
+//         ...formData,
+//         vendorCreatedAt: getFormattedDate(),
+//         vendorUpdatedAt: getFormattedDate(),
+//       };
+
+//       const response = await fetch('/api/vendor', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(newVendor)
+//       });
+
+//       if (response.ok) {
+//         setAlertVariant('success');
+//         setAlertMessage('Vendor account created successfully!');
+//         setShowAlert(true);
+
+//         setTimeout(() => {
+//           setShowAlert(false);
+//           resetForm();
+//           router.push('/viewvendor-account');
+//         }, 2000);
+//       } else {
+//         const error = await response.json();
+//         setAlertVariant('danger');
+//         setAlertMessage(error.message || 'Something went wrong.');
+//         setShowAlert(true);
+//         setIsSubmitting(false);
+//       }
+//     } catch (err) {
+//       setAlertVariant('danger');
+//       setAlertMessage('Network error. Please try again.');
+//       setShowAlert(true);
+//       setIsSubmitting(false);
+//     }
+//   };
+
+//   if (userRole === null) {
+//     return <p className="text-center mt-5">Loading...</p>;
+//   }
+
+//   if (userRole !== 'admin' && userRole !== 'manager') {
+//     return (
+//       <Container className="mt-4 text-center">
+//         <Alert variant="danger">
+//           You do not have permission to access this page. Please log in with appropriate credentials.
+//         </Alert>
+//       </Container>
+//     );
+//   }
+
+//   return (
+//     <>
+//       <Header />
+//       <Container className="mt-4 bg-light rounded-4 p-4 shadow w-100 w-md-75 w-xl-50 mx-auto my-5">
+//         <h4 className="mb-3 text-center fw-bold fs-4">Add New Vendor Account</h4>
+
+//         {showAlert && (
+//           <Alert variant={alertVariant} dismissible onClose={() => setShowAlert(false)}>
+//             {alertMessage}
+//           </Alert>
+//         )}
+
+//         <Form noValidate validated={validated} onSubmit={handleSubmit}>
+//           <Row>
+//             <Col md={6}>
+//               <Form.Group className="mb-3" controlId="vendorName">
+//                 <Form.Label className="fw-bold">Vendor Name <span className="text-danger">*</span></Form.Label>
+//                 <Form.Control
+//                   type="text"
+//                   name="vendorName"
+//                   required
+//                   value={formData.vendorName}
+//                   onChange={handleChange}
+//                   placeholder="Enter full name"
+//                 />
+//                 <Form.Control.Feedback type="invalid">
+//                   Vendor name is required.
+//                 </Form.Control.Feedback>
+//               </Form.Group>
+
+//               <Form.Group className="mb-3" controlId="vendorMobile">
+//                 <Form.Label className="fw-bold">Vendor Mobile <span className="text-danger">*</span></Form.Label>
+//                 <Form.Control
+//                   type="tel"
+//                   name="vendorMobile"
+//                   required
+//                   pattern="[0-9]{10}"
+//                   value={formData.vendorMobile}
+//                   onChange={handleChange}
+//                   placeholder="10-digit mobile number"
+//                 />
+//                 <Form.Control.Feedback type="invalid">
+//                   Enter valid 10-digit mobile number.
+//                 </Form.Control.Feedback>
+//               </Form.Group>
+
+//               <Form.Group className="mb-3" controlId="query_license">
+//                 <Form.Label className="fw-bold">Query License <span className="text-danger">*</span></Form.Label>
+//                 <Form.Control
+//                   type="text"
+//                   name="query_license"
+//                   required
+//                   value={formData.query_license}
+//                   onChange={handleChange}
+//                   placeholder="Enter query license"
+//                 />
+//                 <Form.Control.Feedback type="invalid">
+//                   Query license is required.
+//                 </Form.Control.Feedback>
+//               </Form.Group>
+
+//               <Form.Group className="mb-3" controlId="mining_license">
+//                 <Form.Label className="fw-bold">Mining License</Form.Label>
+//                 <Form.Control
+//                   type="text"
+//                   name="mining_license"
+//                   value={formData.mining_license}
+//                   onChange={handleChange}
+//                   placeholder="Enter mining license"
+//                 />
+//               </Form.Group>
+
+//               <Form.Group className="mb-3" controlId="near_village">
+//                 <Form.Label className="fw-bold">Nearby Village <span className="text-danger">*</span></Form.Label>
+//                 <Form.Control
+//                   type="text"
+//                   name="near_village"
+//                   required
+//                   value={formData.near_village}
+//                   onChange={handleChange}
+//                   placeholder="Enter nearby village"
+//                 />
+//                 <Form.Control.Feedback type="invalid">
+//                   Nearby village is required.
+//                 </Form.Control.Feedback>
+//               </Form.Group>
+//             </Col>
+
+//             <Col md={6}>
+//               <Form.Group className="mb-3" controlId="tehsil">
+//                 <Form.Label className="fw-bold">Tehsil</Form.Label>
+//                 <Form.Control
+//                   type="text"
+//                   name="tehsil"
+//                   value={formData.tehsil}
+//                   onChange={handleChange}
+//                   placeholder="Enter tehsil"
+//                 />
+//               </Form.Group>
+
+//               <Form.Group className="mb-3" controlId="district">
+//                 <Form.Label className="fw-bold">District</Form.Label>
+//                 <Form.Control
+//                   type="text"
+//                   name="district"
+//                   value={formData.district}
+//                   onChange={handleChange}
+//                   placeholder="Enter district"
+//                 />
+//               </Form.Group>
+
+//               <Form.Group className="mb-3" controlId="state">
+//                 <Form.Label className="fw-bold">State</Form.Label>
+//                 <Form.Control
+//                   type="text"
+//                   name="state"
+//                   value={formData.state}
+//                   onChange={handleChange}
+//                   placeholder="Enter state"
+//                 />
+//               </Form.Group>
+
+//               <Form.Group className="mb-3" controlId="country">
+//                 <Form.Label className="fw-bold">Country</Form.Label>
+//                 <Form.Control
+//                   type="text"
+//                   name="country"
+//                   value={formData.country}
+//                   onChange={handleChange}
+//                   placeholder="Enter country"
+//                 />
+//               </Form.Group>
+//             </Col>
+//           </Row>
+
+//           <div className="text-center d-flex justify-content-center gap-2 flex-wrap mt-3">
+//             <Button
+//               type="submit"
+//               variant="success"
+//               className="fw-bold px-4 rounded-3"
+//               disabled={isSubmitting}
+//             >
+//               {isSubmitting ? 'Processing...' : 'Create Vendor Account'}
+//             </Button>
+//             <Button
+//               type="button"
+//               variant="secondary"
+//               className="fw-bold px-4 rounded-3"
+//               onClick={resetForm}
+//             >
+//               Reset Form
+//             </Button>
+//           </div>
+//         </Form>
+//       </Container>
+//     </>
+//   );
+// };
+// export default AddVendorAccount;
+
+'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import Header from '../components/Header';
+import locationData from '../India-state-city-subDistrict-village.json';
 
 const AddVendorAccount = () => {
   const router = useRouter();
@@ -700,11 +1027,11 @@ const AddVendorAccount = () => {
     vendorMobile: '',
     query_license: '',
     mining_license: '',
-    near_village: '',
-    tehsil: '',
-    district: '',
+    country: 'India',
     state: '',
-    country: ''
+    district: '',
+    tehsil: '',
+    near_village: ''
   });
 
   const [validated, setValidated] = useState(false);
@@ -712,37 +1039,80 @@ const AddVendorAccount = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertVariant, setAlertVariant] = useState('success');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [tehsils, setTehsils] = useState([]);
+  const [villages, setVillages] = useState([]);
   const [userRole, setUserRole] = useState(null);
+  const [vendorNameWarning, setVendorNameWarning] = useState('');
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const userData = localStorage.getItem("user");
-      let role;
+    if (typeof window !== 'undefined') {
+      const userData = localStorage.getItem('user');
       if (userData) {
         try {
           const parsedUser = JSON.parse(userData);
-          role = parsedUser.role;
+          const role = parsedUser.role;
           setUserRole(role);
-        } catch (error) {
-          console.error("Error parsing user data from localStorage:", error);
+
+          if (role !== 'admin' && role !== 'manager') {
+            setTimeout(() => {
+              localStorage.clear();
+              window.location.href = '/api/logout';
+            }, 1500);
+          }
+        } catch (err) {
+          console.error('Invalid user in localStorage:', err);
         }
       }
 
-      if (role !== 'admin' && role !== 'manager') {
-        setTimeout(() => {
-          localStorage.clear();
-          window.location.href = '/api/logout';
-        }, 1500);
-      }
+
+      const uniqueStates = locationData.map(item => item.state);
+      setStates(uniqueStates);
     }
-  }, [router]);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+
+    if (name === 'vendorName') {
+      const valid = value.replace(/[^a-z ]/g, '');
+      setVendorNameWarning(valid !== value ? 'Only lowercase letters and spaces allowed' : '');
+      setFormData({ ...formData, [name]: valid });
+      return;
+    }
+
+    if (name === 'state') {
+      const selected = locationData.find(s => s.state === value);
+      const distList = selected?.districts.map(d => d.district) || [];
+      setDistricts(distList);
+      setTehsils([]);
+      setVillages([]);
+      setFormData({ ...formData, state: value, district: '', tehsil: '', near_village: '' });
+      return;
+    }
+
+    if (name === 'district') {
+      const stateData = locationData.find(s => s.state === formData.state);
+      const districtData = stateData?.districts.find(d => d.district === value);
+      const tehsilList = districtData?.subDistricts.map(t => t.subDistrict) || [];
+      setTehsils(tehsilList);
+      setVillages([]);
+      setFormData({ ...formData, district: value, tehsil: '', near_village: '' });
+      return;
+    }
+
+    if (name === 'tehsil') {
+      const stateData = locationData.find(s => s.state === formData.state);
+      const districtData = stateData?.districts.find(d => d.district === formData.district);
+      const tehsilData = districtData?.subDistricts.find(t => t.subDistrict === value);
+      const villageList = tehsilData?.villages || [];
+      setVillages(villageList);
+      setFormData({ ...formData, tehsil: value, near_village: '' });
+      return;
+    }
+
+    setFormData({ ...formData, [name]: value });
   };
 
   const resetForm = () => {
@@ -751,104 +1121,95 @@ const AddVendorAccount = () => {
       vendorMobile: '',
       query_license: '',
       mining_license: '',
-      near_village: '',
-      tehsil: '',
-      district: '',
+      country: 'India',
       state: '',
-      country: ''
+      district: '',
+      tehsil: '',
+      near_village: ''
     });
     setValidated(false);
+    setVendorNameWarning('');
+    setDistricts([]);
+    setTehsils([]);
+    setVillages([]);
+    setStates(locationData.map(item => item.state));
   };
 
-  const getFormattedDate = () => {
-    const now = new Date();
-    return now.toISOString();
-  };
+  const getFormattedDate = () => new Date().toISOString();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const form = e.currentTarget;
     setValidated(true);
 
-    if (form.checkValidity() === false) {
-      e.stopPropagation();
+    if (!e.currentTarget.checkValidity()) {
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Check for existing vendor with same name, license, and village
-      const checkRes = await fetch('/api/vendor');
-      const existingVendors = await checkRes.json();
+      const existing = await fetch('/api/vendor');
+      const res = await existing.json();
 
-      const isDuplicate = existingVendors?.docs?.some((vendor) =>
-        vendor.vendorName?.toLowerCase() === formData.vendorName.toLowerCase() &&
-        vendor.query_license?.toLowerCase() === formData.query_license.toLowerCase() &&
-        vendor.near_village?.toLowerCase() === formData.near_village.toLowerCase()
+      const duplicate = res?.docs?.some(
+        v => v.vendorName?.toLowerCase() === formData.vendorName.toLowerCase() &&
+             v.query_license?.toLowerCase() === formData.query_license.toLowerCase() &&
+             v.near_village?.toLowerCase() === formData.near_village.toLowerCase()
       );
 
-      if (isDuplicate) {
+      if (duplicate) {
         setAlertVariant('danger');
-        setAlertMessage('This vendor account already exists. Duplicate combination not allowed.');
+        setAlertMessage('This vendor account already exists.');
         setShowAlert(true);
         setIsSubmitting(false);
-
         setTimeout(() => {
           resetForm();
           setShowAlert(false);
         }, 3000);
-
         return;
       }
+
 
       const newVendor = {
         ...formData,
         vendorCreatedAt: getFormattedDate(),
-        vendorUpdatedAt: getFormattedDate(),
+        vendorUpdatedAt: getFormattedDate()
       };
 
-      const response = await fetch('/api/vendor', {
+      const create = await fetch('/api/vendor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newVendor)
       });
 
-      if (response.ok) {
+      if (create.ok) {
         setAlertVariant('success');
         setAlertMessage('Vendor account created successfully!');
         setShowAlert(true);
-
         setTimeout(() => {
-          setShowAlert(false);
           resetForm();
           router.push('/viewvendor-account');
         }, 2000);
       } else {
-        const error = await response.json();
-        setAlertVariant('danger');
-        setAlertMessage(error.message || 'Something went wrong.');
-        setShowAlert(true);
-        setIsSubmitting(false);
+        const err = await create.json();
+        throw new Error(err.message || 'Failed to save vendor.');
       }
+
     } catch (err) {
       setAlertVariant('danger');
-      setAlertMessage('Network error. Please try again.');
+      setAlertMessage(err.message || 'Network error.');
       setShowAlert(true);
+    } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (userRole === null) {
-    return <p className="text-center mt-5">Loading...</p>;
-  }
+  if (userRole === null) return <p className="text-center mt-5">Loading...</p>;
 
   if (userRole !== 'admin' && userRole !== 'manager') {
     return (
       <Container className="mt-4 text-center">
-        <Alert variant="danger">
-          You do not have permission to access this page. Please log in with appropriate credentials.
-        </Alert>
+        <Alert variant="danger">Access denied. Log in with appropriate credentials.</Alert>
       </Container>
     );
   }
@@ -869,22 +1230,22 @@ const AddVendorAccount = () => {
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3" controlId="vendorName">
-                <Form.Label className="fw-bold">Vendor Name <span className="text-danger">*</span></Form.Label>
+                <Form.Label className="fw-bold">Vendor's Name <span className="text-danger">*</span></Form.Label>
                 <Form.Control
-                  type="text"
+                  type="name"
                   name="vendorName"
                   required
+                  pattern="^[a-z ]+$"
                   value={formData.vendorName}
                   onChange={handleChange}
-                  placeholder="Enter full name"
+                  placeholder="e.g. vendor name"
                 />
-                <Form.Control.Feedback type="invalid">
-                  Vendor name is required.
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">Lowercase letters and spaces only.</Form.Control.Feedback>
+                {vendorNameWarning && <div className="text-danger mt-1">{vendorNameWarning}</div>}
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="vendorMobile">
-                <Form.Label className="fw-bold">Vendor Mobile <span className="text-danger">*</span></Form.Label>
+                <Form.Label className="fw-bold">Mobile Number <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   type="tel"
                   name="vendorMobile"
@@ -892,11 +1253,9 @@ const AddVendorAccount = () => {
                   pattern="[0-9]{10}"
                   value={formData.vendorMobile}
                   onChange={handleChange}
-                  placeholder="10-digit mobile number"
+                  placeholder="10-digit number"
                 />
-                <Form.Control.Feedback type="invalid">
-                  Enter valid 10-digit mobile number.
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">Enter a valid 10-digit number.</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="query_license">
@@ -908,10 +1267,7 @@ const AddVendorAccount = () => {
                   value={formData.query_license}
                   onChange={handleChange}
                   placeholder="Enter query license"
-                />
-                <Form.Control.Feedback type="invalid">
-                  Query license is required.
-                </Form.Control.Feedback>
+                /><Form.Control.Feedback type="invalid">Enter a valid query license.</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="mining_license">
@@ -922,87 +1278,54 @@ const AddVendorAccount = () => {
                   value={formData.mining_license}
                   onChange={handleChange}
                   placeholder="Enter mining license"
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-3" controlId="near_village">
-                <Form.Label className="fw-bold">Nearby Village <span className="text-danger">*</span></Form.Label>
-                <Form.Control
-                  type="text"
-                  name="near_village"
-                  required
-                  value={formData.near_village}
-                  onChange={handleChange}
-                  placeholder="Enter nearby village"
-                />
-                <Form.Control.Feedback type="invalid">
-                  Nearby village is required.
-                </Form.Control.Feedback>
+                /><Form.Control.Feedback type="invalid">Enter a valid mining license.</Form.Control.Feedback>
               </Form.Group>
             </Col>
 
             <Col md={6}>
-              <Form.Group className="mb-3" controlId="tehsil">
-                <Form.Label className="fw-bold">Tehsil</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="tehsil"
-                  value={formData.tehsil}
-                  onChange={handleChange}
-                  placeholder="Enter tehsil"
-                />
+              <Form.Group className="mb-3" controlId="state">
+                <Form.Label className="fw-bold">State <span className="text-danger">*</span></Form.Label>
+                <Form.Select name="state" value={formData.state} onChange={handleChange} required>
+                  <option value="">-- Select State --</option>
+                  {states.map(s => <option key={s} value={s}>{s}</option>)}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a State.</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="district">
-                <Form.Label className="fw-bold">District</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="district"
-                  value={formData.district}
-                  onChange={handleChange}
-                  placeholder="Enter district"
-                />
+                <Form.Label className="fw-bold">District <span className="text-danger">*</span></Form.Label>
+                <Form.Select name="district" value={formData.district} onChange={handleChange} disabled={!districts.length} required>
+                  <option value="">-- Select District --</option>
+                  {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a District.</Form.Control.Feedback>
               </Form.Group>
 
-              <Form.Group className="mb-3" controlId="state">
-                <Form.Label className="fw-bold">State</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleChange}
-                  placeholder="Enter state"
-                />
+              <Form.Group className="mb-3" controlId="tehsil">
+                <Form.Label className="fw-bold">Tehsil <span className="text-danger">*</span></Form.Label>
+                <Form.Select name="tehsil" value={formData.tehsil} onChange={handleChange} disabled={!tehsils.length} required>
+                  <option value="">-- Select Tehsil --</option>
+                  {tehsils.map(t => <option key={t} value={t}>{t}</option>)}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a Tehsil.</Form.Control.Feedback>
               </Form.Group>
 
-              <Form.Group className="mb-3" controlId="country">
-                <Form.Label className="fw-bold">Country</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  placeholder="Enter country"
-                />
+              <Form.Group className="mb-3" controlId="near_village">
+                <Form.Label className="fw-bold">Nearby Village <span className="text-danger">*</span></Form.Label>
+                <Form.Select name="near_village" value={formData.near_village} onChange={handleChange} disabled={!villages.length} required>
+                  <option value="">-- Select Village --</option>
+                  {villages.map(v => <option key={v} value={v}>{v}</option>)}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a Village.</Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
 
           <div className="text-center d-flex justify-content-center gap-2 flex-wrap mt-3">
-            <Button
-              type="submit"
-              variant="success"
-              className="fw-bold px-4 rounded-3"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" variant="success" className="fw-bold px-4 rounded-3" disabled={isSubmitting}>
               {isSubmitting ? 'Processing...' : 'Create Vendor Account'}
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              className="fw-bold px-4 rounded-3"
-              onClick={resetForm}
-            >
+            <Button type="button" variant="secondary" className="fw-bold px-4 rounded-3" onClick={resetForm}>
               Reset Form
             </Button>
           </div>

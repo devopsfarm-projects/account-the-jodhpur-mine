@@ -885,7 +885,7 @@ const AddClientAccount = () => {
               <Form.Group className="mb-3" controlId="clientName">
                 <Form.Label className="fw-bold">Client's Name <span className="text-danger">*</span></Form.Label>
                 <Form.Control
-                  type="text"
+                  type="name"
                   name="clientName"
                   required
                   pattern="^[a-z ]+$"
@@ -921,6 +921,7 @@ const AddClientAccount = () => {
                   onChange={handleChange}
                   placeholder="Enter query license"
                 />
+                <Form.Control.Feedback type="invalid">Please enter a valid query license.</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="mining_license">
@@ -932,6 +933,7 @@ const AddClientAccount = () => {
                   onChange={handleChange}
                   placeholder="Enter mining license"
                 />
+                <Form.Control.Feedback type="invalid">Please enter a valid mining license.</Form.Control.Feedback>
               </Form.Group>
             </Col>
 
@@ -943,6 +945,7 @@ const AddClientAccount = () => {
                   <option value="">-- Select State --</option>
                   {states.map(s => <option key={s} value={s}>{s}</option>)}
                 </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a State.</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="district">
@@ -951,6 +954,7 @@ const AddClientAccount = () => {
                   <option value="">-- Select District --</option>
                   {districts.map(d => <option key={d} value={d}>{d}</option>)}
                 </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a District.</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="tehsil">
@@ -959,6 +963,7 @@ const AddClientAccount = () => {
                   <option value="">-- Select Tehsil --</option>
                   {tehsils.map(t => <option key={t} value={t}>{t}</option>)}
                 </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a Tehsil.</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="near_village">
@@ -967,6 +972,7 @@ const AddClientAccount = () => {
                   <option value="">-- Select Village --</option>
                   {villages.map(v => <option key={v} value={v}>{v}</option>)}
                 </Form.Select>
+                <Form.Control.Feedback type="invalid">Please select a Village.</Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
