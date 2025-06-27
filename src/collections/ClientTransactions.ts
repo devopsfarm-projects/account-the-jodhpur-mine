@@ -14,14 +14,16 @@ export const ClientTransactions: CollectionConfig = {
       required: true,
     },
     {
-      name: 'totalAmount',
-      type: 'number',
-      required: true,
+      name:'query_license',
+      type:'relationship',
+      relationTo:'client-accounts',
+      required:true,
     },
     {
-      name: 'tokenAmount',
-      type: 'number',
-      required: true,
+      name:'near_village',
+      type:'relationship',
+      relationTo:'client-accounts',
+      required:true,
     },
     {
       name: 'workingStage',
@@ -40,11 +42,30 @@ export const ClientTransactions: CollectionConfig = {
         },
       ],
     },
-
     {
-      name: 'totalCredit',
-      type: 'number',
+      name: 'workingStageclient',
+      type: 'array',
      
+      fields: [
+        {
+          name: 'workingStageclient',
+          type: 'text',
+         
+        },
+        {
+          name: 'workingDescriptionclient',
+          type: 'text',
+         
+        },
+      ],
+    },
+    {
+      name: 'totalAmount',
+      type: 'number',
+    },
+    {
+      name:'totalAmountclient',
+      type:'number',
     },
     {
       name: 'remainingAmount',
@@ -66,5 +87,10 @@ export const ClientTransactions: CollectionConfig = {
       type: 'date',
       
     },
+    {
+      name:'paymentstatus',
+      type:'text',
+      defaultValue:'pending',
+    }
   ],
 }

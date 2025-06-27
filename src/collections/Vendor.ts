@@ -19,48 +19,48 @@ export const Vendor: CollectionConfig = {
     {
       name: 'query_license',
       type: 'text',
-      
+      required: true,
     },
     {
       name: 'mining_license',
       type: 'text',
-      
+
     },
     {
-        name: 'near_village',
-        type: 'text',
-      
-      },
+      name: 'near_village',
+      type: 'text',
+      required: true,
+    },
     {
       name: 'tehsil',
       type: 'text',
-     
+
     },
     {
       name: 'district',
       type: 'text',
-      
+
     },
     {
       name: 'state',
       type: 'text',
-      
+
     },
-   
+
     {
       name: 'country',
       type: 'text',
-      
+
     },
     {
       name: 'vendorCreatedAt',
       type: 'date',
-      
+
     },
     {
       name: 'vendorUpdatedAt',
       type: 'date',
-     
+
     },
   ],
 }
