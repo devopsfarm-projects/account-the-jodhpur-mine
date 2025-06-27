@@ -649,393 +649,340 @@
 // };
 
 // export default AddClientAccount;
-
 'use client';
+
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import Header from '../components/Header';
-import data from '../countries+states+cities.json';
-
-const localTehsilVillageData = {
-    "Jaipur": {
-        tehsils: ["Jaipur", "Amer", "Sanganer", "Chaksu"],
-        villages: {
-            "Jaipur": ["Manpura", "Bhankrota", "Muhana"],
-            "Amer": ["Kukas", "Kanota", "Delawas"],
-            "Sanganer": ["Kukas", "Kanota", "Delawas"],
-            "Chaksu": ["Manpura", "Bhankrota", "Muhana"],
-        }
-    },
-    "Jodhpur": {
-        tehsils: ["Jodhpur", "Osian", "Phalodi"],
-        villages: {
-            "Jodhpur": ["Basni", "Mandore", "Salawas"],
-            "Osian": ["Mathania", "Bhopalgarh"],
-            "Phalodi": ["Basni", "Mandore", "Salawas"]
-        }
-    },
-    // Add more districts and their tehsils/villages as needed
-};
-
+import locationData from '../India-state-city-subDistrict-village.json'; // New JSON with state > district > tehsil > village
 
 const AddClientAccount = () => {
-    const router = useRouter();
+  const router = useRouter();
 
-    // Form data state
-    const [formData, setFormData] = useState({
-        clientName: '',
-        clientMobile: '',
-        query_license: '',
-        mining_license: '',
-        near_village: '',
-        tehsil: '',
-        district: '',
-        state: '',
-        country: 'India' // default
-    });
+  // State to hold form input values
+  const [formData, setFormData] = useState({
+    clientName: '',
+    clientMobile: '',
+    query_license: '',
+    mining_license: '',
+    country: 'India', // Only India supported
+    state: '',
+    district: '',
+    tehsil: '',
+    near_village: ''
+  });
 
-    // UI/validation states
-    const [validated, setValidated] = useState(false);
-    const [showAlert, setShowAlert] = useState(false);
-    const [alertMessage, setAlertMessage] = useState('');
-    const [alertVariant, setAlertVariant] = useState('success');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [userRole, setUserRole] = useState(null);
-    const [clientNameWarning, setClientNameWarning] = useState('');
+  // State for form UI feedback
+  const [validated, setValidated] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertVariant, setAlertVariant] = useState('success');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Location hierarchy options
-    const [countries, setCountries] = useState([]);
-    const [states, setStates] = useState([]);
-    const [districts, setDistricts] = useState([]);
-    const [tehsils, setTehsils] = useState([]);
-    const [villages, setVillages] = useState([]);
+  // Dropdown dynamic lists
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [tehsils, setTehsils] = useState([]);
+  const [villages, setVillages] = useState([]);
 
-    // Load user role and set default country + states
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            const userData = localStorage.getItem("user");
-            let role;
-            if (userData) {
-                try {
-                    const parsedUser = JSON.parse(userData);
-                    role = parsedUser.role;
-                    setUserRole(role);
-                } catch (error) {
-                    console.error("Error parsing user data from localStorage:", error);
-                }
-            }
+  const [userRole, setUserRole] = useState(null);
+  const [clientNameWarning, setClientNameWarning] = useState('');
 
-            if (role !== 'admin' && role !== 'manager') {
-                setTimeout(() => {
-                    localStorage.clear();
-                    window.location.href = '/api/logout';
-                }, 1500);
-            }
-
-            // Populate countries on initial load
-            setCountries(data.map(country => country.name));
-
-            // Set initial states for India
-            const india = data.find(country => country.name === 'India');
-            if (india) {
-                setStates(india.states.map(state => state.name));
-            }
-        }
-    }, [router]);
-
-    // Handle dropdown dependencies
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-
-        if (name === 'clientName') {
-            const validValue = value.replace(/[^a-z ]/g, '');
-            if (value !== validValue) {
-                setClientNameWarning('Only lowercase letters and spaces are allowed.');
-            } else {
-                setClientNameWarning('');
-            }
-            setFormData({ ...formData, [name]: validValue });
-
-        } else if (name === 'country') {
-            const selectedCountry = data.find(country => country.name === value);
-            const nextStates = selectedCountry ? selectedCountry.states.map(state => state.name) : [];
-            setStates(nextStates);
-            setDistricts([]);
-            setTehsils([]);
-            setVillages([]);
-            setFormData({ ...formData, country: value, state: '', district: '', tehsil: '', near_village: '' });
-
-        } else if (name === 'state') {
-            const selectedCountry = data.find(country => country.name === formData.country);
-            const selectedState = selectedCountry?.states.find(state => state.name === value);
-            // Treat 'cities' in JSON as 'districts' for the form
-            const nextDistricts = selectedState ? selectedState.cities.map(city => city.name) : [];
-            setDistricts(nextDistricts);
-            setTehsils([]); // Reset tehsils
-            setVillages([]); // Reset villages
-            setFormData({ ...formData, state: value, district: '', tehsil: '', near_village: '' });
-
-        } else if (name === 'district') {
-            // Populate tehsils based on the selected district using local data
-            const selectedDistrictData = localTehsilVillageData[value];
-            const nextTehsils = selectedDistrictData ? selectedDistrictData.tehsils : [];
-            setTehsils(nextTehsils);
-            setVillages([]); // Reset villages
-            setFormData({ ...formData, district: value, tehsil: '', near_village: '' });
-
-        } else if (name === 'tehsil') {
-            // Populate villages based on the selected tehsil and district using local data
-            const selectedDistrictData = localTehsilVillageData[formData.district];
-            const nextVillages = selectedDistrictData?.villages[value] ? selectedDistrictData.villages[value] : [];
-            setVillages(nextVillages);
-            setFormData({ ...formData, [name]: value, near_village: '' });
-
-        } else {
-            setFormData({ ...formData, [name]: value });
-        }
-    };
-
-
-    const resetForm = () => {
-        setFormData({
-            clientName: '',
-            clientMobile: '',
-            query_license: '',
-            mining_license: '',
-            near_village: '',
-            tehsil: '',
-            district: '',
-            state: '',
-            country: 'India'
-        });
-        setClientNameWarning('');
-        setValidated(false);
-
-        // Reset location dropdowns based on default country
-        setCountries(data.map(country => country.name));
-        const india = data.find(country => country.name === 'India');
-        if (india) {
-            setStates(india.states.map(state => state.name));
-        }
-        setDistricts([]);
-        setTehsils([]);
-        setVillages([]);
-    };
-
-    const getFormattedDate = () => new Date().toISOString();
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const form = e.currentTarget;
-        setValidated(true);
-
-        if (!form.checkValidity()) {
-            e.stopPropagation();
-            return;
-        }
-
-        setIsSubmitting(true);
-
+  // Load user role and state list on first render
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userData = localStorage.getItem('user');
+      if (userData) {
         try {
-            const checkRes = await fetch('/api/client-accounts');
-            const existingClients = await checkRes.json();
+          const parsedUser = JSON.parse(userData);
+          const role = parsedUser.role;
+          setUserRole(role);
 
-            const isDuplicate = existingClients?.docs?.some((client) =>
-                client.clientName?.toLowerCase() === formData.clientName.toLowerCase() &&
-                client.query_license?.toLowerCase() === formData.query_license.toLowerCase() &&
-                client.near_village?.toLowerCase() === formData.near_village.toLowerCase()
-            );
-
-            if (isDuplicate) {
-                setAlertVariant('danger');
-                setAlertMessage('This client account already exists.');
-                setShowAlert(true);
-                setIsSubmitting(false);
-
-                setTimeout(() => {
-                    resetForm();
-                    setShowAlert(false);
-                }, 3000);
-                return;
-            }
-
-            const newClient = {
-                ...formData,
-                clientCreatedAt: getFormattedDate(),
-                clientUpdatedAt: getFormattedDate()
-            };
-
-            const response = await fetch('/api/client-accounts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newClient)
-            });
-
-            if (response.ok) {
-                setAlertVariant('success');
-                setAlertMessage('Client account created successfully!');
-                setShowAlert(true);
-                setTimeout(() => {
-                    setShowAlert(false);
-                    resetForm();
-                    router.push('/viewclient-account');
-                }, 2000);
-            } else {
-                const error = await response.json();
-                throw new Error(error.message || 'Something went wrong.');
-            }
-
+          // Unauthorized role handling
+          if (role !== 'admin' && role !== 'manager') {
+            setTimeout(() => {
+              localStorage.clear();
+              window.location.href = '/api/logout';
+            }, 1500);
+          }
         } catch (err) {
-            setAlertVariant('danger');
-            setAlertMessage(err.message || 'Network error.');
-            setShowAlert(true);
-            setIsSubmitting(false);
+          console.error('Invalid user in localStorage:', err);
         }
-    };
+      }
 
-    if (userRole === null) return <p className="text-center mt-5">Loading...</p>;
+      // Extract states from data.json
+      const uniqueStates = locationData.map(item => item.state);
+      setStates(uniqueStates);
+    }
+  }, []);
 
-    if (userRole !== 'admin' && userRole !== 'manager') {
-        return (
-            <Container className="mt-4 text-center">
-                <Alert variant="danger">Access denied. Log in with appropriate credentials.</Alert>
-            </Container>
-        );
+  // Handle input changes for all fields
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    // Special validation for client name (only lowercase letters and spaces)
+    if (name === 'clientName') {
+      const valid = value.replace(/[^a-z ]/g, '');
+      setClientNameWarning(valid !== value ? 'Only lowercase letters and spaces allowed' : '');
+      setFormData({ ...formData, [name]: valid });
+      return;
     }
 
+    // When state is selected, find its districts
+    if (name === 'state') {
+      const selected = locationData.find(s => s.state === value);
+      const distList = selected?.districts.map(d => d.district) || [];
+      setDistricts(distList);
+      setTehsils([]);
+      setVillages([]);
+      setFormData({ ...formData, state: value, district: '', tehsil: '', near_village: '' });
+      return;
+    }
+
+    // When district is selected, find its tehsils
+    if (name === 'district') {
+      const stateData = locationData.find(s => s.state === formData.state);
+      const districtData = stateData?.districts.find(d => d.district === value);
+      const tehsilList = districtData?.subDistricts.map(t => t.subDistrict) || [];
+      setTehsils(tehsilList);
+      setVillages([]);
+      setFormData({ ...formData, district: value, tehsil: '', near_village: '' });
+      return;
+    }
+
+    // When tehsil is selected, find its villages
+    if (name === 'tehsil') {
+      const stateData = locationData.find(s => s.state === formData.state);
+      const districtData = stateData?.districts.find(d => d.district === formData.district);
+      const tehsilData = districtData?.subDistricts.find(t => t.subDistrict === value);
+      const villageList = tehsilData?.villages || [];
+      setVillages(villageList);
+      setFormData({ ...formData, tehsil: value, near_village: '' });
+      return;
+    }
+
+    // Normal input fields
+    setFormData({ ...formData, [name]: value });
+  };
+
+  // Clear everything and reload India states
+  const resetForm = () => {
+    setFormData({
+      clientName: '',
+      clientMobile: '',
+      query_license: '',
+      mining_license: '',
+      country: 'India',
+      state: '',
+      district: '',
+      tehsil: '',
+      near_village: ''
+    });
+    setValidated(false);
+    setClientNameWarning('');
+    setDistricts([]);
+    setTehsils([]);
+    setVillages([]);
+    setStates(locationData.map(item => item.state));
+  };
+
+  const getFormattedDate = () => new Date().toISOString();
+
+  // Handle form submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setValidated(true);
+
+    if (!e.currentTarget.checkValidity()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const existing = await fetch('/api/client-accounts');
+      const res = await existing.json();
+
+      const duplicate = res?.docs?.some(
+        c => c.clientName?.toLowerCase() === formData.clientName.toLowerCase() &&
+             c.query_license?.toLowerCase() === formData.query_license.toLowerCase() &&
+             c.near_village?.toLowerCase() === formData.near_village.toLowerCase()
+      );
+
+      if (duplicate) {
+        setAlertVariant('danger');
+        setAlertMessage('This client account already exists.');
+        setShowAlert(true);
+        setIsSubmitting(false);
+        setTimeout(() => {
+          resetForm();
+          setShowAlert(false);
+        }, 3000);
+        return;
+      }
+
+      const newClient = {
+        ...formData,
+        clientCreatedAt: getFormattedDate(),
+        clientUpdatedAt: getFormattedDate()
+      };
+
+      const create = await fetch('/api/client-accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newClient)
+      });
+
+      if (create.ok) {
+        setAlertVariant('success');
+        setAlertMessage('Client account created successfully!');
+        setShowAlert(true);
+        setTimeout(() => {
+          resetForm();
+          router.push('/viewclient-account');
+        }, 2000);
+      } else {
+        const err = await create.json();
+        throw new Error(err.message || 'Failed to save.');
+      }
+
+    } catch (err) {
+      setAlertVariant('danger');
+      setAlertMessage(err.message || 'Network error.');
+      setShowAlert(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (userRole === null) return <p className="text-center mt-5">Loading...</p>;
+
+  if (userRole !== 'admin' && userRole !== 'manager') {
     return (
-        <>
-            <Header />
-            <Container className="mt-4 bg-light rounded-4 p-4 shadow w-100 w-md-75 w-xl-50 mx-auto my-5">
-                <h4 className="mb-3 text-center fw-bold fs-4">Add New Client Account</h4>
-
-                {showAlert && (
-                    <Alert variant={alertVariant} dismissible onClose={() => setShowAlert(false)}>
-                        {alertMessage}
-                    </Alert>
-                )}
-
-                <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                    <Row>
-                        <Col md={6}>
-                            <Form.Group className="mb-3" controlId="clientName">
-                                <Form.Label className="fw-bold">Client's Name <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="clientName"
-                                    required
-                                    pattern="^[a-z ]+$"
-                                    value={formData.clientName}
-                                    onChange={handleChange}
-                                    placeholder="e.g. firstname lastname"
-                                />
-                                <Form.Control.Feedback type="invalid">Lowercase letters and spaces only.</Form.Control.Feedback>
-                                {clientNameWarning && <div className="text-danger mt-1">{clientNameWarning}</div>}
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="clientMobile">
-                                <Form.Label className="fw-bold">Mobile Number <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="tel"
-                                    name="clientMobile"
-                                    required
-                                    pattern="[0-9]{10}"
-                                    value={formData.clientMobile}
-                                    onChange={handleChange}
-                                    placeholder="10-digit number"
-                                />
-                                <Form.Control.Feedback type="invalid">Enter a valid 10-digit number.</Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="query_license">
-                                <Form.Label className="fw-bold">Query License <span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="query_license"
-                                    required
-                                    value={formData.query_license}
-                                    onChange={handleChange}
-                                    placeholder="Enter query license"
-                                />
-                                <Form.Control.Feedback type="invalid">Required.</Form.Control.Feedback>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="mining_license">
-                                <Form.Label className="fw-bold">Mining License</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="mining_license"
-                                    value={formData.mining_license}
-                                    onChange={handleChange}
-                                    placeholder="Enter mining license"
-                                />
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={6}>
-                            <Form.Group className="mb-3" controlId="country">
-                                <Form.Label className="fw-bold">Country</Form.Label>
-                                <Form.Select name="country" value={formData.country} onChange={handleChange}>
-                                    {countries.map((country) => (
-                                        <option key={country} value={country}>{country}</option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="state">
-                                <Form.Label className="fw-bold">State</Form.Label>
-                                <Form.Select name="state" value={formData.state} onChange={handleChange} disabled={!states.length}>
-                                    <option value="">-- Select State --</option>
-                                    {states.map((s) => <option key={s} value={s}>{s}</option>)}
-                                </Form.Select>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="district">
-                                <Form.Label className="fw-bold">District</Form.Label>
-                                <Form.Select name="district" value={formData.district} onChange={handleChange} disabled={!districts.length}>
-                                    <option value="">-- Select District --</option>
-                                    {districts.map((d) => <option key={d} value={d}>{d}</option>)}
-                                </Form.Select>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="tehsil">
-                                <Form.Label className="fw-bold">Tehsil</Form.Label>
-                                <Form.Select name="tehsil" value={formData.tehsil} onChange={handleChange} disabled={!tehsils.length}>
-                                    <option value="">-- Select Tehsil --</option>
-                                    {tehsils.map((t) => <option key={t} value={t}>{t}</option>)}
-                                </Form.Select>
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="near_village">
-                                <Form.Label className="fw-bold">Nearby Village <span className="text-danger">*</span></Form.Label>
-                                <Form.Select
-                                    name="near_village"
-                                    value={formData.near_village}
-                                    onChange={handleChange}
-                                    required
-                                    disabled={!villages.length}
-                                >
-                                    <option value="">-- Select Village --</option>
-                                    {villages.map((v) => <option key={v} value={v}>{v}</option>)}
-                                </Form.Select>
-                                <Form.Control.Feedback type="invalid">Required.</Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-                    </Row>
-
-                    <div className="text-center d-flex justify-content-center gap-2 flex-wrap mt-3">
-                        <Button type="submit" variant="success" className="fw-bold px-4 rounded-3" disabled={isSubmitting}>
-                            {isSubmitting ? 'Processing...' : 'Create Client Account'}
-                        </Button>
-                        <Button type="button" variant="secondary" className="fw-bold px-4 rounded-3" onClick={resetForm}>
-                            Reset Form
-                        </Button>
-                    </div>
-                </Form>
-            </Container>
-        </>
+      <Container className="mt-4 text-center">
+        <Alert variant="danger">Access denied. Log in with appropriate credentials.</Alert>
+      </Container>
     );
+  }
+
+  return (
+    <>
+      <Header />
+      <Container className="mt-4 bg-light rounded-4 p-4 shadow w-100 w-md-75 w-xl-50 mx-auto my-5">
+        <h4 className="mb-3 text-center fw-bold fs-4">Add New Client Account</h4>
+
+        {showAlert && (
+          <Alert variant={alertVariant} dismissible onClose={() => setShowAlert(false)}>
+            {alertMessage}
+          </Alert>
+        )}
+
+        <Form noValidate validated={validated} onSubmit={handleSubmit}>
+          <Row>
+            {/* Left Column */}
+            <Col md={6}>
+              <Form.Group className="mb-3" controlId="clientName">
+                <Form.Label className="fw-bold">Client's Name <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="text"
+                  name="clientName"
+                  required
+                  pattern="^[a-z ]+$"
+                  value={formData.clientName}
+                  onChange={handleChange}
+                  placeholder="e.g. firstname lastname"
+                />
+                <Form.Control.Feedback type="invalid">Lowercase letters and spaces only.</Form.Control.Feedback>
+                {clientNameWarning && <div className="text-danger mt-1">{clientNameWarning}</div>}
+              </Form.Group>
+
+              <Form.Group className="mb-3" controlId="clientMobile">
+                <Form.Label className="fw-bold">Mobile Number <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="tel"
+                  name="clientMobile"
+                  required
+                  pattern="[0-9]{10}"
+                  value={formData.clientMobile}
+                  onChange={handleChange}
+                  placeholder="10-digit number"
+                />
+                <Form.Control.Feedback type="invalid">Enter a valid 10-digit number.</Form.Control.Feedback>
+              </Form.Group>
+
+              <Form.Group className="mb-3" controlId="query_license">
+                <Form.Label className="fw-bold">Query License <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                  type="text"
+                  name="query_license"
+                  required
+                  value={formData.query_license}
+                  onChange={handleChange}
+                  placeholder="Enter query license"
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3" controlId="mining_license">
+                <Form.Label className="fw-bold">Mining License</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="mining_license"
+                  value={formData.mining_license}
+                  onChange={handleChange}
+                  placeholder="Enter mining license"
+                />
+              </Form.Group>
+            </Col>
+
+            {/* Right Column */}
+            <Col md={6}>
+              <Form.Group className="mb-3" controlId="state">
+                <Form.Label className="fw-bold">State <span className="text-danger">*</span></Form.Label>
+                <Form.Select name="state" value={formData.state} onChange={handleChange} required>
+                  <option value="">-- Select State --</option>
+                  {states.map(s => <option key={s} value={s}>{s}</option>)}
+                </Form.Select>
+              </Form.Group>
+
+              <Form.Group className="mb-3" controlId="district">
+                <Form.Label className="fw-bold">District <span className="text-danger">*</span></Form.Label>
+                <Form.Select name="district" value={formData.district} onChange={handleChange} disabled={!districts.length} required>
+                  <option value="">-- Select District --</option>
+                  {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                </Form.Select>
+              </Form.Group>
+
+              <Form.Group className="mb-3" controlId="tehsil">
+                <Form.Label className="fw-bold">Tehsil <span className="text-danger">*</span></Form.Label>
+                <Form.Select name="tehsil" value={formData.tehsil} onChange={handleChange} disabled={!tehsils.length} required>
+                  <option value="">-- Select Tehsil --</option>
+                  {tehsils.map(t => <option key={t} value={t}>{t}</option>)}
+                </Form.Select>
+              </Form.Group>
+
+              <Form.Group className="mb-3" controlId="near_village">
+                <Form.Label className="fw-bold">Nearby Village <span className="text-danger">*</span></Form.Label>
+                <Form.Select name="near_village" value={formData.near_village} onChange={handleChange} disabled={!villages.length} required>
+                  <option value="">-- Select Village --</option>
+                  {villages.map(v => <option key={v} value={v}>{v}</option>)}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <div className="text-center d-flex justify-content-center gap-2 flex-wrap mt-3">
+            <Button type="submit" variant="success" className="fw-bold px-4 rounded-3" disabled={isSubmitting}>
+              {isSubmitting ? 'Processing...' : 'Create Client Account'}
+            </Button>
+            <Button type="button" variant="secondary" className="fw-bold px-4 rounded-3" onClick={resetForm}>
+              Reset Form
+            </Button>
+          </div>
+        </Form>
+      </Container>
+    </>
+  );
 };
 
 export default AddClientAccount;
