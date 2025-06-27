@@ -1,4 +1,4 @@
-//page.jsx addclient-account
+// page.jsx addclient-account
 
 // 'use client'; // Required for client-side hooks like useState and useRouter
 // import React, { useState, useEffect } from 'react'; // Added useEffect for client-side role check
@@ -321,7 +321,6 @@
 // export default AddClientAccount;
 
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
