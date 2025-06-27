@@ -313,51 +313,61 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from "next/navigation"; 
 import { Container, Row, Col, Form, Button, Alert, InputGroup } from 'react-bootstrap';
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
 
 import './styles.css';
 
 const LoginForm = () => {
+  const router = useRouter();
+  // User input states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+
+  // Password show/hide toggle
   const [showPassword, setShowPassword] = useState(false);
+
+  // Error and loading feedback
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Show/hide password
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  // Submit form function
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Stop page reload
     setError('');
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/users/login', {
+      const response = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password })
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (res.ok && data.token) {
+      if (response.ok && data.token) {
+        // Store token and user
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 1000);
+        router.push('/dashboard');
+        // Redirect after short delay
+        // setTimeout(() => {
+        //   router.push('/dashboard');
+        // }, 500);
       } else {
         setError(data.message || 'Login failed.');
-        setTimeout(() => {
-          setError('');
-          setIsLoading(false);
-          setEmail('');
-          setPassword('');
-        }, 1500);
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError('An unexpected error occurred. Please try again.');
+      console.error(err);
+      setError('An unexpected error occurred.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -397,7 +407,7 @@ const LoginForm = () => {
                 <InputGroup>
                   <InputGroup.Text><FaLock /></InputGroup.Text>
                   <Form.Control
-                    type={showPassword ? 'text' : 'password'}
+                    type='password'
                     placeholder="Enter your password"
                     value={password}
                     required
@@ -405,9 +415,10 @@ const LoginForm = () => {
                     aria-label="Password"
                   />
                   <Button
-                    variant="secondary"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    variant="outline-secondary"
+                    onClick={toggleShowPassword}
+                    title={showPassword ? 'Hide Password' : 'Show Password'}
+                    style={{ backgroundColor: '#f8f9fa' }}
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </Button>
