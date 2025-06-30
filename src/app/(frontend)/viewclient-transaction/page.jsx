@@ -783,7 +783,7 @@
 // };
 // export default ViewClientTransaction;
 
-
+//pages/view-client-transaction.jsx
 "use client"; // Enables client-side features like localStorage and router
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert, Badge, Card } from "react-bootstrap";

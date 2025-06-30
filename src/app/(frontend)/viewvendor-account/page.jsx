@@ -944,12 +944,7 @@ const ViewVendorAccount = () => {
                                         <strong>Country:</strong> {selectedVendorAccount.country || "NA"}
                                     </Col>
                                     <Col md={6}>
-                                        <strong>Created Date:</strong> {formatDate(selectedVendorAccount.createdAt)}
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col>
-                                        <strong>Created Time:</strong> {formatTime(selectedVendorAccount.createdAt)}
+                                        <strong>Created At:</strong> {formatDate(selectedVendorAccount.createdAt)} {formatTime(selectedVendorAccount.createdAt)}
                                     </Col>
                                 </Row>
                             </Card.Body>
