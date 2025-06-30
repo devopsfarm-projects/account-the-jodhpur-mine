@@ -193,6 +193,7 @@ export interface ClientTransaction {
     | {
         workingStage?: string | null;
         workingDescription?: string | null;
+        workstatus?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -226,6 +227,7 @@ export interface VendorTransaction {
     | {
         workingStage?: string | null;
         workingDescription?: string | null;
+        workstatus?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -429,6 +431,7 @@ export interface ClientTransactionSelect<T extends boolean = true> {
     | {
         workingStage?: T;
         workingDescription?: T;
+        workstatus?: T;
         id?: T;
       };
   workingStageclient?:
@@ -461,6 +464,7 @@ export interface VendorTransactionSelect<T extends boolean = true> {
     | {
         workingStage?: T;
         workingDescription?: T;
+        workstatus?: T;
         id?: T;
       };
   workingStagevendor?:
