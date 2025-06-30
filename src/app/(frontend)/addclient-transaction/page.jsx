@@ -286,7 +286,7 @@
 // };
 // export default AddClientTransaction;
 
-// // Add Client Transaction Page
+// Add Client Transaction Page
 // 'use client'; // This directive marks the component as a Client Component in Next.js
 // // Import necessary React hooks and components from 'react' and 'next/navigation'
 // import React, { useEffect, useState } from 'react';
@@ -342,6 +342,29 @@
 //   // State to store any success messages to display to the user
 //   const [success, setSuccess] = useState('');
 
+//   // --- Helper Functions for Unique Options ---
+
+//   // Get unique client names (removes duplicates)
+//   const getUniqueClientNames = () => {
+//     const names = clients.filter((client) => client.clientName && client.clientName.trim() !== '')
+//       .map((client) => client.clientName);
+//     return [...new Set(names)]; // Remove duplicates using Set
+//   };
+
+//   // Get unique query licenses (removes duplicates)
+//   const getUniqueQueryLicenses = () => {
+//     const licenses = clients.filter((client) => client.query_license && client.query_license.trim() !== '')
+//       .map((client) => client.query_license);
+//     return [...new Set(licenses)]; // Remove duplicates using Set
+//   };
+
+//   // Get unique near villages (removes duplicates)
+//   const getUniqueNearVillages = () => {
+//     const villages = clients.filter((client) => client.near_village && client.near_village.trim() !== '')
+//       .map((client) => client.near_village);
+//     return [...new Set(villages)]; // Remove duplicates using Set
+//   };
+
 //   // --- useEffect Hook: Client-Side Access Control ---
 //   // This runs once when the component mounts to check user authorization.
 //   useEffect(() => {
@@ -378,7 +401,7 @@
 //         setLoadingClients(true); // Set loading state to true
 //         try {
 //           // Make an API call to fetch client accounts
-//           const res = await fetch('/api/client-accounts');
+//           const res = await fetch('/api/client-accounts?limit=100000');
 //           if (res.ok) {
 //             const data = await res.json(); // Parse the JSON response
 //             setClients(data?.docs || []); // Set clients, defaulting to an empty array if no docs
@@ -488,101 +511,7 @@
 //     setSuccess(''); // Clear success messages
 //   };
 
-//    // --- Form Submission Handler ---
-//   // const handleSubmit = async (e) => {
-//   //   e.preventDefault(); // Prevent default form submission behavior (page reload)
-
-//   //   // Basic client-side validation
-//   //   if (!form.clientName || !form.query_license || !form.near_village) {
-//   //     setError('Please fill in all required fields (Client Name, Query License, Near Village).');
-//   //     return; // Stop submission if validation fails
-//   //   }
-
-//   //   // Find the actual client objects based on the selected names/values
-//   //   // This is crucial for sending the correct client IDs to the backend.
-//   //   const selectedClientName = clients.find(
-//   //     (client) => client.clientName === form.clientName || client._id === form.clientName
-//   //   );
-
-//   //   const selectedQueryLicense = clients.find(
-//   //     (client) => client.query_license === form.query_license || client._id === form.query_license
-//   //   );
-
-//   //   const selectedNearVillage = clients.find(
-//   //     (client) => client.near_village === form.near_village || client._id === form.near_village
-//   //   );
-
-//   //   // More robust validation to ensure selected values correspond to existing clients
-//   //   if (!selectedClientName) {
-//   //     setError(`Invalid client selected for Client Name: "${form.clientName}". Please select from the list.`);
-//   //     setTimeout(() => handleReset(), 3000); // Reset form after 3 seconds on error
-//   //     return;
-//   //   }
-//   //   if (!selectedQueryLicense) {
-//   //     setError(`Invalid client selected for Query License: "${form.query_license}". Please select from the list.`);
-//   //     setTimeout(() => handleReset(), 3000);
-//   //     return;
-//   //   }
-//   //   if (!selectedNearVillage) {
-//   //     setError(`Invalid client selected for Village: "${form.near_village}". Please select from the list.`);
-//   //     setTimeout(() => handleReset(), 3000);
-//   //     return;
-//   //   }
-
-//   //   setSubmitting(true); // Set submitting state to true to show loading indicator
-
-//   //   // Prepare the data payload to be sent to the API
-//   //   const payload = {
-//   //     clientName: selectedClientName.id || selectedClientName._id, // Send client ID
-//   //     query_license: selectedQueryLicense.id || selectedQueryLicense._id, // Send query license ID
-//   //     near_village: selectedNearVillage.id || selectedNearVillage._id, // Send near village ID
-//   //     totalAmount: getTotalAmount(), // Calculated total for our side's work
-//   //     totalAmountclient: getTotalAmountClient(), // Calculated total for client's payments
-//   //     remainingAmount: getRemainingAmount(), // Calculated remaining balance
-//   //     workingStage: workingStages.map((s) => ({
-//   //       workingStage: s.work,
-//   //       workingDescription: s.amount, // Note: 'amount' is mapped to 'workingDescription' here
-//   //     })),
-//   //     workingStageclient: workingStagesClient.map((s) => ({
-//   //       workingStageclient: s.work,
-//   //       workingDescriptionclient: s.amount, // Note: 'amount' is mapped to 'workingDescriptionclient' here
-//   //     })),
-//   //     description: form.description,
-//   //     clientCreatedAt: new Date().toISOString(), // Timestamp for creation
-//   //     clientUpdatedAt: new Date().toISOString(), // Timestamp for last update
-//   //     paymentstatus: 'pending',// Payment status from form (default 'pending')
-//   //   };
-
-//   //   try {
-//   //     // Make the POST request to the API
-//   //     const res = await fetch('/api/client-transaction', {
-//   //       method: 'POST',
-//   //       headers: { 'Content-Type': 'application/json' },
-//   //       body: JSON.stringify(payload), // Send payload as JSON string
-//   //     });
-
-//   //     if (res.ok) {
-//   //       setSuccess('Client transaction saved successfully!'); // Set success message
-//   //       setTimeout(() => {
-//   //         handleReset(); // Reset form after success
-//   //         setSuccess(''); // Clear success message
-//   //         router.push('/viewclient-transaction'); // Redirect to view transactions page
-//   //       }, 1000); // Redirect after 1 second
-//   //     } else {
-//   //       const result = await res.json(); // Parse error response from API
-//   //       console.error('API Error:', result);
-//   //       setError(result.message || 'Failed to save transaction. Please check your inputs.'); // Display API error message
-//   //       setSuccess(''); // Clear success message
-//   //     }
-//   //   } catch (err) {
-//   //     console.error('Network or unexpected error:', err);
-//   //     setError('An unexpected error occurred. Please try again later.'); // Display generic error
-//   //     setSuccess(''); // Clear success message
-//   //   } finally {
-//   //     setSubmitting(false); // Always set submitting to false after the attempt
-//   //   }
-//   // };
-
+//   // --- Form Submission Handler ---
 //   const handleSubmit = async (e) => {
 //     e.preventDefault(); // Prevent page reload on form submit
 //     setError("");       // Clear any previous errors
@@ -609,6 +538,7 @@
 //       const villageMatch = clients.some((client) => client.near_village === form.near_village || client.id === form.near_village);
 
 //       // Provide specific error messages based on mismatches
+      
 //       if (licenseMatch && villageMatch && !clientMatch) {
 //         setError("Client Name is incorrect for the selected Query License and Near Village.");
 //       } else if (clientMatch && licenseMatch && !villageMatch) {
@@ -679,6 +609,7 @@
 //       setSubmitting(false); // Turn off loading state
 //     }
 //   };
+
 //   // --- Conditional Rendering based on user role and loading state ---
 
 //   // Show a spinner while determining user role
@@ -773,12 +704,18 @@
 //                         required
 //                         className="p-2" // Add padding for better look
 //                       />
-//                       {/* Datalist provides autocomplete suggestions for client names */}
-//                       <datalist id="client-options">
-//                         {clients.filter((client) => client.clientName).map((client) => (
-//                           <option key={client.id} value={client.clientName} />
-//                         ))}
-//                       </datalist>
+//                       {/* Datalist provides autocomplete suggestions for client names - NOW WITH UNIQUE VALUES */}
+//                       {form.clientName.length >= 2 && (
+//                         <datalist id="client-options">
+//                           {/* Filter values that include typed letters and limit to 10 */}
+//                           {getUniqueClientNames()
+//                             .filter(name => name.toLowerCase().includes(form.clientName.toLowerCase()))
+//                             .slice(0, 10)
+//                             .map((clientName, index) => (
+//                               <option key={`client-${index}`} value={clientName} />
+//                             ))}
+//                         </datalist>
+//                       )}
 //                     </Form.Group>
 //                   </Col>
 //                   <Col md={6} className="mb-3">
@@ -796,11 +733,19 @@
 //                         required
 //                         className="p-2"
 //                       />
-//                       <datalist id="query-license-options">
-//                         {clients.filter((client) => client.query_license).map((client) => (
-//                           <option key={client.id} value={client.query_license} />
-//                         ))}
-//                       </datalist>
+//                       {/* Datalist for query licenses - NOW WITH UNIQUE VALUES */}
+//                       {form.query_license.length >= 2 && (
+//                         <datalist id="query-license-options">
+//                           {getUniqueQueryLicenses()
+//                             .filter(license =>
+//                               license.toLowerCase().includes(form.query_license.toLowerCase())
+//                             )
+//                             .slice(0, 10)
+//                             .map((license, index) => (
+//                               <option key={`license-${index}`} value={license} />
+//                             ))}
+//                         </datalist>
+//                       )}
 //                     </Form.Group>
 //                   </Col>
 //                   <Col md={6} className="mb-3">
@@ -818,11 +763,19 @@
 //                         required
 //                         className="p-2"
 //                       />
-//                       <datalist id="near-village-options">
-//                         {clients.filter((client) => client.near_village).map((client) => (
-//                           <option key={client.id} value={client.near_village} />
-//                         ))}
-//                       </datalist>
+//                       {/* Datalist for near villages - NOW WITH UNIQUE VALUES */}
+//                       {form.near_village.length >= 2 && (
+//                         <datalist id="near-village-options">
+//                           {getUniqueNearVillages()
+//                             .filter(village =>
+//                               village.toLowerCase().includes(form.near_village.toLowerCase())
+//                             )
+//                             .slice(0, 10)
+//                             .map((village, index) => (
+//                               <option key={`village-${index}`} value={village} />
+//                             ))}
+//                         </datalist>
+//                       )}
 //                     </Form.Group>
 //                   </Col>
 //                 </Row>
@@ -968,7 +921,7 @@
 //                   <Form.Control
 //                     value={getRemainingAmount().toFixed(2)}
 //                     readOnly
-//                     className="bg-white fw-bold p-2 text-primary" // Highlight remaining amount in red
+//                     className="bg-white fw-bold p-2 text-primary" // Highlight remaining amount in blue
 //                   />
 //                 </Form.Group>
 //               </Card.Body>
@@ -1024,25 +977,23 @@
 //     </>
 //   );
 // };
-
 // export default AddClientTransaction;
 
-// Add Client Transaction Page
 'use client'; // This directive marks the component as a Client Component in Next.js
 // Import necessary React hooks and components from 'react' and 'next/navigation'
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 // Import Bootstrap components for layout, forms, buttons, alerts, and spinners
-import { Container, Form, Button, Row, Col, Alert, Spinner, Card } from 'react-bootstrap'; // Added Card for better sectioning
+import { Container, Form, Button, Row, Col, Alert, Spinner, Card, Badge } from 'react-bootstrap';
 
 // Import icons from various libraries for a richer UI
-import { TbTransactionRupee, TbPlus, TbCreditCard, TbTrashFilled } from 'react-icons/tb'; // Transaction, Add, Credit Card, Receipt, Home Check
-import { FaSave, FaExclamationTriangle, FaUserTie, FaMapMarkerAlt, FaCoins, FaPencilAlt, FaUndo } from 'react-icons/fa'; // Save, Warning, User, Building, Map Marker, Coins, Balance Scale, Pencil, Undo
+import { TbTransactionRupee, TbPlus, TbCreditCard, TbTrashFilled } from 'react-icons/tb';
+import { FaSave, FaExclamationTriangle, FaUserTie, FaMapMarkerAlt, FaCoins, FaPencilAlt, FaUndo, FaClock } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faIndianRupeeSign, faScrewdriverWrench, faMoneyCheckDollar } from '@fortawesome/free-solid-svg-icons'; // Indian Rupee, Tools, Money Check
+import { faIndianRupeeSign, faScrewdriverWrench, faMoneyCheckDollar } from '@fortawesome/free-solid-svg-icons';
 
-// Import a custom Header component (assuming it exists in '../components/Header')
+// Import a custom Header component
 import Header from '../components/Header';
 
 // Main functional component for adding client transactions
@@ -1050,19 +1001,13 @@ const AddClientTransaction = () => {
   // Initialize the Next.js router for navigation
   const router = useRouter();
 
-  // State variables to manage component data and UI states:
-
-  // Stores the role of the logged-in user (e.g., 'admin', 'manager')
+  // State variables to manage component data and UI states
   const [userRole, setUserRole] = useState(null);
-  // Stores the list of available clients fetched from the API
   const [clients, setClients] = useState([]);
-  // Indicates if client data is currently being loaded
   const [loadingClients, setLoadingClients] = useState(true);
-  // Indicates if the form is currently being submitted
   const [submitting, setSubmitting] = useState(false);
 
-  // Form state to hold the values of input fields.
-  // 'paymentstatus' is set to 'pending' by default.
+  // Form state aligned with ClientTransactions collection
   const [form, setForm] = useState({
     clientName: '',
     query_license: '',
@@ -1071,173 +1016,158 @@ const AddClientTransaction = () => {
     paymentstatus: 'pending',
   });
 
-  // State for dynamically added 'Our Working Stages' (work done by our side)
-  // Each stage has a 'work' description and an 'amount'.
-  const [workingStages, setWorkingStages] = useState([{ work: '', amount: '' }]);
+  // Working stages aligned with collection schema
+  const [workingStages, setWorkingStages] = useState([{ 
+    workingStage: '', 
+    workingDescription: '', 
+    workstatus: 'incomplete' 
+  }]);
 
-  // State for dynamically added 'Client's Working Stages' (payments/work done by the client)
-  const [workingStagesClient, setWorkingStagesClient] = useState([{ work: '', amount: '' }]);
+  // Client working stages aligned with collection schema
+  const [workingStagesClient, setWorkingStagesClient] = useState([{ 
+    workingStageclient: '', 
+    workingDescriptionclient: '' 
+  }]);
 
-  // State to store any error messages to display to the user
   const [error, setError] = useState('');
-  // State to store any success messages to display to the user
   const [success, setSuccess] = useState('');
 
-  // --- Helper Functions for Unique Options ---
-  
-  // Get unique client names (removes duplicates)
+  // Helper Functions for Unique Options
   const getUniqueClientNames = () => {
     const names = clients.filter((client) => client.clientName && client.clientName.trim() !== '')
       .map((client) => client.clientName);
-    return [...new Set(names)]; // Remove duplicates using Set
+    return [...new Set(names)];
   };
 
-  // Get unique query licenses (removes duplicates)
   const getUniqueQueryLicenses = () => {
     const licenses = clients.filter((client) => client.query_license && client.query_license.trim() !== '')
       .map((client) => client.query_license);
-    return [...new Set(licenses)]; // Remove duplicates using Set
+    return [...new Set(licenses)];
   };
 
-  // Get unique near villages (removes duplicates)
   const getUniqueNearVillages = () => {
     const villages = clients.filter((client) => client.near_village && client.near_village.trim() !== '')
       .map((client) => client.near_village);
-    return [...new Set(villages)]; // Remove duplicates using Set
+    return [...new Set(villages)];
   };
 
-  // --- useEffect Hook: Client-Side Access Control ---
-  // This runs once when the component mounts to check user authorization.
+  // useEffect Hook: Client-Side Access Control
   useEffect(() => {
-    // Ensure this code only runs in the browser environment
     if (typeof window !== 'undefined') {
-      const userData = localStorage.getItem('user'); // Get user data from local storage
+      const userData = localStorage.getItem('user');
       let role = null;
       if (userData) {
         try {
-          const parsedUser = JSON.parse(userData); // Parse the JSON string
-          role = parsedUser.role; // Extract the user's role
-          setUserRole(role); // Set the user role in state
+          const parsedUser = JSON.parse(userData);
+          role = parsedUser.role;
+          setUserRole(role);
         } catch (error) {
           console.error('Error parsing user data from localStorage:', error);
         }
       }
 
-      // If the user is not an 'admin' or 'manager', log them out and redirect
       if (role !== 'admin' && role !== 'manager') {
         setTimeout(() => {
-          localStorage.clear(); // Clear all local storage data
-          window.location.href = '/api/logout'; // Redirect to the logout API endpoint
-        }, 1500); // Wait for 1.5 seconds before redirecting
+          localStorage.clear();
+          window.location.href = '/api/logout';
+        }, 1500);
       }
     }
-  }, [router]); // Dependency array: run when router object changes (usually once)
+  }, [router]);
 
-  // --- useEffect Hook: Fetch All Client Accounts ---
-  // This runs when the userRole state is set, to fetch the list of clients.
+  // useEffect Hook: Fetch All Client Accounts
   useEffect(() => {
     const fetchClients = async () => {
-      // Only fetch if the user has 'admin' or 'manager' role
       if (userRole === 'admin' || userRole === 'manager') {
-        setLoadingClients(true); // Set loading state to true
+        setLoadingClients(true);
         try {
-          // Make an API call to fetch client accounts
-          const res = await fetch('/api/client-accounts');
+          const res = await fetch('/api/client-accounts?limit=100000');
           if (res.ok) {
-            const data = await res.json(); // Parse the JSON response
-            setClients(data?.docs || []); // Set clients, defaulting to an empty array if no docs
-            console.log(data.docs); // Log fetched client data for debugging
+            const data = await res.json();
+            setClients(data?.docs || []);
+            console.log(data.docs);
           } else {
-            // Handle HTTP errors (e.g., 404, 500)
             console.error('Failed to fetch clients:', res.status, res.statusText);
             setError('Failed to load client data. Please try again.');
-            setClients([]); // Clear clients on error
+            setClients([]);
           }
         } catch (err) {
-          // Handle network or unexpected errors
           console.error('Error fetching clients:', err);
           setError('Network error while fetching clients.');
-          setClients([]); // Clear clients on error
+          setClients([]);
         } finally {
-          setLoadingClients(false); // Always set loading to false after fetch attempt
+          setLoadingClients(false);
         }
       }
     };
 
     if (userRole) {
-      fetchClients(); // Call the fetch function if userRole is determined
+      fetchClients();
     }
-  }, [userRole]); // Dependency array: run when userRole changes
+  }, [userRole]);
 
-  // --- Event Handlers ---
-
-  // Handles changes for the main form fields (clientName, query_license, near_village, description)
+  // Event Handlers
   const handleFormChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value }); // Update the specific field in form state
-    setError(''); // Clear any previous errors
-    setSuccess(''); // Clear any previous success messages
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError('');
+    setSuccess('');
   };
 
-  // Updates a specific 'Our Working Stage' field (work or amount)
+  // Updated to match collection schema field names
   const updateStage = (index, field, value) => {
-    const updated = [...workingStages]; // Create a mutable copy of the working stages array
-    updated[index][field] = value; // Update the specific field of the stage at the given index
-    setWorkingStages(updated); // Update the state
+    const updated = [...workingStages];
+    updated[index][field] = value;
+    setWorkingStages(updated);
   };
 
-  // Updates a specific 'Client's Working Stage' field (work or amount)
   const updateStageClient = (index, field, value) => {
-    const updated = [...workingStagesClient]; // Create a mutable copy
-    updated[index][field] = value; // Update the specific field
-    setWorkingStagesClient(updated); // Update the state
+    const updated = [...workingStagesClient];
+    updated[index][field] = value;
+    setWorkingStagesClient(updated);
   };
 
-  // Adds a new empty row for 'Our Working Stages'
   const addStage = () => {
-    setWorkingStages([...workingStages, { work: '', amount: '' }]); // Add a new empty object
+    setWorkingStages([...workingStages, { 
+      workingStage: '', 
+      workingDescription: '', 
+      workstatus: 'incomplete' 
+    }]);
   };
 
-  // Adds a new empty row for 'Client's Working Stages'
   const addStageClient = () => {
-    setWorkingStagesClient([...workingStagesClient, { work: '', amount: '' }]); // Add a new empty object
+    setWorkingStagesClient([...workingStagesClient, { 
+      workingStageclient: '', 
+      workingDescriptionclient: '' 
+    }]);
   };
 
-  // Removes a specific row from 'Our Working Stages'
   const removeStage = (index) => {
-    // Prevent removing the last remaining stage
     if (workingStages.length > 1) {
-      setWorkingStages(workingStages.filter((_, i) => i !== index)); // Filter out the stage at the given index
+      setWorkingStages(workingStages.filter((_, i) => i !== index));
     }
   };
 
-  // Removes a specific row from 'Client's Working Stages'
   const removeStageClient = (index) => {
-    // Prevent removing the last remaining stage
     if (workingStagesClient.length > 1) {
-      setWorkingStagesClient(workingStagesClient.filter((_, i) => i !== index)); // Filter out the stage at the given index
+      setWorkingStagesClient(workingStagesClient.filter((_, i) => i !== index));
     }
   };
 
-  // --- Calculation Functions ---
-
-  // Calculates the total amount from 'Our Working Stages'
+  // Calculation Functions - Updated to use correct field names
   const getTotalAmount = () => {
-    const workTotal = workingStages.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+    const workTotal = workingStages.reduce((sum, s) => sum + (parseFloat(s.workingDescription) || 0), 0);
     return workTotal;
   };
 
-  // Calculates the total amount from 'Client's Working Stages'
   const getTotalAmountClient = () => {
-    const workTotalClient = workingStagesClient.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+    const workTotalClient = workingStagesClient.reduce((sum, s) => sum + (parseFloat(s.workingDescriptionclient) || 0), 0);
     return workTotalClient;
   };
 
-  // Calculates the remaining amount (Our Total - Client Total)
   const getRemainingAmount = () => {
     return getTotalAmount() - getTotalAmountClient();
   };
 
-  // Resets the entire form to its initial empty state
   const handleReset = () => {
     setForm({
       clientName: '',
@@ -1246,39 +1176,41 @@ const AddClientTransaction = () => {
       description: '',
       paymentstatus: 'pending',
     });
-    setWorkingStages([{ work: '', amount: '' }]); // Reset our stages
-    setWorkingStagesClient([{ work: '', amount: '' }]); // Reset client stages
-    setError(''); // Clear errors
-    setSuccess(''); // Clear success messages
+    setWorkingStages([{ 
+      workingStage: '', 
+      workingDescription: '', 
+      workstatus: 'incomplete' 
+    }]);
+    setWorkingStagesClient([{ 
+      workingStageclient: '', 
+      workingDescriptionclient: '' 
+    }]);
+    setError('');
+    setSuccess('');
   };
 
-  // --- Form Submission Handler ---
+  // Form Submission Handler - Updated payload structure
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent page reload on form submit
-    setError("");       // Clear any previous errors
-    setSuccess("");     // Clear any previous success messages
+    e.preventDefault();
+    setError("");
+    setSuccess("");
 
-    // Step 1: Basic field presence check
     if (!form.clientName || !form.query_license || !form.near_village) {
       setError("Please fill in all required fields: Client Name, Query License, and Near Village.");
       return;
     }
 
-    // Step 2: Try to find the client that matches all 3 fields
     const matchedClient = clients.find((client) =>
       (client.clientName === form.clientName || client.id === form.clientName) &&
       (client.query_license === form.query_license || client.id === form.query_license) &&
       (client.near_village === form.near_village || client.id === form.near_village)
     );
 
-    // Step 3: If no exact match is found, check individual mismatches and show custom errors
     if (!matchedClient) {
-      // Check for each valid match individually
       const clientMatch = clients.some((client) => client.clientName === form.clientName || client.id === form.clientName);
       const licenseMatch = clients.some((client) => client.query_license === form.query_license || client.id === form.query_license);
       const villageMatch = clients.some((client) => client.near_village === form.near_village || client.id === form.near_village);
 
-      // Provide specific error messages based on mismatches
       if (licenseMatch && villageMatch && !clientMatch) {
         setError("Client Name is incorrect for the selected Query License and Near Village.");
       } else if (clientMatch && licenseMatch && !villageMatch) {
@@ -1294,14 +1226,13 @@ const AddClientTransaction = () => {
       } else {
         setError("The provided Client Name, Query License, and Near Village do not match any known client.");
       }
-      // Reset the form after showing error
-      setTimeout(() => handleReset(), 5000);
+      setTimeout(() => handleReset(), 3000);
       return;
     }
 
-    // Step 4: Prepare payload using the matched client
-    setSubmitting(true); // Show loading indicator
+    setSubmitting(true);
 
+    // Updated payload to match ClientTransactions collection schema
     const payload = {
       clientName: matchedClient.id,
       query_license: matchedClient.id,
@@ -1310,12 +1241,13 @@ const AddClientTransaction = () => {
       totalAmountclient: getTotalAmountClient(),
       remainingAmount: getRemainingAmount(),
       workingStage: workingStages.map((s) => ({
-        workingStage: s.work,
-        workingDescription: s.amount,
+        workingStage: s.workingStage,
+        workingDescription: s.workingDescription,
+        workstatus: s.workstatus
       })),
       workingStageclient: workingStagesClient.map((s) => ({
-        workingStageclient: s.work,
-        workingDescriptionclient: s.amount,
+        workingStageclient: s.workingStageclient,
+        workingDescriptionclient: s.workingDescriptionclient,
       })),
       description: form.description,
       clientCreatedAt: new Date().toISOString(),
@@ -1323,7 +1255,6 @@ const AddClientTransaction = () => {
       paymentstatus: "pending",
     };
 
-    // Step 5: Submit data to API
     try {
       const res = await fetch("/api/client-transaction", {
         method: "POST",
@@ -1346,13 +1277,11 @@ const AddClientTransaction = () => {
       console.error("Unexpected error:", err);
       setError("An unexpected error occurred. Please try again later.");
     } finally {
-      setSubmitting(false); // Turn off loading state
+      setSubmitting(false);
     }
   };
 
-  // --- Conditional Rendering based on user role and loading state ---
-
-  // Show a spinner while determining user role
+  // Conditional Rendering
   if (userRole === null) {
     return (
       <div className="text-center mt-5">
@@ -1362,7 +1291,6 @@ const AddClientTransaction = () => {
     );
   }
 
-  // If unauthorized, show an error and redirect.
   if (userRole !== 'admin' && userRole !== 'manager') {
     return (
       <Container className="mt-5 text-center">
@@ -1374,20 +1302,16 @@ const AddClientTransaction = () => {
     );
   }
 
-  // --- Main Component JSX (What gets rendered on the screen) ---
   return (
     <>
-      <Header /> {/* Render the common Header component */}
+      <Header />
 
-      {/* Main container for the form, responsive padding and margin */}
       <Container className="mt-3 px-3 px-sm-4 px-md-5 py-4 bg-light rounded-4 shadow-sm mx-auto" style={{ maxWidth: '900px' }}>
-        {/* Page Title with an icon */}
         <h4 className="text-center mb-4 fs-3 fw-bold text-danger">
           <TbTransactionRupee className="fs-1 mb-1 me-2" /> Add Client Transaction
         </h4>
         <hr className="mb-4" />
 
-        {/* Loading Clients Spinner */}
         {loadingClients && (
           <div className="text-center my-4">
             <Spinner animation="border" variant="primary" />
@@ -1395,7 +1319,6 @@ const AddClientTransaction = () => {
           </div>
         )}
 
-        {/* No Clients Found Alert */}
         {!loadingClients && clients.length === 0 && (
           <Alert variant="info" className="text-center fw-semibold">
             <FaExclamationTriangle className="me-2" />
@@ -1406,21 +1329,18 @@ const AddClientTransaction = () => {
           </Alert>
         )}
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="danger" dismissible onClose={() => setError('')} className="text-center fw-semibold">
             <FaExclamationTriangle className="me-2" /> {error}
           </Alert>
         )}
 
-        {/* Success Alert */}
         {success && (
           <Alert variant="success" dismissible onClose={() => setSuccess('')} className="text-center fw-semibold">
             {success}
           </Alert>
         )}
 
-        {/* Render the form only if clients are loaded and available */}
         {!loadingClients && clients.length > 0 && (
           <Form onSubmit={handleSubmit}>
             {/* Client Information Section */}
@@ -1436,20 +1356,24 @@ const AddClientTransaction = () => {
                         Client Name <span className="text-danger">*</span>
                       </Form.Label>
                       <Form.Control
-                        list="client-options" // Connects to the datalist for suggestions
+                        list="client-options"
                         name="clientName"
                         value={form.clientName}
                         onChange={handleFormChange}
                         placeholder="Select or type Client Name"
                         required
-                        className="p-2" // Add padding for better look
+                        className="p-2"
                       />
-                      {/* Datalist provides autocomplete suggestions for client names - NOW WITH UNIQUE VALUES */}
-                      <datalist id="client-options">
-                        {getUniqueClientNames().map((clientName, index) => (
-                          <option key={`client-${index}`} value={clientName} />
-                        ))}
-                      </datalist>
+                      {form.clientName.length >= 2 && (
+                        <datalist id="client-options">
+                          {getUniqueClientNames()
+                            .filter(name => name.toLowerCase().includes(form.clientName.toLowerCase()))
+                            .slice(0, 10)
+                            .map((clientName, index) => (
+                              <option key={`client-${index}`} value={clientName} />
+                            ))}
+                        </datalist>
+                      )}
                     </Form.Group>
                   </Col>
                   <Col md={6} className="mb-3">
@@ -1467,12 +1391,18 @@ const AddClientTransaction = () => {
                         required
                         className="p-2"
                       />
-                      {/* Datalist for query licenses - NOW WITH UNIQUE VALUES */}
-                      <datalist id="query-license-options">
-                        {getUniqueQueryLicenses().map((license, index) => (
-                          <option key={`license-${index}`} value={license} />
-                        ))}
-                      </datalist>
+                      {form.query_license.length >= 2 && (
+                        <datalist id="query-license-options">
+                          {getUniqueQueryLicenses()
+                            .filter(license =>
+                              license.toLowerCase().includes(form.query_license.toLowerCase())
+                            )
+                            .slice(0, 10)
+                            .map((license, index) => (
+                              <option key={`license-${index}`} value={license} />
+                            ))}
+                        </datalist>
+                      )}
                     </Form.Group>
                   </Col>
                   <Col md={6} className="mb-3">
@@ -1490,19 +1420,25 @@ const AddClientTransaction = () => {
                         required
                         className="p-2"
                       />
-                      {/* Datalist for near villages - NOW WITH UNIQUE VALUES */}
-                      <datalist id="near-village-options">
-                        {getUniqueNearVillages().map((village, index) => (
-                          <option key={`village-${index}`} value={village} />
-                        ))}
-                      </datalist>
+                      {form.near_village.length >= 2 && (
+                        <datalist id="near-village-options">
+                          {getUniqueNearVillages()
+                            .filter(village =>
+                              village.toLowerCase().includes(form.near_village.toLowerCase())
+                            )
+                            .slice(0, 10)
+                            .map((village, index) => (
+                              <option key={`village-${index}`} value={village} />
+                            ))}
+                        </datalist>
+                      )}
                     </Form.Group>
                   </Col>
                 </Row>
               </Card.Body>
             </Card>
 
-            {/* Our Working Stages Section */}
+            {/* Our Working Stages Section - Updated with Work Status */}
             <Card className="mb-4 border-0 shadow-sm">
               <Card.Header className="bg-primary text-white fw-bold fs-5 d-flex align-items-center justify-content-between">
                 <div>
@@ -1518,40 +1454,60 @@ const AddClientTransaction = () => {
               </Card.Header>
               <Card.Body>
                 {workingStages.map((stage, index) => (
-                  <Row key={`our-stage-${index}`} className="mb-3 align-items-center g-2">
-                    <Col xs={12} md={6}>
-                      <Form.Control
-                        placeholder="Work Description (e.g., Land Survey, Documentation)"
-                        value={stage.work}
-                        onChange={(e) => updateStage(index, 'work', e.target.value)}
-                        className="p-2"
-                      />
-                    </Col>
-                    <Col xs={8} md={4}>
-                      <Form.Control
-                        type="number"
-                        placeholder="₹ Amount"
-                        value={stage.amount}
-                        onChange={(e) => updateStage(index, 'amount', e.target.value)}
-                        className="p-2"
-                      />
-                    </Col>
-                    <Col xs={4} md={2} className="d-flex justify-content-end">
-                      <Button
-                        variant="danger"
-                        onClick={() => removeStage(index)}
-                        disabled={workingStages.length === 1}
-                        className="w-100 fw-bold d-flex align-items-center justify-content-center"
-                      >
-                        <TbTrashFilled className="d-none d-md-inline me-1" /> Remove
-                      </Button>
-                    </Col>
-                  </Row>
+                  <div key={`our-stage-${index}`} className="mb-4 p-3 border rounded bg-light">
+                    <Row className="mb-3 align-items-center g-2">
+                      <Col xs={12} md={5}>
+                        <Form.Label className="fw-bold small">Work Description</Form.Label>
+                        <Form.Control
+                          placeholder="e.g., Land Survey, Documentation"
+                          value={stage.workingStage}
+                          onChange={(e) => updateStage(index, 'workingStage', e.target.value)}
+                          className="p-2"
+                        />
+                      </Col>
+                      <Col xs={8} md={4}>
+                        <Form.Label className="fw-bold small">Amount (₹)</Form.Label>
+                        <Form.Control
+                          type="number"
+                          placeholder="₹ Amount"
+                          value={stage.workingDescription}
+                          onChange={(e) => updateStage(index, 'workingDescription', e.target.value)}
+                          className="p-2"
+                        />
+                      </Col>
+                      <Col xs={4} md={3}>
+                        <Form.Label className="fw-bold small">Work Status</Form.Label>
+                        <div className="d-flex align-items-center">
+                          <Badge 
+                            bg="warning" 
+                            className="me-2 p-2 d-flex align-items-center"
+                            style={{ fontSize: '0.85rem' }}
+                          >
+                            <FaClock className="me-1" />
+                            {stage.workstatus.charAt(0).toUpperCase() + stage.workstatus.slice(1)}
+                          </Badge>
+                        </div>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col xs={12} className="d-flex justify-content-end">
+                        <Button
+                          variant="danger"
+                          onClick={() => removeStage(index)}
+                          disabled={workingStages.length === 1}
+                          className="fw-bold d-flex align-items-center justify-content-center"
+                          size="sm"
+                        >
+                          <TbTrashFilled className="me-1" /> Remove Stage
+                        </Button>
+                      </Col>
+                    </Row>
+                  </div>
                 ))}
               </Card.Body>
             </Card>
 
-            {/* Client's Working Stages Section */}
+            {/* Client's Working Stages Section - Updated field names */}
             <Card className="mb-4 border-0 shadow-sm">
               <Card.Header className="bg-success text-white fw-bold fs-5 d-flex align-items-center justify-content-between">
                 <div>
@@ -1571,8 +1527,8 @@ const AddClientTransaction = () => {
                     <Col xs={12} md={6}>
                       <Form.Control
                         placeholder="Client Payment Description (e.g., Advance, Installment)"
-                        value={stage.work}
-                        onChange={(e) => updateStageClient(index, 'work', e.target.value)}
+                        value={stage.workingStageclient}
+                        onChange={(e) => updateStageClient(index, 'workingStageclient', e.target.value)}
                         className="p-2"
                       />
                     </Col>
@@ -1580,8 +1536,8 @@ const AddClientTransaction = () => {
                       <Form.Control
                         type="number"
                         placeholder="₹ Client Paid Amount"
-                        value={stage.amount}
-                        onChange={(e) => updateStageClient(index, 'amount', e.target.value)}
+                        value={stage.workingDescriptionclient}
+                        onChange={(e) => updateStageClient(index, 'workingDescriptionclient', e.target.value)}
                         className="p-2"
                       />
                     </Col>
@@ -1600,7 +1556,7 @@ const AddClientTransaction = () => {
               </Card.Body>
             </Card>
 
-            {/* Credit Summary Section */}
+            {/* Transaction Summary Section */}
             <Card className="mb-4 border-0 shadow-sm bg-light">
               <Card.Header className="bg-dark text-white fw-bold fs-5 d-flex align-items-center">
                 <FaCoins className="me-2" /> Transaction Summary
@@ -1613,8 +1569,8 @@ const AddClientTransaction = () => {
                         Total Amount Our Side (<FontAwesomeIcon icon={faIndianRupeeSign} />)
                       </Form.Label>
                       <Form.Control
-                        value={getTotalAmount().toFixed(2)} // Display with 2 decimal places
-                        readOnly // Make it read-only
+                        value={getTotalAmount().toFixed(2)}
+                        readOnly
                         className="bg-white fw-bold p-2 text-danger"
                       />
                     </Form.Group>
@@ -1633,7 +1589,6 @@ const AddClientTransaction = () => {
                   </Col>
                 </Row>
 
-                {/* Remaining Amount Field */}
                 <Form.Group className="mb-4">
                   <Form.Label className="fw-bold fs-5">
                     Remaining Amount (<FontAwesomeIcon icon={faIndianRupeeSign} />)
@@ -1641,7 +1596,7 @@ const AddClientTransaction = () => {
                   <Form.Control
                     value={getRemainingAmount().toFixed(2)}
                     readOnly
-                    className="bg-white fw-bold p-2 text-primary" // Highlight remaining amount in blue
+                    className="bg-white fw-bold p-2 text-primary"
                   />
                 </Form.Group>
               </Card.Body>
@@ -1654,7 +1609,7 @@ const AddClientTransaction = () => {
               </Form.Label>
               <Form.Control
                 as="textarea"
-                rows={3} // Increased rows for better input area
+                rows={3}
                 name="description"
                 value={form.description}
                 onChange={handleFormChange}

@@ -40,6 +40,11 @@ export const ClientTransactions: CollectionConfig = {
           type: 'text',
          
         },
+        {
+          name:"workstatus",
+          type:'text',
+          defaultValue:'incomplete',
+        }
       ],
     },
     {

@@ -616,13 +616,32 @@ const ClientTransaction = () => {
   // State to store any success messages
   const [success, setSuccess] = useState('');
 
+  // Helper Functions for Unique Options
+  const getUniqueClientNames = () => {
+    const names = clients.filter((client) => client.clientName && client.clientName.trim() !== '')
+      .map((client) => client.clientName);
+    return [...new Set(names)];
+  };
+
+  const getUniqueQueryLicenses = () => {
+    const licenses = clients.filter((client) => client.query_license && client.query_license.trim() !== '')
+      .map((client) => client.query_license);
+    return [...new Set(licenses)];
+  };
+
+  const getUniqueNearVillages = () => {
+    const villages = clients.filter((client) => client.near_village && client.near_village.trim() !== '')
+      .map((client) => client.near_village);
+    return [...new Set(villages)];
+  };
+
   // --- useEffect Hook: Fetch All Client Accounts ---
   // This runs once on component mount to fetch the list of clients.
   useEffect(() => {
     const fetchClients = async () => {
       setLoadingClients(true);
       try {
-        const res = await fetch('/api/client-accounts');
+        const res = await fetch('/api/client-accounts?limit=100000');
         if (res.ok) {
           const data = await res.json();
           setClients(data?.docs || []);
@@ -732,7 +751,7 @@ const ClientTransaction = () => {
       } else {
         setError("The provided Client Name, Query License, and Near Village do not match any known client.");
       }
-      setTimeout(() => handleReset(), 5000);
+      setTimeout(() => handleReset(), 3000);
       return;
     }
 
@@ -845,11 +864,16 @@ const ClientTransaction = () => {
                         required
                         className="p-2"
                       />
-                      <datalist id="client-options">
-                        {clients.filter((client) => client.clientName).map((client) => (
-                          <option key={client.id} value={client.clientName} />
-                        ))}
-                      </datalist>
+                      {form.clientName.length >= 2 && (
+                        <datalist id="client-options">
+                          {getUniqueClientNames()
+                            .filter(name => name.toLowerCase().includes(form.clientName.toLowerCase()))
+                            .slice(0, 10)
+                            .map((clientName, index) => (
+                              <option key={`client-${index}`} value={clientName} />
+                            ))}
+                        </datalist>
+                      )}
                     </Form.Group>
                   </Col>
                   <Col md={6} className="mb-3">
@@ -867,11 +891,16 @@ const ClientTransaction = () => {
                         required
                         className="p-2"
                       />
-                      <datalist id="query-license-options">
-                        {clients.filter((client) => client.query_license).map((client) => (
-                          <option key={client.id} value={client.query_license} />
-                        ))}
-                      </datalist>
+                      {form.query_license.length >= 2 && (
+                        <datalist id="query-license-options">
+                          {getUniqueQueryLicenses()
+                            .filter(name => name.toLowerCase().includes(form.query_license.toLowerCase()))
+                            .slice(0, 10)
+                            .map((queryLicense, index) => (
+                              <option key={`query-license-${index}`} value={queryLicense} />
+                            ))}
+                        </datalist>
+                      )}
                     </Form.Group>
                   </Col>
                   <Col md={6} className="mb-3">
@@ -889,11 +918,16 @@ const ClientTransaction = () => {
                         required
                         className="p-2"
                       />
-                      <datalist id="near-village-options">
-                        {clients.filter((client) => client.near_village).map((client) => (
-                          <option key={client.id} value={client.near_village} />
-                        ))}
-                      </datalist>
+                      {form.near_village.length >= 2 && (
+                        <datalist id="near-village-options">
+                          {getUniqueNearVillages()
+                            .filter(name => name.toLowerCase().includes(form.near_village.toLowerCase()))
+                            .slice(0, 10)
+                            .map((village, index) => (
+                              <option key={`village-${index}`} value={village} />
+                            ))}
+                        </datalist>
+                      )}
                     </Form.Group>
                   </Col>
                 </Row>
