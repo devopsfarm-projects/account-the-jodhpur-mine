@@ -505,45 +505,41 @@
 // };
 // export default ViewClientAccount;
 
-"use client"; // Ensures this component runs on the browser side (needed for localStorage and hooks)
+"use client";
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Table, Button, Form, InputGroup, Spinner, Alert, Modal, Card } from "react-bootstrap";
-import { FaEye, FaTrash, FaSearch, FaClipboard, FaAngleLeft, FaAngleRight } from "react-icons/fa";
-import Header from "../components/Header";
-import axios from "axios";
 import { useRouter } from "next/navigation";
-// Format date to DD/MM/YYYY
-const formatDate = (date) => new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Asia/Kolkata" });
-// Format time to HH:MM:SS AM/PM
-const formatTime = (date) => new Date(date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Kolkata" });
+import axios from "axios";
+import Header from "../components/Header";
+import {Container, Row, Col, Table, Button, Form,InputGroup, Spinner, Alert, Modal, Card} from "react-bootstrap";
+import {FaEye, FaTrash, FaSearch, FaClipboard,FaAngleLeft, FaAngleRight} from "react-icons/fa";
+
+const formatDate = (date) =>
+  new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Asia/Kolkata"
+  });
+
+const formatTime = (date) =>
+  new Date(date).toLocaleTimeString("en-US", {
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Kolkata"
+  });
+
 const ViewClientAccount = () => {
   const router = useRouter();
 
-  // Store user's role and authorization
   const [userRole, setUserRole] = useState(null);
-
-  // All client accounts fetched from API
   const [allAccounts, setAllAccounts] = useState([]);
-
-  // Accounts filtered by search term
   const [filteredAccounts, setFilteredAccounts] = useState([]);
-
-  // State to store user's search input
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Modal logic
   const [showModal, setShowModal] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
-
-  // Pagination
-  const itemsPerPage = 10; // Number of rows per page is 10
-  const [currentPage, setCurrentPage] = useState(1); // Current page number
-
-  // UI states
+  const itemsPerPage = 10;
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [accountToConfirmDelete, setAccountToConfirmDelete] = useState(null);
+  const [message, setMessage] = useState("");
 
-  // 🧠 Check user's role (authorization)
+  // Auth check
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
@@ -558,7 +554,6 @@ const ViewClientAccount = () => {
           }, 1500);
         }
       } catch (err) {
-        console.error("Error parsing user:", err);
         setError("Login again.");
       }
     } else {
@@ -566,17 +561,16 @@ const ViewClientAccount = () => {
     }
   }, []);
 
-  // 📥 Fetch all client accounts on mount
+  // Fetch accounts
   useEffect(() => {
     const fetchAccounts = async () => {
       if (userRole === "admin" || userRole === "manager") {
         setLoading(true);
         try {
-          const res = await axios.get("/api/client-accounts?limit=10000"); // fetch all (you can use server-side pagination later)
+          const res = await axios.get("/api/client-accounts?limit=10000");
           setAllAccounts(res.data.docs);
-          setFilteredAccounts(res.data.docs); // Initially show everything
+          setFilteredAccounts(res.data.docs);
         } catch (err) {
-          console.error("API Error:", err);
           setError("Failed to fetch client accounts.");
         } finally {
           setLoading(false);
@@ -586,43 +580,50 @@ const ViewClientAccount = () => {
     fetchAccounts();
   }, [userRole]);
 
-  // 🔎 Handle global search (case-insensitive)
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    setCurrentPage(1); // Always go to page 1 after search
-
+    setCurrentPage(1);
     const filtered = allAccounts.filter((acc) =>
       acc.clientName?.toLowerCase().includes(value)
     );
     setFilteredAccounts(filtered);
   };
 
-  // ❌ Delete account
+  // Delete account function
   const deleteAccount = async (id) => {
-    if (window.confirm("Are you sure?")) {
-      try {
-        await axios.delete(`/api/client-accounts/${id}`);
-        const updated = allAccounts.filter((acc) => acc.id !== id);
-        setAllAccounts(updated);
-        const filtered = updated.filter((acc) =>
-          acc.clientName?.toLowerCase().includes(searchTerm)
-        );
-        setFilteredAccounts(filtered);
-        alert("Deleted successfully.");
-      } catch {
-        alert("Failed to delete.");
-      }
+    try {
+      await axios.delete(`/api/client-accounts/${id}`);
+      const updated = allAccounts.filter((acc) => acc.id !== id);
+      setAllAccounts(updated);
+      const filtered = updated.filter((acc) =>
+        acc.clientName?.toLowerCase().includes(searchTerm)
+      );
+      setFilteredAccounts(filtered);
+      setMessage("Account deleted successfully.");
+    } catch {
+      setMessage("Failed to delete account.");
+    } finally {
+      setAccountToConfirmDelete(null);
+      setTimeout(() => setMessage(""), 3000);
     }
   };
 
-  // 👁️ Show modal
+  const confirmDelete = (acc) => {
+    setAccountToConfirmDelete(acc);
+    setMessage(`Are you sure you want to delete the account for "${acc.clientName}"?`);
+  };
+
+  const cancelDelete = () => {
+    setAccountToConfirmDelete(null);
+    setMessage("");
+  };
+
   const handleView = (acc) => {
     setSelectedAccount(acc);
     setShowModal(true);
   };
 
-  // 📃 Get current page items
   const currentItems = filteredAccounts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -630,14 +631,11 @@ const ViewClientAccount = () => {
 
   const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage);
 
-  // ⏭️ Pagination rendering
   const renderPagination = () => {
     const pages = [];
-
     if (currentPage > 1) {
       pages.push(<Button key="prev" onClick={() => setCurrentPage(currentPage - 1)}><FaAngleLeft /> Prev</Button>);
     }
-
     for (let i = 1; i <= totalPages; i++) {
       if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
         pages.push(
@@ -656,15 +654,12 @@ const ViewClientAccount = () => {
         pages.push(<span key={`ellipsis-${i}`} className="mx-2">...</span>);
       }
     }
-
     if (currentPage < totalPages) {
       pages.push(<Button key="next" onClick={() => setCurrentPage(currentPage + 1)}>Next <FaAngleRight /></Button>);
     }
-
     return <div className="d-flex flex-wrap gap-2 justify-content-center my-3">{pages}</div>;
   };
 
-  // ⌛ Show spinner while loading
   if (loading || userRole === null) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
@@ -674,7 +669,6 @@ const ViewClientAccount = () => {
     );
   }
 
-  // 🚫 Unauthorized
   if (userRole !== "admin" && userRole !== "manager") {
     return (
       <Container className="text-center mt-5">
@@ -686,7 +680,6 @@ const ViewClientAccount = () => {
   return (
     <>
       <Header />
-
       <Container fluid className="py-3">
         <Row className="mb-3 text-center align-items-center">
           <Col xs={12} md={6}>
@@ -704,6 +697,28 @@ const ViewClientAccount = () => {
             </InputGroup>
           </Col>
         </Row>
+
+        {/* ✅ Global delete confirmation message */}
+        {message && (
+          <Row className="mb-3">
+            <Col xs={12} md={{ span: 10, offset: 1 }}>
+              <Alert variant={accountToConfirmDelete ? "warning" : message.toLowerCase().includes("success") ? "success" : "danger"}
+                className="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 p-3 shadow-sm rounded text-center text-md-start">
+                <div className="flex-grow-1">
+                  <p className="mb-0 fw-bold fs-5">{message}</p>
+                </div>
+
+                {accountToConfirmDelete && (
+                  <div className="d-flex gap-2 mt-2 mt-md-0">
+                    <Button variant="danger" className="fw-semibold px-3" onClick={() => deleteAccount(accountToConfirmDelete.id)}>Confirm</Button>
+                    <Button variant="outline-secondary" className="fw-semibold px-3" onClick={cancelDelete}>Cancel</Button>
+                  </div>
+                )}
+              </Alert>
+            </Col>
+          </Row>
+        )}
+
 
         <div className="table-responsive">
           <Table bordered hover className="text-center align-middle">
@@ -732,7 +747,7 @@ const ViewClientAccount = () => {
                     <td>{formatTime(acc.clientCreatedAt)}</td>
                     <td className="d-flex gap-2 justify-content-center flex-wrap">
                       <Button variant="info" onClick={() => handleView(acc)}><FaEye /></Button>
-                      <Button variant="danger" onClick={() => deleteAccount(acc.id)}><FaTrash /></Button>
+                      <Button variant="danger" onClick={() => confirmDelete(acc)}><FaTrash /></Button>
                     </td>
                   </tr>
                 ))
@@ -745,11 +760,9 @@ const ViewClientAccount = () => {
           </Table>
         </div>
 
-        {/* Pagination */}
         {renderPagination()}
       </Container>
 
-      {/* Modal for client details */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Client Account Details</Modal.Title>
@@ -786,4 +799,5 @@ const ViewClientAccount = () => {
     </>
   );
 };
+
 export default ViewClientAccount;

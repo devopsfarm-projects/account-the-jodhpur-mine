@@ -784,32 +784,61 @@
 // export default ViewClientTransaction;
 
 //pages/view-client-transaction.jsx
-"use client"; // Enables client-side features like localStorage and router
+"use client";
+
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Table, Button, Modal, Form, InputGroup, Spinner, Alert, Badge, Card } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Table,
+  Button,
+  Modal,
+  Form,
+  InputGroup,
+  Spinner,
+  Alert,
+  Badge,
+  Card,
+} from "react-bootstrap";
 import { useRouter } from "next/navigation";
-import { FaEye, FaSearch, FaRupeeSign, FaClipboard, FaWrench, FaFilePdf, FaUser, FaMapMarkerAlt, FaCalendarAlt, FaAngleLeft, FaAngleRight, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import {
+  FaEye,
+  FaSearch,
+  FaRupeeSign,
+  FaClipboard,
+  FaWrench,
+  FaFilePdf,
+  FaUser,
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaAngleLeft,
+  FaAngleRight,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaSpinner, // Added for loading indicator
+} from "react-icons/fa";
 import { PencilSquare } from "react-bootstrap-icons";
 import Header from "../components/Header";
-import axios from "axios"; // Import axios for API calls
+import axios from "axios";
 
 // Helper function to format date as DD/MM/YYYY
 const formatDate = (date) =>
-  new Date(date).toLocaleDateString("en-GB", { 
-    day: "2-digit", 
-    month: "2-digit", 
-    year: "numeric", 
-    timeZone: "Asia/Kolkata" 
+  new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
   });
 
 // Helper function to format time as HH:MM:SS AM/PM
 const formatTime = (date) =>
-  new Date(date).toLocaleTimeString("en-US", { 
-    hour: "2-digit", 
-    minute: "2-digit", 
-    second: "2-digit", 
-    hour12: true, 
-    timeZone: "Asia/Kolkata" 
+  new Date(date).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
   });
 
 const ViewClientTransaction = () => {
@@ -826,6 +855,10 @@ const ViewClientTransaction = () => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(""); // Error message displayed using Alert
+
+  // States for individual button loading
+  const [paymentStatusLoadingId, setPaymentStatusLoadingId] = useState(null);
+  const [workStatusLoadingId, setWorkStatusLoadingId] = useState(null); // Stores { transactionId, stageIndex }
 
   // Pagination states
   const itemsPerPage = 10; // Number of transactions per page is 10
@@ -888,7 +921,7 @@ const ViewClientTransaction = () => {
       endDateObj.setHours(23, 59, 59, 999);
     }
 
-    const results = allTransactions.filter(transaction => {
+    const results = allTransactions.filter((transaction) => {
       const clientName = transaction.clientName?.clientName?.toLowerCase() || "";
       const transactionDate = new Date(transaction.clientCreatedAt);
 
@@ -926,39 +959,41 @@ const ViewClientTransaction = () => {
 
   // Function to download PDF
   const downloadPDF = async () => {
-    if (typeof window === 'undefined' || !selectedTransaction) return;
+    if (typeof window === "undefined" || !selectedTransaction) return;
 
     try {
       // Dynamically import html2pdf only on the client side
-      const html2pdf = (await import('html2pdf.js')).default;
+      const html2pdf = (await import("html2pdf.js")).default;
 
       const element = document.getElementById("pdf-content");
       if (!element) return;
 
       // Create a new div to hold the content for PDF generation
-      const pdfContentWrapper = document.createElement('div');
+      const pdfContentWrapper = document.createElement("div");
       pdfContentWrapper.innerHTML = element.innerHTML;
 
       // Apply inline styles to the wrapper for consistent layout
-      pdfContentWrapper.style.padding = '20px';
-      pdfContentWrapper.style.fontFamily = 'Arial, sans-serif';
-      pdfContentWrapper.style.fontSize = '12px';
+      pdfContentWrapper.style.padding = "20px";
+      pdfContentWrapper.style.fontFamily = "Arial, sans-serif";
+      pdfContentWrapper.style.fontSize = "12px";
 
       // Adjust specific elements within the wrapper for PDF
-      const tables = pdfContentWrapper.querySelectorAll('table');
-      tables.forEach(table => {
-        table.style.width = '100%';
-        table.style.borderCollapse = 'collapse';
+      const tables = pdfContentWrapper.querySelectorAll("table");
+      tables.forEach((table) => {
+        table.style.width = "100%";
+        table.style.borderCollapse = "collapse";
       });
-      const cells = pdfContentWrapper.querySelectorAll('th, td');
-      cells.forEach(cell => {
-        cell.style.padding = '8px';
-        cell.style.border = '1px solid #ddd';
+      const cells = pdfContentWrapper.querySelectorAll("th, td");
+      cells.forEach((cell) => {
+        cell.style.padding = "8px";
+        cell.style.border = "1px solid #ddd";
       });
 
       const opt = {
         margin: 0.5,
-        filename: `Client_Transaction_${selectedTransaction.clientName?.clientName || "Details"}.pdf`,
+        filename: `Client_Transaction_${
+          selectedTransaction.clientName?.clientName || "Details"
+        }.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: {
           scale: 2,
@@ -966,33 +1001,34 @@ const ViewClientTransaction = () => {
           logging: true,
           scrollY: 0,
           windowWidth: pdfContentWrapper.scrollWidth,
-          windowHeight: pdfContentWrapper.scrollHeight
+          windowHeight: pdfContentWrapper.scrollHeight,
         },
         jsPDF: {
           unit: "in",
           format: "a4",
-          orientation: "portrait"
+          orientation: "portrait",
         },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak: { mode: ["avoid-all", "css", "legacy"] },
       };
 
       await html2pdf().set(opt).from(pdfContentWrapper).save();
-
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Error generating PDF. Please try again.');
+      console.error("Error generating PDF:", error);
+      alert("Error generating PDF. Please try again.");
     }
   };
 
   // Toggle payment status function
   const togglePaymentStatus = async (id) => {
+    setPaymentStatusLoadingId(id); // Set loading for this transaction
     try {
       // Find the transaction to get current status
-      const transactionToUpdate = allTransactions.find(txn => txn.id === id);
+      const transactionToUpdate = allTransactions.find((txn) => txn.id === id);
       if (!transactionToUpdate) return;
 
-      const newStatus = transactionToUpdate.paymentstatus === "pending" ? "paid" : "pending";
-      
+      const newStatus =
+        transactionToUpdate.paymentstatus === "pending" ? "paid" : "pending";
+
       // Update on the server
       await fetch(`/api/client-transaction/${id}`, {
         method: "PATCH",
@@ -1001,12 +1037,12 @@ const ViewClientTransaction = () => {
       });
 
       // Update the allTransactions state
-      const updatedAllTransactions = allTransactions.map(txn => 
+      const updatedAllTransactions = allTransactions.map((txn) =>
         txn.id === id ? { ...txn, paymentstatus: newStatus } : txn
       );
 
       // Update the filteredTransactions state while preserving the current filter
-      const updatedFilteredTransactions = filteredTransactions.map(txn =>
+      const updatedFilteredTransactions = filteredTransactions.map((txn) =>
         txn.id === id ? { ...txn, paymentstatus: newStatus } : txn
       );
 
@@ -1017,30 +1053,34 @@ const ViewClientTransaction = () => {
       if (selectedTransaction && selectedTransaction.id === id) {
         setSelectedTransaction({ ...selectedTransaction, paymentstatus: newStatus });
       }
-
     } catch (error) {
       console.error("Error updating payment status:", error);
       setError("Failed to update payment status. Please try again.");
+    } finally {
+      setPaymentStatusLoadingId(null); // Clear loading
     }
   };
 
   // Toggle work status function for individual work stages
   const toggleWorkStatus = async (transactionId, stageIndex) => {
+    setWorkStatusLoadingId({ transactionId, stageIndex }); // Set loading for this specific stage
     try {
       // Find the transaction
-      const transactionToUpdate = allTransactions.find(txn => txn.id === transactionId);
+      const transactionToUpdate = allTransactions.find(
+        (txn) => txn.id === transactionId
+      );
       if (!transactionToUpdate || !transactionToUpdate.workingStage) return;
 
       // Create a copy of the working stages array
       const updatedWorkingStage = [...transactionToUpdate.workingStage];
-      
+
       // Toggle the status of the specific stage
       const currentStatus = updatedWorkingStage[stageIndex]?.workstatus || "incomplete";
       const newStatus = currentStatus === "incomplete" ? "complete" : "incomplete";
-      
+
       updatedWorkingStage[stageIndex] = {
         ...updatedWorkingStage[stageIndex],
-        workstatus: newStatus
+        workstatus: newStatus,
       };
 
       // Update on the server
@@ -1051,12 +1091,12 @@ const ViewClientTransaction = () => {
       });
 
       // Update the allTransactions state
-      const updatedAllTransactions = allTransactions.map(txn => 
+      const updatedAllTransactions = allTransactions.map((txn) =>
         txn.id === transactionId ? { ...txn, workingStage: updatedWorkingStage } : txn
       );
 
       // Update the filteredTransactions state
-      const updatedFilteredTransactions = filteredTransactions.map(txn =>
+      const updatedFilteredTransactions = filteredTransactions.map((txn) =>
         txn.id === transactionId ? { ...txn, workingStage: updatedWorkingStage } : txn
       );
 
@@ -1067,10 +1107,11 @@ const ViewClientTransaction = () => {
       if (selectedTransaction && selectedTransaction.id === transactionId) {
         setSelectedTransaction({ ...selectedTransaction, workingStage: updatedWorkingStage });
       }
-
     } catch (error) {
       console.error("Error updating work status:", error);
       setError("Failed to update work status. Please try again.");
+    } finally {
+      setWorkStatusLoadingId(null); // Clear loading
     }
   };
 
@@ -1122,7 +1163,7 @@ const ViewClientTransaction = () => {
     return <div className="d-flex flex-wrap gap-2 justify-content-center my-3">{pages}</div>;
   };
 
-  // Show spinner while loading or unauthorized
+  // Show spinner while initial loading or unauthorized
   if (isLoading || userRole === null) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
@@ -1219,40 +1260,60 @@ const ViewClientTransaction = () => {
                       {formatDate(txn.clientCreatedAt)}
                       <br />
                       <small>
-                        <span className="fw-semibold">{formatTime(txn.clientCreatedAt)}</span>
+                        <span className="fw-semibold">
+                          {formatTime(txn.clientCreatedAt)}
+                        </span>
                       </small>
                     </td>
                     <td>
-                      <FaRupeeSign />{txn.totalAmount?.toFixed(2)}
+                      <FaRupeeSign />
+                      {txn.totalAmount?.toFixed(2)}
                     </td>
                     <td>
-                      <FaRupeeSign />{txn.totalAmountclient?.toFixed(2)}
+                      <FaRupeeSign />
+                      {txn.totalAmountclient?.toFixed(2)}
                     </td>
                     <td>
-                      <FaRupeeSign />{txn.remainingAmount?.toFixed(2) || (txn.totalAmount - txn.totalAmountclient).toFixed(2)}
+                      <FaRupeeSign />
+                      {(
+                        txn.remainingAmount ||
+                        (txn.totalAmount - txn.totalAmountclient)
+                      ).toFixed(2)}
                     </td>
                     <td>
-                      <Button 
+                      <Button
                         variant={txn.paymentstatus === "pending" ? "danger" : "success"}
                         onClick={() => togglePaymentStatus(txn.id)}
                         className="rounded-pill text-capitalize fw-bold fs-6"
+                        disabled={paymentStatusLoadingId === txn.id} // Disable button while loading
                       >
-                        {txn.paymentstatus}
+                        {paymentStatusLoadingId === txn.id ? (
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                            className="me-1"
+                          />
+                        ) : (
+                          txn.paymentstatus
+                        )}
                       </Button>
                     </td>
                     <td>
                       <div className="d-flex flex-wrap justify-content-center gap-2">
-                        <Button 
-                          variant="info" 
-                          onClick={() => { 
-                            setSelectedTransaction(txn); 
-                            setShowModal(true); 
+                        <Button
+                          variant="info"
+                          onClick={() => {
+                            setSelectedTransaction(txn);
+                            setShowModal(true);
                           }}
                         >
                           <FaEye />
                         </Button>
-                        <Button 
-                          variant="warning" 
+                        <Button
+                          variant="warning"
                           onClick={() => router.push(`/editclient-transaction/${txn.id}`)}
                         >
                           <PencilSquare />
@@ -1281,14 +1342,15 @@ const ViewClientTransaction = () => {
             <Modal.Title className="d-flex align-items-center gap-2">
               <FaClipboard className="text-primary" />
               <span className="fs-5">Client Transaction Details</span>
-              <Button 
-                variant="outline-warning" 
-                size="sm" 
-                className="ms-auto rounded-pill fw-bold fs-6 text-center justify-content-center align-items-center d-flex gap-1 text-dark" 
-                onClick={downloadPDF} 
+              <Button
+                variant="outline-warning"
+                size="sm"
+                className="ms-auto rounded-pill fw-bold fs-6 text-center justify-content-center align-items-center d-flex gap-1 text-dark"
+                onClick={downloadPDF}
                 title="Download as PDF"
               >
-                <FaFilePdf className="me-1" />PDF
+                <FaFilePdf className="me-1" />
+                PDF
               </Button>
             </Modal.Title>
           </Modal.Header>
@@ -1301,25 +1363,32 @@ const ViewClientTransaction = () => {
                   <Col xs={12} sm={6}>
                     <p>
                       <FaUser className="me-2 text-secondary" />
-                      <strong>Client Name:</strong> {selectedTransaction.clientName?.clientName || "N/A"}
+                      <strong>Client Name:</strong>{" "}
+                      {selectedTransaction.clientName?.clientName || "N/A"}
                     </p>
                     <p>
                       <FaWrench className="me-2 text-secondary" />
-                      <strong>Query License:</strong> {selectedTransaction.query_license?.query_license || "N/A"}
+                      <strong>Query License:</strong>{" "}
+                      {selectedTransaction.query_license?.query_license || "N/A"}
                     </p>
                     <p>
                       <FaMapMarkerAlt className="me-2 text-secondary" />
-                      <strong>Nearby Village:</strong> {selectedTransaction.near_village?.near_village || "N/A"}
+                      <strong>Nearby Village:</strong>{" "}
+                      {selectedTransaction.near_village?.near_village || "N/A"}
                     </p>
                   </Col>
                   <Col xs={12} sm={6}>
                     <p>
                       <FaCalendarAlt className="me-2 text-secondary" />
-                      <strong>Created At:</strong> {formatDate(selectedTransaction.clientCreatedAt)} {formatTime(selectedTransaction.clientCreatedAt)}
+                      <strong>Created At:</strong>{" "}
+                      {formatDate(selectedTransaction.clientCreatedAt)}{" "}
+                      {formatTime(selectedTransaction.clientCreatedAt)}
                     </p>
                     <p>
                       <FaCalendarAlt className="me-2 text-secondary" />
-                      <strong>Last Updated At:</strong> {formatDate(selectedTransaction.clientUpdatedAt)} {formatTime(selectedTransaction.clientUpdatedAt)}
+                      <strong>Last Updated At:</strong>{" "}
+                      {formatDate(selectedTransaction.clientUpdatedAt)}{" "}
+                      {formatTime(selectedTransaction.clientUpdatedAt)}
                     </p>
                   </Col>
                 </Row>
@@ -1330,7 +1399,8 @@ const ViewClientTransaction = () => {
                     <div className="bg-light rounded shadow-sm p-2">
                       <p className="mb-1 fw-bold text-dark">Total Amount</p>
                       <p className="text-success">
-                        <FaRupeeSign /> {selectedTransaction.totalAmount?.toFixed(2)}
+                        <FaRupeeSign />{" "}
+                        {selectedTransaction.totalAmount?.toFixed(2)}
                       </p>
                     </div>
                   </Col>
@@ -1338,7 +1408,8 @@ const ViewClientTransaction = () => {
                     <div className="bg-light rounded shadow-sm p-2">
                       <p className="mb-1 fw-bold text-dark">Received Amount</p>
                       <p className="text-primary">
-                        <FaRupeeSign /> {selectedTransaction.totalAmountclient?.toFixed(2)}
+                        <FaRupeeSign />{" "}
+                        {selectedTransaction.totalAmountclient?.toFixed(2)}
                       </p>
                     </div>
                   </Col>
@@ -1346,7 +1417,12 @@ const ViewClientTransaction = () => {
                     <div className="bg-light rounded shadow-sm p-2">
                       <p className="mb-1 fw-bold text-dark">Remaining Amount</p>
                       <p className="text-danger">
-                        <FaRupeeSign /> {selectedTransaction.remainingAmount?.toFixed(2) || (selectedTransaction.totalAmount - selectedTransaction.totalAmountclient).toFixed(2)}
+                        <FaRupeeSign />{" "}
+                        {(
+                          selectedTransaction.remainingAmount ||
+                          (selectedTransaction.totalAmount -
+                            selectedTransaction.totalAmountclient)
+                        ).toFixed(2)}
                       </p>
                     </div>
                   </Col>
@@ -1357,17 +1433,34 @@ const ViewClientTransaction = () => {
                   <Col xs={12}>
                     <p>
                       <strong>Payment Status:</strong>{" "}
-                      <Button 
-                        variant={selectedTransaction.paymentstatus === "pending" ? "danger" : "success"}
+                      <Button
+                        variant={
+                          selectedTransaction.paymentstatus === "pending"
+                            ? "danger"
+                            : "success"
+                        }
                         onClick={() => togglePaymentStatus(selectedTransaction.id)}
                         className="rounded-pill text-capitalize fw-bold fs-6 ms-2"
                         size="sm"
+                        disabled={paymentStatusLoadingId === selectedTransaction.id}
                       >
-                        {selectedTransaction.paymentstatus}
+                        {paymentStatusLoadingId === selectedTransaction.id ? (
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                            className="me-1"
+                          />
+                        ) : (
+                          selectedTransaction.paymentstatus
+                        )}
                       </Button>
                     </p>
                     <p>
-                      <strong>Transaction Description:</strong> {selectedTransaction.description || "N/A"}
+                      <strong>Transaction Description:</strong>{" "}
+                      {selectedTransaction.description || "N/A"}
                     </p>
                   </Col>
                 </Row>
@@ -1375,7 +1468,8 @@ const ViewClientTransaction = () => {
                 {/* Working Stage Table */}
                 <hr />
                 <h6 className="text-secondary mb-3">
-                  <FaWrench className="me-2" />Work Progress Stages
+                  <FaWrench className="me-2" />
+                  Work Progress Stages
                 </h6>
                 <div className="table-responsive">
                   <Table bordered hover className="text-center align-middle">
@@ -1394,12 +1488,17 @@ const ViewClientTransaction = () => {
                         length: Math.max(
                           selectedTransaction.workingStage?.length || 0,
                           selectedTransaction.workingStageclient?.length || 0
-                        )
+                        ),
                       }).map((_, index) => {
                         const companyStage = selectedTransaction.workingStage?.[index];
-                        const clientStage = selectedTransaction.workingStageclient?.[index];
+                        const clientStage =
+                          selectedTransaction.workingStageclient?.[index];
                         const workStatus = companyStage?.workstatus || "incomplete";
-                        
+                        const isStageLoading =
+                          workStatusLoadingId &&
+                          workStatusLoadingId.transactionId === selectedTransaction.id &&
+                          workStatusLoadingId.stageIndex === index;
+
                         return (
                           <tr key={index}>
                             <td>{index + 1}</td>
@@ -1409,11 +1508,24 @@ const ViewClientTransaction = () => {
                               {companyStage ? (
                                 <Button
                                   variant={workStatus === "incomplete" ? "danger" : "success"}
-                                  onClick={() => toggleWorkStatus(selectedTransaction.id, index)}
-                                  className="rounded-pill text-capitalize fw-bold"
+                                  onClick={() =>
+                                    toggleWorkStatus(selectedTransaction.id, index)
+                                  }
+                                  className="rounded-pill text-capitalize fw-bold d-flex align-items-center justify-content-center mx-auto"
                                   size="sm"
+                                  disabled={isStageLoading} // Disable button while loading
+                                  style={{ minWidth: '120px' }} // Ensure consistent button width
                                 >
-                                  {workStatus === "incomplete" ? (
+                                  {isStageLoading ? (
+                                    <Spinner
+                                      as="span"
+                                      animation="border"
+                                      size="sm"
+                                      role="status"
+                                      aria-hidden="true"
+                                      className="me-1"
+                                    />
+                                  ) : workStatus === "incomplete" ? (
                                     <>
                                       <FaTimesCircle className="me-1" />
                                       Incomplete

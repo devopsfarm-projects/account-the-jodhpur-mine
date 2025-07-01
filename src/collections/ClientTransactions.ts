@@ -60,8 +60,11 @@ export const ClientTransactions: CollectionConfig = {
         {
           name: 'workingDescriptionclient',
           type: 'text',
-         
         },
+        {
+          name:"workDate",
+          type:'date',
+        }
       ],
     },
     {
