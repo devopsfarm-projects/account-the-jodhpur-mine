@@ -367,15 +367,26 @@ const Dashboard = () => {
 
           {/* Client-Specific Card. In this card is only shown if the user's Userdata is "guest". */}
           {UserRole === "guest" && (
-            <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
-              <Card className="text-center bg-warning text-dark w-100 shadow rounded-5 cursor-pointer hover:bg-dark hover:text-warning hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/client-transaction")}>
-                <Card.Body className="d-flex flex-column align-items-center">
-                  <FaReceipt size={65} className="mb-3 text-dark hover:text-warning" />
-                  <Card.Title className="fs-3 fw-bold">Client Transaction</Card.Title>
-                  <Card.Text className="fs-6 fw-bold">Add a client transactions</Card.Text>
-                </Card.Body>
-              </Card>
-            </Col>
+            <>
+              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
+                <Card className="text-center bg-warning text-dark w-100 shadow rounded-5 cursor-pointer hover:bg-dark hover:text-warning hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/client-transaction")}>
+                  <Card.Body className="d-flex flex-column align-items-center">
+                    <FaReceipt size={65} className="mb-3 text-dark hover:text-warning" />
+                    <Card.Title className="fs-3 fw-bold">Client Transaction</Card.Title>
+                    <Card.Text className="fs-6 fw-bold">Add a client transactions</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col xs={12} sm={6} md={4} lg={2} className="d-flex">
+  <Card className="text-center bg-warning text-dark w-100 shadow rounded-5 cursor-pointer hover:bg-dark hover:text-warning hover:shadow-lg" style={{ cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => router.push("/add-account")}>  
+    <Card.Body className="d-flex flex-column align-items-center">
+      <FaWallet size={60} className="mb-3 text-dark hover:text-warning" />
+      <Card.Title className="fs-5 fw-bold">Add Account</Card.Title>
+      <Card.Text className="fs-6 fw-bold">Create a new account</Card.Text>
+    </Card.Body>
+  </Card>
+</Col>
+            </>
           )}
         </Row>
       </Container>

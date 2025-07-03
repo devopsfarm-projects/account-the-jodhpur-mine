@@ -13,10 +13,12 @@ import { Expense } from './collections/Expense'
 import { Vendor } from './collections/Vendor'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
-
+import dotenv from 'dotenv'
+// ✅ Load the .env file from the project root
+dotenv.config({ path: path.resolve(process.cwd(), '.env') })
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-
+console.log('Loaded PAYLOAD_SECRET:', process.env.PAYLOAD_SECRET)
 export default buildConfig({
   admin: {
     user: Users.slug,

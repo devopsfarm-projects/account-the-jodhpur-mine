@@ -201,6 +201,7 @@ export interface ClientTransaction {
     | {
         workingStageclient?: string | null;
         workingDescriptionclient?: string | null;
+        stageDate: string;
         id?: string | null;
       }[]
     | null;
@@ -439,6 +440,7 @@ export interface ClientTransactionSelect<T extends boolean = true> {
     | {
         workingStageclient?: T;
         workingDescriptionclient?: T;
+        stageDate?: T;
         id?: T;
       };
   totalAmount?: T;

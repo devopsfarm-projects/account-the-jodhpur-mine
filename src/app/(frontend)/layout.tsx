@@ -1,10 +1,12 @@
 import React from 'react'
 import './styles.css'
-import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css'
 import { headers as getHeaders } from 'next/headers.js'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import Login from './login/page'
+import dotenv from 'dotenv'
+dotenv.config()
 
 export const metadata = {
   description: 'A blank template using Payload in a Next.js app.',
@@ -15,7 +17,19 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
   const headers = await getHeaders()
   const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
+  // const payload = await getPayload({
+  //   config: {
+  //     ...payloadConfig,
+  //     secret: process.env.PAYLOAD_SECRET!,
+  //   },
+  // })
+  const payload = await getPayload({
+    config: {
+      ...payloadConfig,
+      secret: process.env.PAYLOAD_SECRET!,
+    },
+  })
+
   const { user } = await payload.auth({ headers })
 
   // If user is not authenticated, show login page
@@ -32,9 +46,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <main className="flex-1">
-          {children}
-        </main>
+        <main className="flex-1">{children}</main>
       </body>
     </html>
   )

@@ -992,7 +992,8 @@ const AddVendorTransaction = () => {
   // Vendor's working stages aligned with collection schema (vendor's charges/payments)
   const [workingStagesVendor, setWorkingStagesVendor] = useState([{
     workingStagevendor: '',
-    workingDescriptionvendor: ''
+    workingDescriptionvendor: '',
+    stageDate: ''
   }]);
 
   const [error, setError] = useState('');
@@ -1102,10 +1103,10 @@ const AddVendorTransaction = () => {
   };
 
   const addStageVendor = () => {
-    setWorkingStagesVendor([...workingStagesVendor, {
-      workingStagevendor: '',
-      workingDescriptionvendor: ''
-    }]);
+    setWorkingStagesVendor([
+      ...workingStagesVendor,
+      { workingStagevendor: '', workingDescriptionvendor: '', stageDate: '' }
+    ]);
   };
 
   const removeStage = (index) => {
@@ -1153,10 +1154,7 @@ const AddVendorTransaction = () => {
       workingDescription: '',
       workstatus: 'incomplete'
     }]);
-    setWorkingStagesVendor([{
-      workingStagevendor: '',
-      workingDescriptionvendor: ''
-    }]);
+    setWorkingStagesVendor([{ workingStagevendor: '', workingDescriptionvendor: '', stageDate: '' }]);
     setError('');
     setSuccess('');
   };
@@ -1220,6 +1218,7 @@ const AddVendorTransaction = () => {
       workingStagevendor: workingStagesVendor.map((s) => ({
         workingStagevendor: s.workingStagevendor,
         workingDescriptionvendor: s.workingDescriptionvendor,
+        stageDate: s.stageDate,
       })),
       description: form.description,
       vendorCreatedAt: new Date().toISOString(), // Renamed for clarity
@@ -1497,7 +1496,7 @@ const AddVendorTransaction = () => {
               <Card.Body>
                 {workingStagesVendor.map((stage, index) => (
                   <Row key={`vendor-stage-${index}`} className="mb-3 align-items-center g-2">
-                    <Col xs={12} md={6}>
+                    <Col xs={12} md={4}>
                       <Form.Control
                         placeholder="Vendor Service Description (e.g., Material Supply, Labor)"
                         value={stage.workingStagevendor}
@@ -1505,13 +1504,23 @@ const AddVendorTransaction = () => {
                         className="p-2"
                       />
                     </Col>
-                    <Col xs={8} md={4}>
+                    <Col xs={8} md={3}>
                       <Form.Control
                         type="number"
                         placeholder="₹ Vendor Charged Amount"
                         value={stage.workingDescriptionvendor}
                         onChange={(e) => updateStageVendor(index, 'workingDescriptionvendor', e.target.value)}
                         className="p-2"
+                      />
+                    </Col>
+                    <Col xs={8} md={3}>
+                      <Form.Control
+                        type="date"
+                        placeholder="Stage Date"
+                        value={stage.stageDate}
+                        onChange={(e) => updateStageVendor(index, 'stageDate', e.target.value)}
+                        className="p-2"
+                        required
                       />
                     </Col>
                     <Col xs={4} md={2} className="d-flex justify-content-end">
