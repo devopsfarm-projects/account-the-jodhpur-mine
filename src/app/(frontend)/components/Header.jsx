@@ -1,10 +1,8 @@
 // "use client"; // Required for using localStorage and useRouter in Next.js
-
 // import React, { useEffect, useState } from "react";
 // import Link from "next/link";
 // import { useRouter } from "next/navigation"; // Navigation hook in Next.js
 // import { Container, Navbar, Nav, Button, NavDropdown, Offcanvas, } from "react-bootstrap";
-
 // const Header = () => {
 //   const router = useRouter(); // Allows programmatic navigation (e.g., after logout)
 //   const [role, setRole] = useState(""); // Role: 'admin' or 'manager' or 'guest'
@@ -181,8 +179,8 @@
 //   );
 // };
 // export default Header;
-"use client"; // Required for using localStorage and useRouter in Next.js
 
+"use client"; // Required for using localStorage and useRouter in Next.js
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation"; // Navigation hook in Next.js
@@ -225,11 +223,11 @@ const Header = () => {
 
   return (
     <Navbar expand="lg" bg="dark" variant="dark" className="mb-3">
-      <Container fluid className="text-uppercase">
+      <Container fluid className="text-capitalize">
 
         {/* Brand name: always visible */}
-        <Navbar.Brand as={Link} href="/dashboard" className="fs-4">
-          Dashboard
+        <Navbar.Brand as={Link} href="/dashboard" className="fs-5 fw-bold">
+          JODHPUR MINES
         </Navbar.Brand>
 
         {/* Toggle button for mobile menu */}
@@ -244,7 +242,7 @@ const Header = () => {
         >
           {/* Header for offcanvas menu */}
           <Offcanvas.Header closeButton closeVariant="white">
-            <Offcanvas.Title id="offcanvasNavbarLabel" className="fs-4 fw-bold">
+            <Offcanvas.Title id="offcanvasNavbarLabel" className="fs-5 fw-bold">
               Menu
             </Offcanvas.Title>
           </Offcanvas.Header>
