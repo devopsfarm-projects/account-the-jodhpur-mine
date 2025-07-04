@@ -56,7 +56,7 @@ const formatTime = (date) =>
     timeZone: "Asia/Kolkata",
   });
 
-const ViewClientTransaction = () => {
+const VoucherClientTransaction = () => {
   const router = useRouter();
 
   // States for authentication, data, filters, modals, and UI
@@ -404,7 +404,7 @@ const ViewClientTransaction = () => {
       <Header />
       <Container className="mt-4 mb-5">
         <h4 className="text-center mb-4">
-          <FaClipboard /> View All Client Transactions
+          <FaClipboard /> View All Client Voucher Transactions
         </h4>
 
         {/* Show error using Alert */}
@@ -773,4 +773,4 @@ const ViewClientTransaction = () => {
   );
 };
 
-export default ViewClientTransaction;
+export default VoucherClientTransaction;

@@ -269,6 +269,9 @@ const Header = () => {
                     <NavDropdown.Item as={Link} href="/viewclient-transaction">
                       View Client Transaction
                     </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} href="/voucherclient-transaction">
+                      Voucher Client Transaction
+                    </NavDropdown.Item>
                   </NavDropdown>
 
                   <NavDropdown title="Vendor Accounts" id="admin-vendor-acc">
@@ -318,6 +321,9 @@ const Header = () => {
                     </NavDropdown.Item>
                     <NavDropdown.Item as={Link} href="/viewclient-transaction">
                       View Client Transaction
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} href="/voucherclient-transaction">
+                      Voucher Client Transaction
                     </NavDropdown.Item>
                   </NavDropdown>
 

@@ -222,7 +222,8 @@ const ClientTransaction = () => {
         setSuccess("Client transaction saved successfully!");
         setTimeout(() => {
           handleReset();
-          router.push("/dashboard");
+          // Redirect all users to the main dashboard
+          router.push('/dashboard');
         }, 1000);
       } else {
         const result = await res.json();
@@ -423,37 +424,7 @@ const ClientTransaction = () => {
                     </Col>
                   </Row>
                 ))}
-                {/* Table displaying all client payment stages with date */}
-                <div className="mt-4">
-                  <table className="table table-bordered table-hover text-center align-middle">
-                    <thead className="table-light">
-                      <tr>
-                        <th>S.No</th>
-                        <th>Date</th>
-                        <th>Client Stage</th>
-                        <th>Client Description</th>
-                        <th>Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {workingStagesClient.length === 0 ? (
-                        <tr>
-                          <td colSpan="5">No stages added</td>
-                        </tr>
-                      ) : (
-                        workingStagesClient.map((stage, idx) => (
-                          <tr key={`stage-table-row-${idx}`}>
-                            <td>{idx + 1}</td>
-                            <td>{stage.stageDate ? new Date(stage.stageDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</td>
-                            <td>{stage.work || 'N/A'}</td>
-                            <td>{stage.amount || 'N/A'}</td>
-                            <td>{stage.amount ? `₹ ${stage.amount}` : 'N/A'}</td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+
               </Card.Body>
             </Card>
 

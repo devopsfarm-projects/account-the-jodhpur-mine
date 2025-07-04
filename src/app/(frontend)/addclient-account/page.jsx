@@ -180,7 +180,8 @@ const AddClientAccount = ({ isGuest = false }) => {
         setShowAlert(true);
         setTimeout(() => {
           resetForm();
-          router.push('/viewclient-account');
+          // Redirect all users to the main dashboard
+          router.push('/dashboard');
         }, 1000);
       } else {
         throw new Error('Failed to save client account.');

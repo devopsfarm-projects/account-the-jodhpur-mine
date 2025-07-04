@@ -314,6 +314,10 @@ const AddClientTransaction = () => {
 
     setSubmitting(true);
 
+    // Get user role from localStorage or default to 'guest'
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userRole = user?.role || 'guest';
+
     // Updated payload to match ClientTransactions collection schema
     const payload = {
       clientName: matchedClient.id,
@@ -336,6 +340,7 @@ const AddClientTransaction = () => {
       clientCreatedAt: new Date().toISOString(),
       clientUpdatedAt: new Date().toISOString(),
       paymentstatus: "pending",
+      createdBy: userRole, // Add createdBy field with user role
     };
 
     try {
