@@ -208,6 +208,7 @@ const ClientTransaction = () => {
       clientCreatedAt: new Date().toISOString(),
       clientUpdatedAt: new Date().toISOString(),
       paymentstatus: "pending", // Always pending for submissions from this form
+      source: 'guest' // Marking this as a guest submission
     };
 
     // Step 5: Submit data to API

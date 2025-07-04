@@ -99,6 +99,19 @@ export const ClientTransactions: CollectionConfig = {
       name: 'paymentstatus',
       type: 'text',
       defaultValue: 'pending',
+    },
+    {
+      name: 'source',
+      type: 'select',
+      options: [
+        { label: 'Guest', value: 'guest' },
+        { label: 'Manager', value: 'manager' },
+      ],
+      required: true,
+      defaultValue: 'guest',
+      admin: {
+        position: 'sidebar',
+      },
     }
   ],
 }

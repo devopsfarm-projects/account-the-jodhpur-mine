@@ -109,14 +109,37 @@ const VoucherClientTransaction = () => {
     const fetchData = async () => {
       if (userRole === "admin" || userRole === "manager") {
         setIsLoading(true);
+        setError("");
         try {
-          // Fetch all transactions to enable client-side filtering and pagination
+          console.log("Fetching transactions for voucher page...");
           const res = await axios.get("/api/client-transaction?limit=100000");
-          setAllTransactions(res.data.docs || []);
-          setFilteredTransactions(res.data.docs || []); // Initially set filtered to all
+          console.log("Raw API response (voucher):", res.data);
+          
+          if (!res.data || !Array.isArray(res.data.docs)) {
+            throw new Error("Invalid response format from server");
+          }
+          
+          const guestTransactions = res.data.docs.filter(tx => {
+            console.log("Voucher transaction source:", tx.source, "Transaction ID:", tx.id);
+            return tx.source === 'guest';
+          });
+          
+          console.log("Guest transactions:", guestTransactions);
+          
+          if (guestTransactions.length === 0) {
+            console.warn("No guest transactions found. Total transactions:", res.data.docs.length);
+          }
+          
+          setAllTransactions(guestTransactions);
+          setFilteredTransactions(guestTransactions);
         } catch (err) {
-          console.error("API Error:", err);
-          setError("Error fetching client transactions. Please try again.");
+          console.error("API Error (voucher):", err);
+          console.error("Error details (voucher):", {
+            message: err.message,
+            response: err.response?.data,
+            status: err.response?.status
+          });
+          setError(`Failed to load voucher transactions: ${err.message}. Please check the console for more details.`);
         } finally {
           setIsLoading(false);
         }
@@ -458,9 +481,7 @@ const VoucherClientTransaction = () => {
                 <th>S.No</th>
                 <th>Client Name</th>
                 <th>Created At</th>
-                <th>Total Amount(<FaRupeeSign />)</th>
                 <th>Received Amount(<FaRupeeSign />)</th>
-                <th>Remaining Amount(<FaRupeeSign />)</th>
                 <th>Payment Status</th>
                 <th>Actions</th>
               </tr>
@@ -482,18 +503,7 @@ const VoucherClientTransaction = () => {
                     </td>
                     <td>
                       <FaRupeeSign />
-                      {txn.totalAmount?.toFixed(2)}
-                    </td>
-                    <td>
-                      <FaRupeeSign />
                       {txn.totalAmountclient?.toFixed(2)}
-                    </td>
-                    <td>
-                      <FaRupeeSign />
-                      {(
-                        txn.remainingAmount ||
-                        (txn.totalAmount - txn.totalAmountclient)
-                      ).toFixed(2)}
                     </td>
                     <td>
                       <Button
@@ -691,8 +701,6 @@ const VoucherClientTransaction = () => {
                     <thead className="table-light">
                       <tr>
                         <th>S.No</th>
-                        <th>Company Stage</th>
-                        <th>Company Description</th>
                         <th>Work Status</th>
                         <th>Client Stage</th>
                         <th>Client Description</th>
@@ -717,44 +725,33 @@ const VoucherClientTransaction = () => {
                         return (
                           <tr key={index}>
                             <td>{index + 1}</td>
-                            <td>{companyStage?.workingStage || "N/A"}</td>
-                            <td>{companyStage?.workingDescription || "N/A"}</td>
                             <td>
-                              {companyStage ? (
-                                <Button
-                                  variant={workStatus === "incomplete" ? "danger" : "success"}
-                                  onClick={() =>
-                                    toggleWorkStatus(selectedTransaction.id, index)
-                                  }
-                                  className="rounded-pill text-capitalize fw-bold d-flex align-items-center justify-content-center mx-auto"
-                                  size="sm"
-                                  disabled={isStageLoading} // Disable button while loading
-                                  style={{ minWidth: '120px' }} // Ensure consistent button width
-                                >
-                                  {isStageLoading ? (
-                                    <Spinner
-                                      as="span"
-                                      animation="border"
-                                      size="sm"
-                                      role="status"
-                                      aria-hidden="true"
-                                      className="me-1"
-                                    />
-                                  ) : workStatus === "incomplete" ? (
-                                    <>
-                                      <FaTimesCircle className="me-1" />
-                                      Incomplete
-                                    </>
-                                  ) : (
-                                    <>
-                                      <FaCheckCircle className="me-1" />
-                                      Complete
-                                    </>
-                                  )}
-                                </Button>
-                              ) : (
-                                "N/A"
-                              )}
+                            <td>
+                            <td>
+  <Button
+    variant={workStatus === "incomplete" ? "danger" : "success"}
+    onClick={() => toggleWorkStatus(selectedTransaction.id, index)}
+    className="rounded-pill text-capitalize fw-bold d-flex align-items-center justify-content-center mx-auto"
+    size="sm"
+    style={{ minWidth: '120px' }}
+  >
+    {workStatus === "incomplete" ? (
+      <>
+        <FaTimesCircle className="me-1" />
+        Incomplete
+      </>
+    ) : (
+      <>
+        <FaCheckCircle className="me-1" />
+        Complete
+      </>
+    )}
+  </Button>
+</td>
+  {!companyStage && (
+    <small className="d-block text-muted mt-1">No stage data</small>
+  )}
+</td>
                             </td>
                             <td>{clientStage?.workingStageclient || "N/A"}</td>
                             <td>{clientStage?.workingDescriptionclient || "N/A"}</td>

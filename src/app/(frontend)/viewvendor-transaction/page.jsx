@@ -1319,28 +1319,30 @@ const ViewVendorTransaction = () => {
                             <td>{companyStage?.workingStage || "N/A"}</td>
                             <td>{companyStage?.workingDescription || "N/A"}</td>
                             <td>
-                              {companyStage ? (
-                                <Button
-                                  variant={workStatus === "incomplete" ? "danger" : "success"}
-                                  onClick={() => toggleWorkStatus(selectedVendorTransaction.id, index)}
-                                  className="rounded-pill text-capitalize fw-bold"
-                                  size="sm"
-                                >
-                                  {workStatus === "incomplete" ? (
-                                    <>
-                                      <FaTimesCircle className="me-1" />
-                                      Incomplete
-                                    </>
-                                  ) : (
-                                    <>
-                                      <FaCheckCircle className="me-1" />
-                                      Complete
-                                    </>
-                                  )}
-                                </Button>
-                              ) : (
-                                "N/A"
-                              )}
+                            <td>
+  <Button
+    variant={workStatus === "incomplete" ? "danger" : "success"}
+    onClick={() => toggleWorkStatus(selectedVendorTransaction.id, index)}
+    className="rounded-pill text-capitalize fw-bold"
+    size="sm"
+    disabled={!companyStage}
+  >
+    {workStatus === "incomplete" ? (
+      <>
+        <FaTimesCircle className="me-1" />
+        Incomplete
+      </>
+    ) : (
+      <>
+        <FaCheckCircle className="me-1" />
+        Complete
+      </>
+    )}
+  </Button>
+  {!companyStage && (
+    <small className="d-block text-muted mt-1">No stage data</small>
+  )}
+</td>
                             </td>
                             <td>{vendorStage?.workingStagevendor || "N/A"}</td>
                             <td>{vendorStage?.workingDescriptionvendor || "N/A"}</td>

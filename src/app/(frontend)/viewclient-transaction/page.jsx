@@ -109,14 +109,37 @@ const ViewClientTransaction = () => {
     const fetchData = async () => {
       if (userRole === "admin" || userRole === "manager") {
         setIsLoading(true);
+        setError("");
         try {
-          // Fetch all transactions to enable client-side filtering and pagination
+          console.log("Fetching transactions...");
           const res = await axios.get("/api/client-transaction?limit=100000");
-          setAllTransactions(res.data.docs || []);
-          setFilteredTransactions(res.data.docs || []); // Initially set filtered to all
+          console.log("Raw API response:", res.data);
+          
+          if (!res.data || !Array.isArray(res.data.docs)) {
+            throw new Error("Invalid response format from server");
+          }
+          
+          const managerTransactions = res.data.docs.filter(tx => {
+            console.log("Transaction source:", tx.source, "Transaction ID:", tx.id);
+            return tx.source === 'manager';
+          });
+          
+          console.log("Manager transactions:", managerTransactions);
+          
+          if (managerTransactions.length === 0) {
+            console.warn("No manager transactions found. Total transactions:", res.data.docs.length);
+          }
+          
+          setAllTransactions(managerTransactions);
+          setFilteredTransactions(managerTransactions);
         } catch (err) {
           console.error("API Error:", err);
-          setError("Error fetching client transactions. Please try again.");
+          console.error("Error details:", {
+            message: err.message,
+            response: err.response?.data,
+            status: err.response?.status
+          });
+          setError(`Failed to load transactions: ${err.message}. Please check the console for more details.`);
         } finally {
           setIsLoading(false);
         }
